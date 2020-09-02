@@ -15,15 +15,17 @@ ifeq ($(config),debug)
   TARGETDIR = ../bin/Debug-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Debug-linux-x86_64/Snow
-  DEFINES += -DSNOW_PLATFORM_LINUX -DSNOW_DEBUG
-  INCLUDES += -Isrc
-  FORCE_INCLUDE +=
+  PCH = src/spch.h
+  GCH = $(OBJDIR)/$(notdir $(PCH)).gch
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_DEBUG
+  INCLUDES += -Isrc -Ivendor/GLFW/include -Ivendor/spdlog/include
+  FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += -lGL -lXLib -lX11 -lXi
-  LDDEPS +=
+  LIBS += vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lpthread -ldl
+  LDDEPS += vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
@@ -42,15 +44,17 @@ ifeq ($(config),release)
   TARGETDIR = ../bin/Release-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Release-linux-x86_64/Snow
-  DEFINES += -DSNOW_PLATFORM_LINUX
-  INCLUDES += -Isrc
-  FORCE_INCLUDE +=
+  PCH = src/spch.h
+  GCH = $(OBJDIR)/$(notdir $(PCH)).gch
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX
+  INCLUDES += -Isrc -Ivendor/GLFW/include -Ivendor/spdlog/include
+  FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += -lGL -lXLib -lX11 -lXi
-  LDDEPS +=
+  LIBS += vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lpthread -ldl
+  LDDEPS += vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
@@ -69,15 +73,17 @@ ifeq ($(config),dist)
   TARGETDIR = ../bin/Dist-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Dist-linux-x86_64/Snow
-  DEFINES += -DSNOW_PLATFORM_LINUX
-  INCLUDES += -Isrc
-  FORCE_INCLUDE +=
+  PCH = src/spch.h
+  GCH = $(OBJDIR)/$(notdir $(PCH)).gch
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX
+  INCLUDES += -Isrc -Ivendor/GLFW/include -Ivendor/spdlog/include
+  FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += -lGL -lXLib -lX11 -lXi
-  LDDEPS +=
+  LIBS += vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lpthread -ldl
+  LDDEPS += vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
@@ -93,6 +99,9 @@ endif
 
 OBJECTS := \
 	$(OBJDIR)/Application.o \
+	$(OBJDIR)/Log.o \
+	$(OBJDIR)/Window.o \
+	$(OBJDIR)/LinuxWindow.o \
 
 RESOURCES := \
 
@@ -152,6 +161,15 @@ $(OBJECTS): | $(OBJDIR)
 endif
 
 $(OBJDIR)/Application.o: src/Snow/Core/Application.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Log.o: src/Snow/Core/Log.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Window.o: src/Snow/Core/Window.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/LinuxWindow.o: src/Snow/Platform/Linux/LinuxWindow.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

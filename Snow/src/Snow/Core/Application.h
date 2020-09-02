@@ -1,4 +1,7 @@
 
+
+#include "Snow/Core/Window.h"
+
 namespace Snow {
     namespace Core {
         class Application {
@@ -6,9 +9,9 @@ namespace Snow {
             Application();
             ~Application();
 
-
+            void Run();
         private:
-
+            Window* m_Window;
         };
 
         Application* CreateApplication();

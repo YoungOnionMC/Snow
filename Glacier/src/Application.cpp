@@ -8,8 +8,6 @@ public:
     }
 };
 
-
-
 Snow::Core::Application* Snow::Core::CreateApplication() {
     return new MainApplication();
 }

@@ -16,14 +16,14 @@ ifeq ($(config),debug)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Debug-linux-x86_64/Glacier
   DEFINES +=
-  INCLUDES += -Isrc -I../Snow/src
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Debug-linux-x86_64/Snow/libSnow.a
-  LDDEPS += ../bin/Debug-linux-x86_64/Snow/libSnow.a
+  LIBS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lpthread -ldl
+  LDDEPS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
@@ -43,14 +43,14 @@ ifeq ($(config),release)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Release-linux-x86_64/Glacier
   DEFINES +=
-  INCLUDES += -Isrc -I../Snow/src
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Release-linux-x86_64/Snow/libSnow.a
-  LDDEPS += ../bin/Release-linux-x86_64/Snow/libSnow.a
+  LIBS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lpthread -ldl
+  LDDEPS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
@@ -70,14 +70,14 @@ ifeq ($(config),dist)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Dist-linux-x86_64/Glacier
   DEFINES +=
-  INCLUDES += -Isrc -I../Snow/src
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Dist-linux-x86_64/Snow/libSnow.a
-  LDDEPS += ../bin/Dist-linux-x86_64/Snow/libSnow.a
+  LIBS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lpthread -ldl
+  LDDEPS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS

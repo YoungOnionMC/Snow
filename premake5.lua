@@ -16,6 +16,12 @@ workspace "Snow"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 VendorIncludeDir = {}
+VendorIncludeDir["GLFW"] = "Snow/vendor/GLFW/include"
+
+
+
+
+include "Snow/vendor/GLFW"
 
 
 project "Snow"
@@ -28,17 +34,27 @@ project "Snow"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+    pchheader "%{prj.name}/src/spch.h"
+    pchsource "%{prj.name}/src/spch.cpp"
+
+
     files {
-        "%{prj.name}/src/**.*"
+        "%{prj.name}/src/Snow/Core/**.*"
     }
 
     includedirs {
         "%{prj.name}/src",
+        "%{VendorIncludeDir.GLFW}",
 
+        "%{prj.name}/vendor/spdlog/include"
     }
     
     links {
-        
+        "GLFW"
+    }
+
+    defines {
+        "GLFW_INCLUDE_NONE"
     }
 
     if os.target() == "windows" then
@@ -54,6 +70,10 @@ project "Snow"
             "D3DCompiler.lib"
         }
 
+        files {
+            "%{prj.name}/src/Snow/Platform/Windows/**.*"
+        }
+
     end
 
     if os.target() == "linux" then
@@ -63,13 +83,17 @@ project "Snow"
         }
 
         links {
-            "GL",
-            "XLib",
+            --"GL",
             "X11",
             "Xi",
+            "pthread",
+            "dl",
 
         }
 
+        files { 
+            "%{prj.name}/src/Snow/Platform/Linux/**.*" 
+        }
 
     end
 
@@ -93,7 +117,14 @@ project "Glacier"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-    links { "Snow" }
+    links { 
+        "Snow",
+        "GLFW",
+        "X11",
+        "Xi",
+        "pthread",
+        "dl"
+    }
 
     files {
         "%{prj.name}/src/**.*"
@@ -101,5 +132,6 @@ project "Glacier"
 
     includedirs {
         "%{prj.name}/src",
-        "Snow/src"
+        "Snow/src",
+        "Snow/vendor/spdlog/include",
     }
