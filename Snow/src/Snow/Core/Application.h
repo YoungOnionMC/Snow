@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include "Snow/Core/Window.h"
 

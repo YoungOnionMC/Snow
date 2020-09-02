@@ -16,7 +16,7 @@ ifeq ($(config),debug)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Debug-linux-x86_64/Glacier
   DEFINES +=
-  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/GLFW/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
@@ -43,7 +43,7 @@ ifeq ($(config),release)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Release-linux-x86_64/Glacier
   DEFINES +=
-  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/GLFW/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
@@ -70,7 +70,7 @@ ifeq ($(config),dist)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Dist-linux-x86_64/Glacier
   DEFINES +=
-  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/GLFW/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64

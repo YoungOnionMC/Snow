@@ -31,9 +31,11 @@ endif
 
 PROJECTS := Glad GLFW Snow Glacier
 
-.PHONY: all clean help $(PROJECTS) 
+.PHONY: all clean help $(PROJECTS) Vendor
 
 all: $(PROJECTS)
+
+Vendor: GLFW Glad
 
 Glad:
 ifneq (,$(Glad_config))

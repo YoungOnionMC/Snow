@@ -18,7 +18,7 @@ ifeq ($(config),debug)
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_DEBUG
-  INCLUDES += -Isrc -Ivendor/GLFW/include -Ivendor/spdlog/include
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
@@ -47,7 +47,7 @@ ifeq ($(config),release)
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX
-  INCLUDES += -Isrc -Ivendor/GLFW/include -Ivendor/spdlog/include
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
@@ -76,7 +76,7 @@ ifeq ($(config),dist)
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX
-  INCLUDES += -Isrc -Ivendor/GLFW/include -Ivendor/spdlog/include
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
@@ -99,6 +99,7 @@ endif
 
 OBJECTS := \
 	$(OBJDIR)/Application.o \
+	$(OBJDIR)/Input.o \
 	$(OBJDIR)/Log.o \
 	$(OBJDIR)/Window.o \
 	$(OBJDIR)/LinuxWindow.o \
@@ -161,6 +162,9 @@ $(OBJECTS): | $(OBJDIR)
 endif
 
 $(OBJDIR)/Application.o: src/Snow/Core/Application.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Input.o: src/Snow/Core/Input.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Log.o: src/Snow/Core/Log.cpp
