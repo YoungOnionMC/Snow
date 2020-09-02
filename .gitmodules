@@ -1,0 +1,3 @@
+[submodule "Snow/vendor/GLFW"]
+	path = Snow/vendor/GLFW
+	url = https://github.com/glfw/glfw.git
