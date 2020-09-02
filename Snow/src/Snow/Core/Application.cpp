@@ -7,6 +7,7 @@ namespace Snow {
         Application::Application() {
             SNOW_CORE_TRACE("Creating Application");
 
+
             m_Window = new Window();
         }
 

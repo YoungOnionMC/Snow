@@ -16,11 +16,12 @@ workspace "Snow"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 VendorIncludeDir = {}
+VendorIncludeDir["Glad"] = "Snow/vendor/Glad/include"
 VendorIncludeDir["GLFW"] = "Snow/vendor/GLFW/include"
 
 
 
-
+include "Snow/vendor/Glad"
 include "Snow/vendor/GLFW"
 
 
@@ -50,7 +51,8 @@ project "Snow"
     }
     
     links {
-        "GLFW"
+        "GLFW",
+        "Glad"
     }
 
     defines {
@@ -120,6 +122,7 @@ project "Glacier"
     links { 
         "Snow",
         "GLFW",
+        "Glad",
         "X11",
         "Xi",
         "pthread",
