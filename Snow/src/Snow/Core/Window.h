@@ -7,10 +7,10 @@ namespace Snow {
             Window();
             ~Window();
 
-
+            void* GetWindowHandle();
         private:
             bool PlatformInit();
-
+            bool PlatformShutdown();
 
 
         };

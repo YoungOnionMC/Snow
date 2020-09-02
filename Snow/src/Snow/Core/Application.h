@@ -10,7 +10,13 @@ namespace Snow {
             ~Application();
 
             void Run();
+
+
+            static Application& Get() { return *s_Instance; }
+            Window* GetWindow() { return Get().m_Window; }
         private:
+            static Application* s_Instance;
+
             Window* m_Window;
         };
 

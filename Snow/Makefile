@@ -18,7 +18,7 @@ ifeq ($(config),debug)
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_DEBUG
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
@@ -47,7 +47,7 @@ ifeq ($(config),release)
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
@@ -76,7 +76,7 @@ ifeq ($(config),dist)
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
@@ -103,6 +103,9 @@ OBJECTS := \
 	$(OBJDIR)/Log.o \
 	$(OBJDIR)/Window.o \
 	$(OBJDIR)/LinuxWindow.o \
+	$(OBJDIR)/OpenGLContext.o \
+	$(OBJDIR)/RenderContext.o \
+	$(OBJDIR)/Renderer.o \
 
 RESOURCES := \
 
@@ -174,6 +177,15 @@ $(OBJDIR)/Window.o: src/Snow/Core/Window.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/LinuxWindow.o: src/Snow/Platform/Linux/LinuxWindow.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/OpenGLContext.o: src/Snow/Platform/OpenGL/OpenGLContext.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/RenderContext.o: src/Snow/Render/RenderContext.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Renderer.o: src/Snow/Render/Renderer.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

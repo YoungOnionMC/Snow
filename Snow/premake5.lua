@@ -12,14 +12,16 @@ project "Snow"
 
 
     files {
-        "src/Snow/Core/**.*"
+        "src/Snow/Core/**.*",
+        "src/Snow/Render/**.*",
+        "src/Snow/Platform/OpenGL/**.*"
     }
 
     includedirs {
         "src",
         "vendor/spdlog/include",
         "%{VendorIncludeDir.GLFW}",
-
+        "%{VendorIncludeDir.Glad}",
     }
     
     links {

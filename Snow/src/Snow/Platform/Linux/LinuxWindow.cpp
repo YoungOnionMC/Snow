@@ -19,5 +19,16 @@ namespace Snow {
             
             return true;
         }
+
+        bool Window::PlatformShutdown() {
+            if(GLFWWindowHandle)
+                glfwDestroyWindow(GLFWWindowHandle);
+
+            
+        }
+
+        void* Window::GetWindowHandle() {
+            return GLFWWindowHandle;
+        }
     }
 }
