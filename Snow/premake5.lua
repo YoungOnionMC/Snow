@@ -14,7 +14,8 @@ project "Snow"
     files {
         "src/Snow/Core/**.*",
         "src/Snow/Render/**.*",
-        "src/Snow/Platform/OpenGL/**.*"
+        "src/Snow/Platform/OpenGL/**.*",
+        --"src/Snow/Platform/Vulkan/**.*"
     }
 
     includedirs {
@@ -22,6 +23,7 @@ project "Snow"
         "vendor/spdlog/include",
         "%{VendorIncludeDir.GLFW}",
         "%{VendorIncludeDir.Glad}",
+        --"%{VendorIncludeDir.Vulkan}"
     }
     
     links {
@@ -64,7 +66,6 @@ project "Snow"
             "Xi",
             "pthread",
             "dl",
-
         }
 
         files { 

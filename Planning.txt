@@ -3,4 +3,5 @@ Thursday
 Input system
 Event system
 
+Get Render context up and running
 Clear screen

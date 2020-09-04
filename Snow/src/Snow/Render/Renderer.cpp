@@ -9,7 +9,7 @@ namespace Snow {
         Context* Renderer::s_Context = nullptr;
 
         void Renderer::Init() {
-            SNOW_CORE_TRACE("Initializing Renderer");
+            SNOW_CORE_INFO("Initializing Renderer");
             ContextSpecification contextSpec;
             contextSpec.s_RenderAPI = RenderAPI::OpenGL;
             contextSpec.WindowHandle = Core::Application::Get().GetWindow()->GetWindowHandle();

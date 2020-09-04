@@ -9,6 +9,8 @@ namespace Snow {
     namespace Render {
         OpenGLContext::OpenGLContext(const ContextSpecification& spec) {
             m_Specification = spec;
+            SNOW_CORE_TRACE("=============================");
+            SNOW_CORE_INFO("Using OpenGL Render API");
 
             glfwMakeContextCurrent((GLFWwindow*)m_Specification.WindowHandle);
             int status = gladLoadGL();
@@ -18,9 +20,7 @@ namespace Snow {
             SNOW_CORE_INFO("    Vendor: {0}", glGetString(GL_VENDOR));
             SNOW_CORE_INFO("    Renderer: {0}", glGetString(GL_RENDERER));
             SNOW_CORE_INFO("	Version: {0}", glGetString(GL_VERSION));
-            glClearColor(1,0,0,1);
-            glClear(GL_COLOR_BUFFER_BIT);
-            glfwSwapBuffers((GLFWwindow*)m_Specification.WindowHandle);
+            SNOW_CORE_TRACE("=============================");
         }
     }
 }

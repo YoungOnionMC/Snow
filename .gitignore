@@ -7,3 +7,7 @@
 **.vcxproj
 **.vcxproj.filters
 **.vcxproj.user
+
+**.cbp
+**.depend
+**.layout

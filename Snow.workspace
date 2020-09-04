@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="Snow">
+		<Project filename="Snow/vendor/Glad/Glad.cbp" active="1">
+		</Project>
+		<Project filename="Snow/vendor/GLFW/GLFW.cbp">
+		</Project>
+		<Project filename="Snow/Snow.cbp">
+			<Depends filename="Snow/vendor/GLFW/GLFW.cbp" />
+			<Depends filename="Snow/vendor/Glad/Glad.cbp" />
+		</Project>
+		<Project filename="Glacier/Glacier.cbp">
+			<Depends filename="Snow/Snow.cbp" />
+			<Depends filename="Snow/vendor/GLFW/GLFW.cbp" />
+			<Depends filename="Snow/vendor/Glad/Glad.cbp" />
+		</Project>
+	</Workspace>
+</CodeBlocks_workspace_file>

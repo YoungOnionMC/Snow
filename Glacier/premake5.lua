@@ -28,5 +28,5 @@ project "Glacier"
         "X11",
         "Xi",
         "pthread",
-        "dl"
+        "dl",
     }
