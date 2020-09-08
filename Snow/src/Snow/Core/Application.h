@@ -22,7 +22,7 @@ namespace Snow {
 
             class ApplicationListener : public Listener {
             public:
-                virtual void HandleEvent(Event& event) override {
+                virtual void HandleEvent(Event* event) override {
                     SNOW_CORE_TRACE("AppRenderEvent");
                 }
             };

@@ -19,7 +19,9 @@ namespace Snow {
 
             Event::WindowCloseEvent event;
             
-            Event::EventSystem::Get().SendEvent(event);
+            Event::EventSystem::SendEvent(&event);
+
+            Application::Get().SetRunning(false);
             
             // Generate window close event....
         }
@@ -29,7 +31,7 @@ namespace Snow {
 
             auto appWindow = Application::Get().GetWindow();
             Event::WindowMinimizedEvent event;
-            Event::EventSystem::Get().SendEvent(event);
+            Event::EventSystem::SendEvent(&event);
             
         }
 
@@ -38,8 +40,10 @@ namespace Snow {
 
             auto appWindow = Application::Get().GetWindow();
             Event::WindowResizeEvent event(width, height);
-            Event::EventSystem::Get().SendEvent(event);
-            Event::EventSystem::Get().RegisterClient(event, appWindow->m_WindowResizeListener);
+            SNOW_CORE_TRACE(event.GetWidth());
+            Event::EventSystem::RegisterClient(Event::WindowResizeEvent::ID, appWindow->m_WindowResizeListener);
+            Event::EventSystem::RegisterClient(Event::WindowMinimizedEvent::ID, appWindow->m_WindowResizeListener);
+            Event::EventSystem::SendEvent(&event);
         }
 
         bool Window::PlatformInit() {

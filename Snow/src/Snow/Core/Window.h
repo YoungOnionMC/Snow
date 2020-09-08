@@ -30,6 +30,7 @@ namespace Snow {
 
             private:
                 uint32_t m_Width, m_Height;
+
                 
                 
             };
@@ -37,12 +38,13 @@ namespace Snow {
 
             class WindowResizeListener : public Listener {
             public:
-                WindowResizeListener();
+                WindowResizeListener() = default;
 
-                virtual void HandleEvent(Event& event) override {
-                    SNOW_CORE_TRACE("This One??");
-                    auto e = static_cast<WindowResizeEvent*>(&event); 
-                    SNOW_CORE_TRACE(e->GetWidth());
+                virtual void HandleEvent(Event* event) override {
+                    WindowResizeEvent* e = static_cast<WindowResizeEvent*>(event);
+                    SNOW_CORE_TRACE("Window Width {0}", e->GetWidth()); 
+                    SNOW_CORE_TRACE("sizeof event {0}", WindowResizeEvent::ID);
+                    SNOW_CORE_TRACE("sizeof event {0}", WindowMinimizedEvent::ID);
                 }
             };
         }

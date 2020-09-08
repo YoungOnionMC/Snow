@@ -7,11 +7,11 @@ namespace Snow {
         namespace Event {
             class Listener {
             public:
-                Listener();
+                Listener() = default;
 
-                virtual ~Listener() = 0;
+                //virtual ~Listener() = 0;
 
-                virtual void HandleEvent(Event& event) = 0;
+                virtual void HandleEvent(Event* event) = 0;
 
             };
         }

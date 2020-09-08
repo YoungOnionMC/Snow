@@ -11,9 +11,14 @@ namespace Snow {
 
         Window::Window() {
             SNOW_CORE_TRACE("Creating Window");
+
+            m_WindowResizeListener = new Event::WindowResizeListener();
+
             if(!PlatformInit()) {
                 SNOW_CORE_ERROR("Window creation failed");
             }
+
+            
         }
 
         Window::~Window() {
