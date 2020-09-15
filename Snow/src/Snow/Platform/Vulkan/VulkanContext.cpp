@@ -59,7 +59,7 @@ namespace Snow {
 #if defined(SNOW_WINDOW_WIN32)
             m_InstanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif defined(SNOW_WINDOW_XLIB)
-            m_InstanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+            m_InstanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
             
            // m_InstanceExtensions.push_back();
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)

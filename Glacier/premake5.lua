@@ -35,6 +35,7 @@ project "Glacier"
         "Glad",
         "X11",
         "Xi",
+        "xcb",
         "pthread",
         "dl",
     }

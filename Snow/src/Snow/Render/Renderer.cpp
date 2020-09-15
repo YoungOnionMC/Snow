@@ -28,7 +28,7 @@ namespace Snow {
         void Renderer::Init() {
             SNOW_CORE_INFO("Initializing Renderer");
             ContextSpecification contextSpec;
-            contextSpec.s_RenderAPI = RenderAPI::Vulkan;
+            contextSpec.s_RenderAPI = RenderAPI::OpenGL;
             contextSpec.WindowHandle = Core::Application::Get().GetWindow()->GetWindowHandle();
 
             s_RenderAPI = contextSpec.s_RenderAPI;

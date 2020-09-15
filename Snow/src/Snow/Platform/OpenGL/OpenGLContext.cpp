@@ -3,6 +3,8 @@
 
 #include <glad/glad.h>
 
+#define SNOW_WINDOW_XLIB
+
 #if defined(SNOW_WINDOW_WIN32)
     #include <glad/glad_wgl.h>
 #elif defined(SNOW_WINDOW_GLFW)
@@ -55,8 +57,19 @@ namespace Snow {
 
 #elif defined(SNOW_WINDOW_XLIB)
 
-
+            Display* display = XOpenDisplay(0);
             
+            GLint attribList[] = {
+                GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None
+            };
+            
+            XVisualInfo* visualInfo = glXChooseVisual(display, 0, attribList);
+            SNOW_CORE_TRACE("BRUH2");
+
+            GLXContext context = glXCreateContext(display, visualInfo, NULL, GL_TRUE);
+            ::Window* window = (::Window*)m_Specification.WindowHandle;
+            glXMakeCurrent(display, *window, context);
+            SNOW_CORE_TRACE("BRUH1");
 #endif
 
             SNOW_CORE_INFO("OpenGL Information:");

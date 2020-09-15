@@ -6,5 +6,9 @@ namespace Snow {
 		VulkanSwapChain::VulkanSwapChain(const SwapChainSpecification& spec) {
 			
 		}
+
+		void VulkanSwapChain::SwapBuffers() {
+			
+		}
 	}
 }

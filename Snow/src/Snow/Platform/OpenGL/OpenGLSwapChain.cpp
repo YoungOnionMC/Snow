@@ -7,6 +7,8 @@
 #elif defined(SNOW_WINDOW_WIN32)
     #include <Windows.h>
     #include <glad/glad_wgl.h>
+#elif defined(SNOW_WINDOW_XLIB)
+    #include <glad/glad_glx.h>
 #endif
 
 #include "Snow/Core/Application.h"
@@ -27,6 +29,9 @@ namespace Snow {
             ::SwapBuffers(dc);
 #elif defined(SNOW_WINDOW_GLFW)
             glfwSwapBuffers((GLFWwindow*)window->GetWindowHandle());
+#elif defined(SNOW_WINDOW_XLIB)
+            SNOW_CORE_TRACE("BRUH");
+            glXSwapBuffers(XOpenDisplay(0), (::Window)window->GetWindowHandle());
 #endif
 
 

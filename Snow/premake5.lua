@@ -74,8 +74,9 @@ project "Snow"
     if os.target() == "linux" then
         defines {
             "SNOW_PLATFORM_LINUX",
-            "VK_USE_PLATFORM_XLIB_KHR",
-            "GLFW_VULKAN_STATIC"
+            --"SNOW_WINDOW_XCB",
+            "SNOW_WINDOW_XLIB",
+            --"SNOW_WINDOW_GLFW",
         }
 
         links {
@@ -84,6 +85,7 @@ project "Snow"
             
             "X11",
             "Xi",
+            "xcb",
             "pthread",
             "dl",
         }

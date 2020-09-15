@@ -15,16 +15,16 @@ ifeq ($(config),debug)
   TARGETDIR = ../bin/Debug-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Debug-linux-x86_64/Snow
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC -DSNOW_DEBUG
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_XLIB -DSNOW_DEBUG
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lpthread -ldl
+  LIBS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -llibvulkan.so -lX11 -lXi -lxcb -lpthread -ldl
   LDDEPS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/lib -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -42,16 +42,16 @@ ifeq ($(config),release)
   TARGETDIR = ../bin/Release-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Release-linux-x86_64/Snow
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_XLIB
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lpthread -ldl
+  LIBS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -llibvulkan.so -lX11 -lXi -lxcb -lpthread -ldl
   LDDEPS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/lib -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -69,16 +69,16 @@ ifeq ($(config),dist)
   TARGETDIR = ../bin/Dist-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Dist-linux-x86_64/Snow
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_XLIB
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lpthread -ldl
+  LIBS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -llibvulkan.so -lX11 -lXi -lxcb -lpthread -ldl
   LDDEPS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/lib -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -107,11 +107,15 @@ OBJECTS := \
 	$(OBJDIR)/OpenGLRenderCommand.o \
 	$(OBJDIR)/OpenGLSwapChain.o \
 	$(OBJDIR)/VulkanContext.o \
+	$(OBJDIR)/VulkanDevice.o \
+	$(OBJDIR)/VulkanSwapChain.o \
 	$(OBJDIR)/Buffer.o \
 	$(OBJDIR)/RenderCommand.o \
 	$(OBJDIR)/RenderContext.o \
+	$(OBJDIR)/RenderDevice.o \
 	$(OBJDIR)/Renderer.o \
 	$(OBJDIR)/SwapChain.o \
+	$(OBJDIR)/spch.o \
 
 RESOURCES := \
 
@@ -215,6 +219,12 @@ $(OBJDIR)/OpenGLSwapChain.o: src/Snow/Platform/OpenGL/OpenGLSwapChain.cpp
 $(OBJDIR)/VulkanContext.o: src/Snow/Platform/Vulkan/VulkanContext.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanDevice.o: src/Snow/Platform/Vulkan/VulkanDevice.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanSwapChain.o: src/Snow/Platform/Vulkan/VulkanSwapChain.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Buffer.o: src/Snow/Render/API/Buffer.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -224,10 +234,16 @@ $(OBJDIR)/RenderCommand.o: src/Snow/Render/RenderCommand.cpp
 $(OBJDIR)/RenderContext.o: src/Snow/Render/RenderContext.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/RenderDevice.o: src/Snow/Render/RenderDevice.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Renderer.o: src/Snow/Render/Renderer.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/SwapChain.o: src/Snow/Render/SwapChain.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/spch.o: src/spch.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

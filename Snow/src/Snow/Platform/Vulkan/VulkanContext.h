@@ -2,8 +2,9 @@
 
 #if defined(SNOW_WINDOW_WIN32)
 #define VK_USE_PLATFORM_WIN32_KHR
-#elif dfeined(SNOW_WINDOW_XLIB)
-#define VK_USE_PLATFOMR_XLIB_KHR
+#elif defined(SNOW_WINDOW_XLIB)
+//#define VK_USE_PLATFOMR_XLIB_KHR
+#define VK_USE_PLATFORM_XCB_KHR
 #endif
 #include <vulkan/vulkan.h>
 

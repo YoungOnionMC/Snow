@@ -140,19 +140,19 @@ namespace Snow {
     }
 
     typedef enum class MouseCode : uint16_t {
-        Button0         = 0,
-        Button1         = 1,
-        Button2         = 2,
-        Button3         = 3,
-        Button4         = 4,
-        Button5         = 5,
-        Button6         = 6,
-        Button7         = 7,
+        MouseButton0         = 0,
+        MouseButton1         = 1,
+        MouseButton2         = 2,
+        MouseButton3         = 3,
+        MouseButton4         = 4,
+        MouseButton5         = 5,
+        MouseButton6         = 6,
+        MouseButton7         = 7,
 
-        ButtonLast      = Button7,
-        ButtonLeft      = Button0,
-        ButtonRight     = Button1,
-        ButtonMiddle    = Button2
+        ButtonLast      = MouseButton7,
+        ButtonLeft      = MouseButton0,
+        ButtonRight     = MouseButton1,
+        ButtonMiddle    = MouseButton2
     } Mouse;
 
     inline std::ostream& operator<<(std::ostream& os, MouseCode mouseCode) {
@@ -289,14 +289,14 @@ namespace Snow {
 
 
 
-#define SNOW_MOUSE_BUTTON_0         ::Snow::MouseCode::Button0
-#define SNOW_MOUSE_BUTTON_1         ::Snow::MouseCode::Button1
-#define SNOW_MOUSE_BUTTON_2         ::Snow::MouseCode::Button2
-#define SNOW_MOUSE_BUTTON_3         ::Snow::MouseCode::Button3
-#define SNOW_MOUSE_BUTTON_4         ::Snow::MouseCode::Button4
-#define SNOW_MOUSE_BUTTON_5         ::Snow::MouseCode::Button5
-#define SNOW_MOUSE_BUTTON_6         ::Snow::MouseCode::Button6
-#define SNOW_MOUSE_BUTTON_7         ::Snow::MouseCode::Button7
+#define SNOW_MOUSE_BUTTON_0         ::Snow::MouseCode::MouseButton0
+#define SNOW_MOUSE_BUTTON_1         ::Snow::MouseCode::MouseButton1
+#define SNOW_MOUSE_BUTTON_2         ::Snow::MouseCode::MouseButton2
+#define SNOW_MOUSE_BUTTON_3         ::Snow::MouseCode::MouseButton3
+#define SNOW_MOUSE_BUTTON_4         ::Snow::MouseCode::MouseButton4
+#define SNOW_MOUSE_BUTTON_5         ::Snow::MouseCode::MouseButton5
+#define SNOW_MOUSE_BUTTON_6         ::Snow::MouseCode::MouseButton6
+#define SNOW_MOUSE_BUTTON_7         ::Snow::MouseCode::MouseButton7
 #define SNOW_MOUSE_BUTTON_LAST      ::Snow::MouseCode::ButtonLast
 #define SNOW_MOUSE_BUTTON_LEFT      ::Snow::MouseCode::ButtonLeft
 #define SNOW_MOUSE_BUTTON_RIGHT     ::Snow::MouseCode::ButtonRight
