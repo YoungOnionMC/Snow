@@ -40,7 +40,7 @@ namespace Snow {
 
             template<typename E>
             uint32_t EventCreate(std::vector<uint8_t>& memory, BaseEvent* e) {
-                uint32_t index = memory.size();
+                size_t index = memory.size();
                 memory.resize(index + E::Size);
                 E* event = new(&memory[index])E(*(E*)e);
                 
