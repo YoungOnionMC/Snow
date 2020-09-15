@@ -20,13 +20,15 @@ namespace Snow {
            
             glClearColor(0.3, 0.3, 0.3, 1.0);
 
-            glBegin(GL_TRIANGLES);
-            glColor3f(1.0f, 0.0, 0.0); // Bottom left
+            glBegin(GL_QUADS);
+            glColor3f(1.0f, 1.0, 1.0); // Bottom left
             glVertex2f(-0.5, -0.5);
-            glColor3f(0.0f, 1.0, 0.0); // Bottom right
+            glColor3f(1.0f, 0.0, 0.0); // Bottom right
             glVertex2f(0.5, -0.5);
-            glColor3f(0.0f, 0.0, 1.0); // top middle
-            glVertex2f(0.0, 0.5);
+            glColor3f(0.0f, 0.0, 0.0); // top right
+            glVertex2f(0.5, 0.5);
+            glColor3f(0.0, 1.0, 0.0); // top left
+            glVertex2f(-0.5, 0.5);
             glEnd();
         }
 

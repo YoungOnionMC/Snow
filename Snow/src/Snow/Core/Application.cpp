@@ -40,8 +40,8 @@ namespace Snow {
             while(m_Running) {
                 OnUpdate();
 
-                Render::Renderer::BeginScene();
-                Render::Renderer::EndScene();
+                //Render::Renderer::BeginScene();
+                //Render::Renderer::EndScene();
             }
         }
 

@@ -12,4 +12,4 @@
 **.depend
 **.layout
 
-**/vulkan/**
+**/vulkan/lib/**

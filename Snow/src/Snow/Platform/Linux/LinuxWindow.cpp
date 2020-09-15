@@ -1,14 +1,20 @@
 #include <spch.h>
 #include "Snow/Core/Window.h"
 
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
+#if defined(SNOW_WINDOW_GLFW)
+    #include <GLFW/glfw3.h>
+    #include <GLFW/glfw3native.h>
+#elif defined(SNOW_WINDOW_XLIB)
+    #include <X11.h>
+    #include <XInput.h>
+#endif
 
 #include "Snow/Core/Application.h"
 
 namespace Snow {
     namespace Core {
 
+#if defined(SNOW_WINDOW_GLFW)
         GLFWwindow* GLFWWindowHandle;
         int GLFWResult;
 
@@ -46,8 +52,12 @@ namespace Snow {
         void WindowFocusCallback(GLFWwindow* window, int focus) {
             //SNOW_CORE_TRACE("Lost Focus? {0}", focus == GLFW_FALSE);
         }
+#elif defined(SNOW_WINDOW_XLIB)
+#endif
 
         bool Window::PlatformInit() {
+            SNOW_CORE_TRACE("Creating Linux window");
+#if defined(SNOW_WINDOW_GLFW)
             GLFWResult = glfwInit();
             if(!GLFWResult)
                 SNOW_CORE_ERROR("GLFW initilization failed");
@@ -65,27 +75,41 @@ namespace Snow {
             glfwSetWindowMaximizeCallback(GLFWWindowHandle, WindowMaximizedCallback);
             glfwSetWindowPosCallback(GLFWWindowHandle, WindowMovedCallback);
             glfwSetWindowFocusCallback(GLFWWindowHandle, WindowFocusCallback);
-
            // int yes = glfwVulkanSupported();
            // SNOW_CORE_TRACE("Vulkan Supported {0}", yes);
+#elif defined(SNOW_WINDOW_XLIB)
+
+#endif
+
 
             return true;
         }
 
         bool Window::PlatformShutdown() {
+#if defined(SNOW_WINDOW_GLFW)
             SNOW_CORE_INFO("Destroying GLFW window");
             if(GLFWWindowHandle)
                 glfwDestroyWindow(GLFWWindowHandle);
+#elif defined(SNOW_WINDOW_XLIB)
 
+#endif
             return true;
         }
 
         void Window::PlatformUpdate() {
+#if defined(SNOW_WINDOW_GLFW)
             glfwPollEvents();
+#elif defined(SNOW_WINDOW_XLIB)
+
+#endif
         }
 
         void* Window::GetWindowHandle() {
+#if defined(SNOW_WINDOW_GLFW)
             return GLFWWindowHandle;
+#elif defined(SNOW_WINDOW_XLIB)
+
+#endif
         }
     }
 }

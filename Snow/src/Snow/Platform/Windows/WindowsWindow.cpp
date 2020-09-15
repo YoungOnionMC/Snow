@@ -3,12 +3,12 @@
 
 #if defined(SNOW_WINDOW_WIN32)
 
-#include <windows.h>
-#include <windowsx.h>
-
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+    #include <windows.h>
+    #include <windowsx.h>
+    
+    EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #elif defined(SNOW_WINDOW_GLFW)
-#include <GLFW/glfw3.h>
+    #include <GLFW/glfw3.h>
 #endif
 
 namespace Snow {
@@ -38,9 +38,6 @@ namespace Snow {
             result.iLayerType = PFD_MAIN_PLANE;
             return result;
         }
-#elif defined(SNOW_WINDOW_GLFW)
-        GLFWwindow* GLFWWindowHandle;
-#endif
 
         void WindowCloseCallback() {
             Event::WindowCloseEvent event;
@@ -69,9 +66,44 @@ namespace Snow {
         void WindowFocusCallback() {
 
         }
+#elif defined(SNOW_WINDOW_GLFW)
+        GLFWwindow* GLFWWindowHandle;
+        int GLFWResult;
+
+        void WindowCloseCallback(GLFWwindow* window) {
+            Event::WindowCloseEvent event;
+            Event::EventSystem::AddEvent(event);
+        }
+
+        void WindowMinimizeCallback(GLFWwindow* window, int restored) {
+            Event::WindowMinimizedEvent event;
+            Event::EventSystem::AddEvent(event);
+
+        }
+
+        void WindowMaximizedCallback(GLFWwindow* window, int restored) {
+            SNOW_CORE_TRACE("Window Maximized");
+        }
+
+        void WindowMovedCallback(GLFWwindow* window, int xPos, int yPos) {
+            Event::WindowMovedEvent event(xPos, yPos);
+            Event::EventSystem::AddEvent(event);
+        }
+
+        void WindowResizeCallback(GLFWwindow* window, int width, int height) {
+            Event::WindowResizeEvent event(width, height);
+            Event::EventSystem::AddEvent(event);
+        }
+
+        void WindowFocusCallback(GLFWwindow* window, int focus) {
+            //SNOW_CORE_TRACE("Lost Focus? {0}", focus == GLFW_FALSE);
+        }
+#endif
+
+        
 
         bool Window::PlatformInit() {
-
+            SNOW_CORE_TRACE("Creating Windows window");
 #if defined(SNOW_WINDOW_WIN32)
             HInstance = (HINSTANCE)&__ImageBase;
 
@@ -121,7 +153,7 @@ namespace Snow {
 
 
             GLFWWindowHandle = glfwCreateWindow(720, 720, "Test Window", nullptr, nullptr);
-            SNOW_CORE_INFO("Using GLFW window platform");
+            SNOW_CORE_INFO("Using GLFW window");
 
             glfwSetWindowCloseCallback(GLFWWindowHandle, WindowCloseCallback);
             glfwSetWindowIconifyCallback(GLFWWindowHandle, WindowMinimizeCallback);

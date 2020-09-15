@@ -12,6 +12,10 @@ project "Snow"
 
 
     files {
+        "src/spch.h",
+        "src/spch.cpp",
+        "src/Snow/EntryPoint.h",
+
         "src/Snow/Core/**.*",
         "src/Snow/Render/**.*",
         "src/Snow/Math/**.*",
@@ -23,8 +27,8 @@ project "Snow"
         "src",
         "vendor/spdlog/include",
         "%{VendorIncludeDir.GLFW}",
-        "%{VendorIncludeDir.Glad}",
-        "%{VendorIncludeDir.Vulkan}"
+        "%{VendorIncludeDir.Glad}"
+        
     }
     
     links {
@@ -42,17 +46,23 @@ project "Snow"
         defines { 
             "SNOW_PLATFORM_WINDOWS",
             "SNOW_WINDOW_WIN32",
-            --"SNOW_WINDOW_GLFW"
+            --"SNOW_WINDOW_GLFW",
         }
 
         characterset("MBCS")
+
+        includedirs {
+            "%{VendorIncludeDir.WindowsVulkan}",  
+		}
 
         links {
             "opengl32.lib",
             "dxgi.lib",
             "d3d11.lib",
             "d3d12.lib",
-            "D3DCompiler.lib"
+            "D3DCompiler.lib",
+
+            "%{LibraryIncludeDir.WindowsVulkan}"
         }
 
         files {
@@ -70,7 +80,7 @@ project "Snow"
 
         links {
             --"GL",
-            "vulkan",
+            "%{LibraryIncludeDir.LinuxVulkan}",
             
             "X11",
             "Xi",
