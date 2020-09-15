@@ -16,12 +16,12 @@ namespace Snow {
         }
 
         VulkanContext::~VulkanContext() {
-            vkDestroyInstance(m_VulkanInstance, nullptr);
+            //vkDestroyInstance(m_VulkanInstance, nullptr);
         }
 
         void VulkanContext::CreateInstance() {
             // Application information 
-            
+            /*
             VkApplicationInfo applicationInfo = {};
             applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
             applicationInfo.pApplicationName = "ApplicationName";
@@ -33,9 +33,10 @@ namespace Snow {
             // Extensions
 
             SNOW_CORE_TRACE("IS VULKAN SUPPORTED? {0}", glfwVulkanSupported());
+            */
             //SNOW_CORE_TRACE("Finding Vulkan Extensions");
 
-            
+            /*
             
 #if defined(_WIN32)
             SNOW_CORE_TRACE("1");
@@ -83,6 +84,7 @@ namespace Snow {
 
             m_Result = vkCreateInstance(&instanceCreateInfo, nullptr, &m_VulkanInstance);
             SNOW_CORE_TRACE("VkResult: {0}", m_Result);
+            */
         }
 
         

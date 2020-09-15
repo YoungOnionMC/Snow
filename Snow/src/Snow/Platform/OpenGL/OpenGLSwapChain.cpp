@@ -2,7 +2,9 @@
 #include "Snow/Platform/OpenGL/OpenGLSwapChain.h"
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
+#include <Windows.h>
+#include <glad/glad_wgl.h>
 
 #include "Snow/Core/Application.h"
 
@@ -15,8 +17,10 @@ namespace Snow {
 
         void OpenGLSwapChain::SwapBuffers() {
             Core::Window* window = Core::Application::Get().GetWindow();
+            auto dc = GetDC((HWND)window->GetWindowHandle());
             
-            glfwSwapBuffers((GLFWwindow*)window->GetWindowHandle());
+            ::SwapBuffers(dc);
+            //glfwSwapBuffers((GLFWwindow*)window->GetWindowHandle());
 
 
         }

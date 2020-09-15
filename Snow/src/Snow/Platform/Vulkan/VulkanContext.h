@@ -1,6 +1,6 @@
 #include "Snow/Render/RenderContext.h"
 
-#include <vulkan/vulkan.h>
+//#include <vulkan/vulkan.h>
 
 #include <vector>
 
@@ -18,12 +18,12 @@ namespace Snow {
 
 
 
-            VkInstance m_VulkanInstance;
+            //VkInstance m_VulkanInstance;
 
-            VkResult m_Result;
+            //VkResult m_Result;
 
-            std::vector<const char*> m_InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
-            std::vector<VkExtensionProperties> m_Extensions;
+            //std::vector<const char*> m_InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+            //std::vector<VkExtensionProperties> m_Extensions;
 
 
             ContextSpecification m_Specification;
