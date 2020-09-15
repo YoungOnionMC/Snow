@@ -10,7 +10,7 @@ namespace Snow {
     namespace Core {
 
         Window::Window() {
-            SNOW_CORE_TRACE("Creating Window");
+            SNOW_CORE_INFO("Creating Window...");
 
             m_WindowResizeListener = new Event::WindowResizeListener();
             m_WindowMoveListener = new Event::WindowMoveListener();
@@ -21,11 +21,15 @@ namespace Snow {
                 SNOW_CORE_ERROR("Window creation failed");
             }
 
-            
+            SNOW_CORE_INFO("Window Created");
         }
 
         Window::~Window() {
-            SNOW_CORE_TRACE("Destroying Window");
+            SNOW_CORE_INFO("Destroying Window...");
+            if(!PlatformShutdown())
+                SNOW_CORE_ERROR("Failed to shutdown window");
+
+            SNOW_CORE_INFO("Window destroyed");
         }
 
         void Window::OnUpdate() {

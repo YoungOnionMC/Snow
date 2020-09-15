@@ -28,13 +28,15 @@ project "Snow"
     }
     
     links {
-        
-        "Glad"
+        "Glad",
+        "GLFW",
     }
 
     defines {
         "GLFW_INCLUDE_NONE"
     }
+
+    flags { "NoPCH" }
 
     if os.target() == "windows" then
         defines { "SNOW_PLATFORM_WINDOWS" }
@@ -65,7 +67,7 @@ project "Snow"
         links {
             --"GL",
             "vulkan",
-            "GLFW",
+            
             "X11",
             "Xi",
             "pthread",

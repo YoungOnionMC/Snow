@@ -25,7 +25,7 @@ namespace Snow {
                     m_EventType = eventType;
                 }
             private:
-                EventID m_EventType;
+                EventID m_EventType = 0;
             };
         }
     }

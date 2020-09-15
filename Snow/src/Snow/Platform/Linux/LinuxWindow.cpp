@@ -13,14 +13,11 @@ namespace Snow {
         int GLFWResult;
 
         void WindowCloseCallback(GLFWwindow* window) {
-            SNOW_CORE_TRACE("Closing Window");
 
             auto appWindow = Application::Get().GetWindow();
 
             Event::WindowCloseEvent event;
             Event::EventSystem::AddEvent(event);
-            
-            // Generate window close event....
         }
 
         void WindowMinimizeCallback(GLFWwindow* window, int restored) {
@@ -28,7 +25,7 @@ namespace Snow {
 
             auto appWindow = Application::Get().GetWindow();
             Event::WindowMinimizedEvent event;
-            //Event::EventSystem::SendEvent(&event);
+            Event::EventSystem::AddEvent(event);
             
         }
 
@@ -39,20 +36,11 @@ namespace Snow {
         void WindowMovedCallback(GLFWwindow* window, int xPos, int yPos) {
             Event::WindowMovedEvent event(xPos, yPos);
             Event::EventSystem::AddEvent(event);
-
-            //SNOW_CORE_TRACE("Window Moved {0}, {1}", xPos, yPos);
         }
 
         void WindowResizeCallback(GLFWwindow* window, int width, int height) {
-            //SNOW_CORE_TRACE("Resizing Window, {0}, {1}", width, height);
-
-            auto appWindow = Application::Get().GetWindow();
             Event::WindowResizeEvent event(width, height);
             Event::EventSystem::AddEvent(event);
-            //SNOW_CORE_TRACE(event.GetWidth());
-            //Event::EventSystem::RegisterClient(Event::WindowResizeEvent::ID, appWindow->m_WindowResizeListener);
-            //Event::EventSystem::RegisterClient(Event::WindowMinimizedEvent::ID, appWindow->m_WindowResizeListener);
-            //Event::EventSystem::SendEvent(&event);
         }
 
         void WindowFocusCallback(GLFWwindow* window, int focus) {
@@ -60,7 +48,6 @@ namespace Snow {
         }
 
         bool Window::PlatformInit() {
-            SNOW_CORE_TRACE("=============================");
             GLFWResult = glfwInit();
             if(!GLFWResult)
                 SNOW_CORE_ERROR("GLFW initilization failed");
@@ -71,7 +58,6 @@ namespace Snow {
 
             GLFWWindowHandle = glfwCreateWindow(720, 720, "Test Window", nullptr, nullptr);
             SNOW_CORE_INFO("Using GLFW window platform");
-            SNOW_CORE_TRACE("=============================");
 
             glfwSetWindowCloseCallback(GLFWWindowHandle, WindowCloseCallback);
             glfwSetWindowIconifyCallback(GLFWWindowHandle, WindowMinimizeCallback);
@@ -87,6 +73,7 @@ namespace Snow {
         }
 
         bool Window::PlatformShutdown() {
+            SNOW_CORE_INFO("Destroying GLFW window");
             if(GLFWWindowHandle)
                 glfwDestroyWindow(GLFWWindowHandle);
 

@@ -15,11 +15,9 @@ ifeq ($(config),debug)
   TARGETDIR = ../bin/Debug-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Debug-linux-x86_64/Snow
-  PCH = src/spch.h
-  GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC -DSNOW_DEBUG
   INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
-  FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
+  FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
@@ -44,11 +42,9 @@ ifeq ($(config),release)
   TARGETDIR = ../bin/Release-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Release-linux-x86_64/Snow
-  PCH = src/spch.h
-  GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC
   INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
-  FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
+  FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
@@ -73,11 +69,9 @@ ifeq ($(config),dist)
   TARGETDIR = ../bin/Dist-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Dist-linux-x86_64/Snow
-  PCH = src/spch.h
-  GCH = $(OBJDIR)/$(notdir $(PCH)).gch
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC
   INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
-  FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
+  FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17

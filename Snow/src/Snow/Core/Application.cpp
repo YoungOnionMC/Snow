@@ -12,7 +12,7 @@ namespace Snow {
        
 
         Application::Application() {
-            SNOW_CORE_TRACE("Creating Application");
+            SNOW_CORE_INFO("Creating Application...");
             s_Instance = this;
             Event::EventSystem::Init();
 
@@ -32,6 +32,7 @@ namespace Snow {
         }
 
         Application::~Application() {
+            delete m_Window;
             SNOW_CORE_TRACE("Destroying Application");
         }
 

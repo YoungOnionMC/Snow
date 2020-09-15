@@ -19,7 +19,7 @@ namespace Snow {
             SNOW_CORE_INFO("OpenGL Information:");
             SNOW_CORE_INFO("    Vendor: {0}", glGetString(GL_VENDOR));
             SNOW_CORE_INFO("    Renderer: {0}", glGetString(GL_RENDERER));
-            SNOW_CORE_INFO("	Version: {0}", glGetString(GL_VERSION));
+            SNOW_CORE_INFO("    Version: {0}", glGetString(GL_VERSION));
             SNOW_CORE_TRACE("=============================");
 
             SwapChainSpecification swapchainSpec = {};

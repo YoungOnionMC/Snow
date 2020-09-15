@@ -31,7 +31,7 @@ namespace Snow {
             contextSpec.s_RenderAPI = RenderAPI::OpenGL;
             contextSpec.WindowHandle = Core::Application::Get().GetWindow()->GetWindowHandle();
 
-            s_RenderAPI = RenderAPI::OpenGL;
+            s_RenderAPI = contextSpec.s_RenderAPI;
             s_Context = Context::Create(contextSpec);
 
             m_RenderResizeListener = new Event::RenderResizeListener();
