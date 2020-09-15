@@ -9,45 +9,79 @@
 namespace Snow {
     namespace Core {
         namespace Event {
+
+            typedef uint32_t EventID;
+            typedef uint32_t EventIndex;
+
             class EventSystem {
             public:
                 static void Init();
 
                 static EventSystem& Get() { return *s_Instance; }
 
-                
-                static void RegisterClient(EventID eventID, Listener* listener);
-                static void UnregisterClient(EventID eventID, Listener* listener);
-                static void UnregisterAll(Listener* listener);
+                template<class E>
+                static void AddEvent(E& event) { 
+                    BaseEvent* ev = &event;
+                    uint32_t evID = E::ID;
+                    AddEventInternal(evID, ev); 
+                }
 
+                template<class E>
+                static void RemoveEvent(E* event) { RemoveEventInternal(E::ID, event); }
 
-                static void SendEvent(Event* event);
+                static void AddListener(BaseListener* listener);
 
                 static void ProcessEvents();
                 static void ClearEvents();
                 static void Shutdown();
-
-                inline static bool IsTypeValid(EventID ID) { return ID < s_RegisteredEventIDs->size(); }
-
-
-                static uint32_t RegisterEventID();
             private:
-                friend class Event;
 
-                static bool AlreadyRegisteredClient(EventID eventID, Listener* listener);
-                static void DispatchEvent(Event* event);
+                static void AddEventInternal(EventID eventID, BaseEvent* event);
+                static void RemoveEventInternal(EventID eventID, EventIndex eventIndex);
+
+
+               // static bool AlreadyRegisteredClient(EventID* eventIDs, Listener* listener);
+               // template<class Event>
+               // static void DispatchEvent(BaseEvent* event);
 
                 static EventSystem* s_Instance;
 
+                
 
+               // static std::vector<RegisteredClient> s_RegisteredClients;
 
-                static std::vector<std::pair<EventID, Listener*>> s_Database;
-
-                static std::vector<Event*> s_CurrentEvents;
-                static std::vector<uint32_t>* s_RegisteredEventIDs;
+                static std::map<EventID, std::vector<uint8_t>> s_Events;
+                static std::vector<BaseListener*> s_Listeners;
+                //static std::vector<BaseEvent*> s_CurrentEvents;
             };
-
-            const EventID Event::ID(EventSystem::RegisterEventID());
         }
     }
 }
+
+
+
+
+/*
+
+void EntityComponentSystem::UpdateSystems(SystemList& systemList, Core::Time::Timestep ts) {
+			std::vector<BaseComponent*> componentParam;
+			std::vector<std::vector<Math::uint8_t>*> componentArrays;
+			for (Math::uint32_t i = 0; i < systemList.GetSize(); i++) {
+				const std::vector<Math::uint32_t>& componentTypes = systemList[i]->GetComponentTypes();
+				if (componentTypes.size() == 1) {
+					size_t typeSize = BaseComponent::GetTypeSize(componentTypes[0]);
+					std::vector<uint8_t> array = s_Components[componentTypes[0]];
+					for (Math::uint32_t j = 0; j < array.size(); j += typeSize) {
+						BaseComponent* comp = (BaseComponent*)&array[j];
+						systemList[i]->UpdateComponents(ts, &comp);
+					}
+				}
+			}
+		}
+
+
+
+
+
+
+*/

@@ -22,7 +22,7 @@ ifeq ($(config),debug)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a -lX11 -lXi -lpthread -ldl
+  LIBS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a -lvulkan -lX11 -lXi -lpthread -ldl
   LDDEPS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
@@ -49,7 +49,7 @@ ifeq ($(config),release)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a -lX11 -lXi -lpthread -ldl
+  LIBS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a -lvulkan -lX11 -lXi -lpthread -ldl
   LDDEPS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
@@ -76,7 +76,7 @@ ifeq ($(config),dist)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a -lX11 -lXi -lpthread -ldl
+  LIBS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a -lvulkan -lX11 -lXi -lpthread -ldl
   LDDEPS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)

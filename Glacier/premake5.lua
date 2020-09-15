@@ -21,8 +21,16 @@ project "Glacier"
         "%{VendorIncludeDir.GLFW}"
     }
 
+    if os.target() == "windows" then
+        links {
+            "Snow"
+        }
+    end
+
+    if os.target() == "linux" then
     links { 
         "Snow",
+        "vulkan",
         "GLFW",
         "Glad",
         "X11",
@@ -30,3 +38,7 @@ project "Glacier"
         "pthread",
         "dl",
     }
+    end
+
+
+    

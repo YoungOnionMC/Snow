@@ -4,14 +4,14 @@
 namespace Snow {
     namespace Core {
         namespace Event {
-            std::vector<size_t>* BaseEvent::m_EventTypes;
+            std::vector<std::tuple<EventCreateFunction, EventFreeFunction, size_t>>* BaseEvent::s_RegisteredEventTypes;
 
-            EventID BaseEvent::RegisterEventType(size_t size) {
-                if(m_EventTypes == nullptr)
-                    m_EventTypes = new std::vector<size_t>();
+            uint32_t BaseEvent::RegisterEventID(EventCreateFunction createFn, EventFreeFunction freeFn, size_t size) {
+                if(s_RegisteredEventTypes == nullptr)
+                    s_RegisteredEventTypes = new std::vector<std::tuple<EventCreateFunction, EventFreeFunction, size_t>>();
+                uint32_t eventID = s_RegisteredEventTypes->size();
 
-                EventID eventID = m_EventTypes->size();
-                m_EventTypes->push_back(size);
+                s_RegisteredEventTypes->push_back(std::tuple<EventCreateFunction, EventFreeFunction, size_t>(createFn, freeFn, size));
                 return eventID;
             }
         }

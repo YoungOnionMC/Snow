@@ -18,10 +18,7 @@ namespace Snow {
             auto appWindow = Application::Get().GetWindow();
 
             Event::WindowCloseEvent event;
-            
-            Event::EventSystem::SendEvent(&event);
-
-            Application::Get().SetRunning(false);
+            Event::EventSystem::AddEvent(event);
             
             // Generate window close event....
         }
@@ -31,19 +28,35 @@ namespace Snow {
 
             auto appWindow = Application::Get().GetWindow();
             Event::WindowMinimizedEvent event;
-            Event::EventSystem::SendEvent(&event);
+            //Event::EventSystem::SendEvent(&event);
             
         }
 
+        void WindowMaximizedCallback(GLFWwindow* window, int restored) {
+            SNOW_CORE_TRACE("Window Maximized");
+        }
+
+        void WindowMovedCallback(GLFWwindow* window, int xPos, int yPos) {
+            Event::WindowMovedEvent event(xPos, yPos);
+            Event::EventSystem::AddEvent(event);
+
+            //SNOW_CORE_TRACE("Window Moved {0}, {1}", xPos, yPos);
+        }
+
         void WindowResizeCallback(GLFWwindow* window, int width, int height) {
-            SNOW_CORE_TRACE("Resizing Window");
+            //SNOW_CORE_TRACE("Resizing Window, {0}, {1}", width, height);
 
             auto appWindow = Application::Get().GetWindow();
             Event::WindowResizeEvent event(width, height);
-            SNOW_CORE_TRACE(event.GetWidth());
-            Event::EventSystem::RegisterClient(Event::WindowResizeEvent::ID, appWindow->m_WindowResizeListener);
-            Event::EventSystem::RegisterClient(Event::WindowMinimizedEvent::ID, appWindow->m_WindowResizeListener);
-            Event::EventSystem::SendEvent(&event);
+            Event::EventSystem::AddEvent(event);
+            //SNOW_CORE_TRACE(event.GetWidth());
+            //Event::EventSystem::RegisterClient(Event::WindowResizeEvent::ID, appWindow->m_WindowResizeListener);
+            //Event::EventSystem::RegisterClient(Event::WindowMinimizedEvent::ID, appWindow->m_WindowResizeListener);
+            //Event::EventSystem::SendEvent(&event);
+        }
+
+        void WindowFocusCallback(GLFWwindow* window, int focus) {
+            //SNOW_CORE_TRACE("Lost Focus? {0}", focus == GLFW_FALSE);
         }
 
         bool Window::PlatformInit() {
@@ -63,7 +76,12 @@ namespace Snow {
             glfwSetWindowCloseCallback(GLFWWindowHandle, WindowCloseCallback);
             glfwSetWindowIconifyCallback(GLFWWindowHandle, WindowMinimizeCallback);
             glfwSetWindowSizeCallback(GLFWWindowHandle, WindowResizeCallback);
+            glfwSetWindowMaximizeCallback(GLFWWindowHandle, WindowMaximizedCallback);
+            glfwSetWindowPosCallback(GLFWWindowHandle, WindowMovedCallback);
+            glfwSetWindowFocusCallback(GLFWWindowHandle, WindowFocusCallback);
 
+           // int yes = glfwVulkanSupported();
+           // SNOW_CORE_TRACE("Vulkan Supported {0}", yes);
 
             return true;
         }
@@ -72,7 +90,7 @@ namespace Snow {
             if(GLFWWindowHandle)
                 glfwDestroyWindow(GLFWWindowHandle);
 
-            
+            return true;
         }
 
         void Window::PlatformUpdate() {

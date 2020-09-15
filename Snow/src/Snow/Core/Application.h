@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Snow/Core/Window.h"
+#include "Snow/Core/Input.h"
 
 #include "Snow/Core/Base.h"
 #include "Snow/Core/Event/EventSystem.h"
@@ -8,27 +9,11 @@
 namespace Snow {
     namespace Core {
 
+        
         namespace Event {
-            struct AppUpdateEvent : public Event {
-            public:
-                AppUpdateEvent() = default;
-            };
-
-            class AppRenderEvent : public Event {
-            public:
-                AppRenderEvent() = default;
-            };
-
-
-            class ApplicationListener : public Listener {
-            public:
-                virtual void HandleEvent(Event* event) override {
-                    SNOW_CORE_TRACE("AppRenderEvent");
-                }
-            };
-        }
-
-
+        class ApplicationRenderListener;
+        class ApplicationCloseListener;
+        };
 
         class Application {
         public:
@@ -51,8 +36,47 @@ namespace Snow {
             Window* m_Window;
 
             bool m_Running = true;
+
+            Event::ApplicationRenderListener* m_AppRenderListener;
+            Event::ApplicationCloseListener* m_AppCloseListener;
         };
 
         Application* CreateApplication();
+
+
+        namespace Event {
+            struct AppUpdateEvent : public Event<AppUpdateEvent> {
+            public:
+                AppUpdateEvent() = default;
+            };
+
+            class AppRenderEvent : public Event<AppRenderEvent> {
+            public:
+                AppRenderEvent() = default;
+            };
+
+
+            class ApplicationRenderListener : public BaseListener {
+            public:
+                ApplicationRenderListener() {
+                    SetEventType(AppRenderEvent::ID);
+                }
+
+                virtual void HandleEvent(BaseEvent* event) override {
+                    SNOW_CORE_TRACE("AppRenderEvent");
+                }
+            };
+
+            class ApplicationCloseListener : public BaseListener {
+            public:
+                ApplicationCloseListener() {
+                    SetEventType(WindowCloseEvent::ID);
+                }
+
+                virtual void HandleEvent(BaseEvent* event) override {
+                    Application::Get().SetRunning(false);
+                }
+            };
+        }
     }
 }

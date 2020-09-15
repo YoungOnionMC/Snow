@@ -11,3 +11,5 @@
 **.cbp
 **.depend
 **.layout
+
+**/vulkan/**

@@ -15,6 +15,7 @@ namespace Snow {
 
         class Context {
         public:
+
             ~Context() = default;
 
             virtual const ContextSpecification& GetSpecification() const = 0;

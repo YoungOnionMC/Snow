@@ -136,7 +136,7 @@ namespace Snow {
     } Key;
 
     inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode) {
-        os << static_cast<uint32_t>(keyCode);
+        return os << static_cast<uint32_t>(keyCode);
     }
 
     typedef enum class MouseCode : uint16_t {
@@ -156,7 +156,7 @@ namespace Snow {
     } Mouse;
 
     inline std::ostream& operator<<(std::ostream& os, MouseCode mouseCode) {
-        os << static_cast<uint16_t>(mouseCode);
+        return os << static_cast<uint16_t>(mouseCode);
     }
 }
 

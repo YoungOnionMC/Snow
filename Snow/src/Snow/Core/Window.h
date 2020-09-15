@@ -6,21 +6,23 @@
 
 #include "Snow/Core/Log.h"
 
+#include "Snow/Core/Input.h"
+
 namespace Snow {
     namespace Core {
 
         namespace Event {
-            struct WindowCloseEvent : public Event {
+            struct WindowCloseEvent : public Event<WindowCloseEvent> {
             public:
                 WindowCloseEvent() {}
             };
 
-            struct WindowMinimizedEvent : public Event {
+            struct WindowMinimizedEvent : public Event<WindowMinimizedEvent> {
             public:
                 WindowMinimizedEvent() {}
             };
 
-            struct WindowResizeEvent : public Event {
+            struct WindowResizeEvent : public Event<WindowResizeEvent> {
             public:
                 WindowResizeEvent(uint32_t width, uint32_t height) :
                     m_Width(width), m_Height(height) {}
@@ -30,21 +32,53 @@ namespace Snow {
 
             private:
                 uint32_t m_Width, m_Height;
+            };
 
-                
-                
+            struct WindowMovedEvent : public Event<WindowMovedEvent> {
+            public:
+                WindowMovedEvent(int32_t xPos, int32_t yPos) :
+                    m_XPos(xPos), m_YPos(yPos) {}
+                    
+                int32_t GetXPos() { return m_XPos; }
+                int32_t GetYPos() { return m_YPos; }
+            private:
+                int32_t m_XPos, m_YPos;      
             };
 
 
-            class WindowResizeListener : public Listener {
+            struct WindowFullscreenEvent : public Event<WindowFullscreenEvent> {
             public:
-                WindowResizeListener() = default;
+                WindowFullscreenEvent(int32_t width, int32_t height) : 
+                    m_Width(width), m_Height(height) {}
+                
+                int32_t GetWidth() { return m_Width; }
+                int32_t GetHeight() { return m_Height; }
+            private:
+                int32_t m_Width, m_Height;
+            };
 
-                virtual void HandleEvent(Event* event) override {
-                    WindowResizeEvent* e = static_cast<WindowResizeEvent*>(event);
-                    SNOW_CORE_TRACE("Window Width {0}", e->GetWidth()); 
-                    SNOW_CORE_TRACE("sizeof event {0}", WindowResizeEvent::ID);
-                    SNOW_CORE_TRACE("sizeof event {0}", WindowMinimizedEvent::ID);
+
+            class WindowResizeListener : public BaseListener {
+            public:
+                WindowResizeListener() {
+                    SetEventType(WindowResizeEvent::ID);
+                }
+
+                virtual void HandleEvent(BaseEvent* event) override {
+                   WindowResizeEvent* e = (WindowResizeEvent*)event;
+                   SNOW_CORE_TRACE("Window width {0}, height {1}", e->GetWidth(), e->GetHeight());
+                }
+            };
+
+            class WindowMoveListener : public BaseListener {
+                public:
+                WindowMoveListener() {
+                    SetEventType(WindowMovedEvent::ID);
+                }
+
+                virtual void HandleEvent(BaseEvent* event) override {
+                   WindowMovedEvent* e = (WindowMovedEvent*)event;
+                   SNOW_CORE_TRACE("Window X {0}, Y {1}", e->GetXPos(), e->GetYPos());
                 }
             };
         }
@@ -58,7 +92,6 @@ namespace Snow {
             void OnUpdate();
 
             void* GetWindowHandle();
-            Event::WindowResizeListener* m_WindowResizeListener;
         private:
 
 
@@ -66,6 +99,9 @@ namespace Snow {
             bool PlatformShutdown();
 
             void PlatformUpdate();
+
+            Event::WindowResizeListener* m_WindowResizeListener;
+            Event::WindowMoveListener* m_WindowMoveListener;
         };
 
         

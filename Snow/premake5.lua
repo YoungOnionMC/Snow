@@ -14,8 +14,9 @@ project "Snow"
     files {
         "src/Snow/Core/**.*",
         "src/Snow/Render/**.*",
+        "src/Snow/Math/**.*",
         "src/Snow/Platform/OpenGL/**.*",
-        --"src/Snow/Platform/Vulkan/**.*"
+        "src/Snow/Platform/Vulkan/**.*"
     }
 
     includedirs {
@@ -23,11 +24,11 @@ project "Snow"
         "vendor/spdlog/include",
         "%{VendorIncludeDir.GLFW}",
         "%{VendorIncludeDir.Glad}",
-        --"%{VendorIncludeDir.Vulkan}"
+        "%{VendorIncludeDir.Vulkan}"
     }
     
     links {
-        "GLFW",
+        
         "Glad"
     }
 
@@ -56,12 +57,15 @@ project "Snow"
 
     if os.target() == "linux" then
         defines {
-            "SNOW_PLATFORM_LINUX"
-
+            "SNOW_PLATFORM_LINUX",
+            "VK_USE_PLATFORM_XLIB_KHR",
+            "GLFW_VULKAN_STATIC"
         }
 
         links {
             --"GL",
+            "vulkan",
+            "GLFW",
             "X11",
             "Xi",
             "pthread",

@@ -49,7 +49,7 @@ ifneq (,$(GLFW_config))
 	@${MAKE} --no-print-directory -C Snow/vendor/GLFW -f Makefile config=$(GLFW_config)
 endif
 
-Snow: GLFW Glad
+Snow: Glad GLFW
 ifneq (,$(Snow_config))
 	@echo "==== Building Snow ($(Snow_config)) ===="
 	@${MAKE} --no-print-directory -C Snow -f Makefile config=$(Snow_config)

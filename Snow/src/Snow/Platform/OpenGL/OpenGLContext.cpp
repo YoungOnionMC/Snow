@@ -21,6 +21,9 @@ namespace Snow {
             SNOW_CORE_INFO("    Renderer: {0}", glGetString(GL_RENDERER));
             SNOW_CORE_INFO("	Version: {0}", glGetString(GL_VERSION));
             SNOW_CORE_TRACE("=============================");
+
+            SwapChainSpecification swapchainSpec = {};
+            m_OpenGLSwapChain = static_cast<OpenGLSwapChain*>(SwapChain::Create(swapchainSpec));
         }
     }
 }

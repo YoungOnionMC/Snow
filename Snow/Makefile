@@ -17,15 +17,15 @@ ifeq ($(config),debug)
   OBJDIR = ../bin-int/Debug-linux-x86_64/Snow
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_DEBUG
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC -DSNOW_DEBUG
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a -lX11 -lXi -lpthread -ldl
-  LDDEPS += vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a
+  LIBS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lpthread -ldl
+  LDDEPS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
@@ -46,15 +46,15 @@ ifeq ($(config),release)
   OBJDIR = ../bin-int/Release-linux-x86_64/Snow
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a -lX11 -lXi -lpthread -ldl
-  LDDEPS += vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a
+  LIBS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lpthread -ldl
+  LDDEPS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
@@ -75,15 +75,15 @@ ifeq ($(config),dist)
   OBJDIR = ../bin-int/Dist-linux-x86_64/Snow
   PCH = src/spch.h
   GCH = $(OBJDIR)/$(notdir $(PCH)).gch
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DVK_USE_PLATFORM_XLIB_KHR -DGLFW_VULKAN_STATIC
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/vulkan/include
   FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a -lX11 -lXi -lpthread -ldl
-  LDDEPS += vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a
+  LIBS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lpthread -ldl
+  LDDEPS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
@@ -99,15 +99,25 @@ endif
 
 OBJECTS := \
 	$(OBJDIR)/Application.o \
+	$(OBJDIR)/Event.o \
 	$(OBJDIR)/EventSystem.o \
 	$(OBJDIR)/Input.o \
+	$(OBJDIR)/Layer.o \
 	$(OBJDIR)/Log.o \
 	$(OBJDIR)/Window.o \
+	$(OBJDIR)/Math.o \
 	$(OBJDIR)/LinuxInput.o \
 	$(OBJDIR)/LinuxWindow.o \
+	$(OBJDIR)/OpenGLBuffer.o \
 	$(OBJDIR)/OpenGLContext.o \
+	$(OBJDIR)/OpenGLRenderCommand.o \
+	$(OBJDIR)/OpenGLSwapChain.o \
+	$(OBJDIR)/VulkanContext.o \
+	$(OBJDIR)/Buffer.o \
+	$(OBJDIR)/RenderCommand.o \
 	$(OBJDIR)/RenderContext.o \
 	$(OBJDIR)/Renderer.o \
+	$(OBJDIR)/SwapChain.o \
 
 RESOURCES := \
 
@@ -169,10 +179,16 @@ endif
 $(OBJDIR)/Application.o: src/Snow/Core/Application.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Event.o: src/Snow/Core/Event/Event.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EventSystem.o: src/Snow/Core/Event/EventSystem.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Input.o: src/Snow/Core/Input.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Layer.o: src/Snow/Core/Layer.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Log.o: src/Snow/Core/Log.cpp
@@ -181,19 +197,43 @@ $(OBJDIR)/Log.o: src/Snow/Core/Log.cpp
 $(OBJDIR)/Window.o: src/Snow/Core/Window.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Math.o: src/Snow/Math/Math.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/LinuxInput.o: src/Snow/Platform/Linux/LinuxInput.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/LinuxWindow.o: src/Snow/Platform/Linux/LinuxWindow.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/OpenGLBuffer.o: src/Snow/Platform/OpenGL/OpenGLBuffer.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/OpenGLContext.o: src/Snow/Platform/OpenGL/OpenGLContext.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/OpenGLRenderCommand.o: src/Snow/Platform/OpenGL/OpenGLRenderCommand.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/OpenGLSwapChain.o: src/Snow/Platform/OpenGL/OpenGLSwapChain.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanContext.o: src/Snow/Platform/Vulkan/VulkanContext.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Buffer.o: src/Snow/Render/API/Buffer.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/RenderCommand.o: src/Snow/Render/RenderCommand.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/RenderContext.o: src/Snow/Render/RenderContext.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Renderer.o: src/Snow/Render/Renderer.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/SwapChain.o: src/Snow/Render/SwapChain.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

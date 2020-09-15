@@ -3,7 +3,7 @@
 #include "Snow/Render/RenderContext.h"
 
 #include "Snow/Platform/OpenGL/OpenGLContext.h"
-//#include "Snow/Platform/Vulkan/VulkanContext.h"
+#include "Snow/Platform/Vulkan/VulkanContext.h"
 
 namespace Snow {
     namespace Render {
@@ -18,8 +18,9 @@ namespace Snow {
             switch(spec.s_RenderAPI) {
             case RenderAPI::None:   return nullptr;
             case RenderAPI::OpenGL: return new OpenGLContext(spec);
-  //          case RenderAPI::Vulkan: return new VulkanContext(spec);
+            case RenderAPI::Vulkan: return new VulkanContext(spec);
             }
+            s_Created = true;
             SNOW_CORE_ERROR("Context must not be null");
             return nullptr;
         }
