@@ -14,8 +14,14 @@ namespace Snow {
 
 			bool IsExtensionSupported(const std::string& extensionName) const;
 
+			uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags props) const;
+			VkQueue GetQueue() { return m_Queue; }
+
 			VkCommandBuffer GetCommandBuffer(bool begin);
 			void FlushCommandBuffer(VkCommandBuffer commandBuffer);
+
+			VkPhysicalDevice GetPhysicalDevice() { return m_VulkanPhysicalDevice; }
+			VkDevice GetDevice() { return m_VulkanDevice; }
 
 		private:
 			void PickPhysicalDevice();

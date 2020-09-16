@@ -15,7 +15,7 @@ ifeq ($(config),debug)
   TARGETDIR = ../bin/Debug-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Debug-linux-x86_64/Snow
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_XLIB -DSNOW_DEBUG
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW -DSNOW_DEBUG
   INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
@@ -42,7 +42,7 @@ ifeq ($(config),release)
   TARGETDIR = ../bin/Release-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Release-linux-x86_64/Snow
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_XLIB
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW
   INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
@@ -69,7 +69,7 @@ ifeq ($(config),dist)
   TARGETDIR = ../bin/Dist-linux-x86_64/Snow
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Dist-linux-x86_64/Snow
-  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_XLIB
+  DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW
   INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
@@ -106,8 +106,10 @@ OBJECTS := \
 	$(OBJDIR)/OpenGLContext.o \
 	$(OBJDIR)/OpenGLRenderCommand.o \
 	$(OBJDIR)/OpenGLSwapChain.o \
+	$(OBJDIR)/VulkanAllocator.o \
 	$(OBJDIR)/VulkanContext.o \
 	$(OBJDIR)/VulkanDevice.o \
+	$(OBJDIR)/VulkanRenderCommand.o \
 	$(OBJDIR)/VulkanSwapChain.o \
 	$(OBJDIR)/Buffer.o \
 	$(OBJDIR)/RenderCommand.o \
@@ -216,10 +218,16 @@ $(OBJDIR)/OpenGLRenderCommand.o: src/Snow/Platform/OpenGL/OpenGLRenderCommand.cp
 $(OBJDIR)/OpenGLSwapChain.o: src/Snow/Platform/OpenGL/OpenGLSwapChain.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanAllocator.o: src/Snow/Platform/Vulkan/VulkanAllocator.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanContext.o: src/Snow/Platform/Vulkan/VulkanContext.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanDevice.o: src/Snow/Platform/Vulkan/VulkanDevice.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanRenderCommand.o: src/Snow/Platform/Vulkan/VulkanRenderCommand.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanSwapChain.o: src/Snow/Platform/Vulkan/VulkanSwapChain.cpp

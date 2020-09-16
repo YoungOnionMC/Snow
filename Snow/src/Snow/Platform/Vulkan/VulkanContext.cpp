@@ -1,6 +1,7 @@
 #include "spch.h"
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 
+#define SNOW_WINDOW_GLFW
 #if defined(SNOW_WINDOW_GLFW)
 #include <GLFW/glfw3.h>
 #elif defined(SNOW_WINDOW_WIN32)
@@ -18,15 +19,20 @@ namespace Snow {
             m_Specification(spec) {
 
             SNOW_CORE_TRACE("Creating Vulkan Context");
+
+            glfwMakeContextCurrent((GLFWwindow*)m_Specification.WindowHandle);
+            SNOW_CORE_TRACE("GLFW Vulkan supported {0}", glfwVulkanSupported());
             
             CreateInstance();
-            CreateSurface();
 
             DeviceSpecification deviceSpec;
             m_Device = static_cast<VulkanDevice*>(Device::Create(deviceSpec));
 
             SwapChainSpecification swapchainSpec;
-            m_SwapChain = static_cast<VulkanSwapChain*>(SwapChain::Create(swapchainSpec));
+            m_SwapChain.Init(s_VulkanInstance, m_Device);
+
+            uint32_t width = 1080, height = 720;
+            m_SwapChain.Create(&width, &height);
             //vkEnumerateInstanceExtensionProperties(nullptr, &m_ExtensionCount, nullptr);
             //vkEnumerateInstanceExtensionProperties(nullptr, &m_ExtensionCount, nullptr);
         }
@@ -58,8 +64,18 @@ namespace Snow {
             
 #if defined(SNOW_WINDOW_WIN32)
             m_InstanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(SNOW_WINDOW_XLIB)
-            m_InstanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#elif defined(SNOW_WINDOW_GLFW)
+            uint32_t extensionCount = 0;
+            const char** extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
+
+            for(uint32_t i=0; i< extensionCount; i++){
+                m_InstanceExtensions.push_back(extensions[i]);
+                SNOW_CORE_TRACE("Extensions {0}", extensions[i]);
+            }
+            //m_InstanceExtensions = glfwGetRequiredInstanceExtensions(&extensionCount);
+
+            //m_InstanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+            //m_InstanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
             
            // m_InstanceExtensions.push_back();
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
@@ -140,18 +156,7 @@ namespace Snow {
             
         }
 
-        void VulkanContext::CreateSurface() {
-            Core::Window* window = Core::Application::Get().GetWindow();
-#if defined(SNOW_WINDOW_WIN32)
-            VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-            surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-            surfaceCreateInfo.hinstance = (HINSTANCE)GetWindowLong((HWND)window->GetWindowHandle(), GWLP_HINSTANCE);
-            surfaceCreateInfo.hwnd = (HWND)window->GetWindowHandle();
-            m_Result = vkCreateWin32SurfaceKHR(s_VulkanInstance, &surfaceCreateInfo, NULL, &m_VulkanSurface);
-#elif defined(SNOW_WINDOW_XLIB)
-
-#endif
-        }
+        
 
         
     }

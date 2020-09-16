@@ -75,8 +75,8 @@ project "Snow"
         defines {
             "SNOW_PLATFORM_LINUX",
             --"SNOW_WINDOW_XCB",
-            "SNOW_WINDOW_XLIB",
-            --"SNOW_WINDOW_GLFW",
+            --"SNOW_WINDOW_XLIB",
+            "SNOW_WINDOW_GLFW",
         }
 
         links {

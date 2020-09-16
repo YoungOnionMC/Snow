@@ -17,12 +17,14 @@ namespace Snow {
 			m_QueueFamiliesProperties.resize(familyCount);
 			vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, m_QueueFamiliesProperties.data());
 
+			SNOW_CORE_TRACE("Family count {0}", familyCount);
 			return true;
 		}
 
 		void VulkanDevice::PickPhysicalDevice() {
 			uint32_t deviceCount = 0;
 			vkEnumeratePhysicalDevices(VulkanContext::GetVulkanInstance(), &deviceCount, nullptr);
+			SNOW_CORE_TRACE("Device Count {0}", deviceCount);
 			if (deviceCount == 0)
 				SNOW_CORE_ERROR("Failed to find a GPU supporting vulkan");
 			std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -126,6 +128,17 @@ namespace Snow {
 
 		bool VulkanDevice::IsExtensionSupported(const std::string& extensionName) const {
 			return m_ExtensionProperties.find(extensionName) != m_ExtensionProperties.end();
+		}
+
+		uint32_t VulkanDevice::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags props) const {
+			for(uint32_t i=0; i<m_VulkanPhysicalDeviceMemoryProperties.memoryTypeCount; i++) {
+				if((typeBits & 1) == 1){
+					if((m_VulkanPhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & props)==props)
+						return i;
+				}
+				typeBits >> 1;
+			}
+			return UINT32_MAX;
 		}
 
 		void VulkanDevice::CreateLogicalDevice() {
