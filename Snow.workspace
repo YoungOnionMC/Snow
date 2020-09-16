@@ -6,8 +6,8 @@
 		<Project filename="Snow/vendor/GLFW/GLFW.cbp">
 		</Project>
 		<Project filename="Snow/Snow.cbp">
-			<Depends filename="Snow/vendor/GLFW/GLFW.cbp" />
 			<Depends filename="Snow/vendor/Glad/Glad.cbp" />
+			<Depends filename="Snow/vendor/GLFW/GLFW.cbp" />
 		</Project>
 		<Project filename="Glacier/Glacier.cbp">
 			<Depends filename="Snow/Snow.cbp" />

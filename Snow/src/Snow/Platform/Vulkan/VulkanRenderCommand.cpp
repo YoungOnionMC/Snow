@@ -17,6 +17,8 @@ namespace Snow {
 
             VulkanSwapChain vkSwapChain = vkContext->GetSwapChain();
 
+            
+
             vkSwapChain.BeginFrame();
 
             VkCommandBufferBeginInfo commandBufferInfo = {};
@@ -45,7 +47,7 @@ namespace Snow {
 
             {
                 m_DrawCommandBuffer = vkSwapChain.GetCurrentDrawCommandBuffer();
-                vkBeginCommandBuffer(m_DrawCommandBuffer, &commandBufferInfo);
+                VKCheckError(vkBeginCommandBuffer(m_DrawCommandBuffer, &commandBufferInfo));
 
                 vkCmdBeginRenderPass(m_DrawCommandBuffer, &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -56,15 +58,16 @@ namespace Snow {
 				viewport.width = (float)width;
 				viewport.minDepth = 0.0f;
 				viewport.maxDepth = 1.0f;
-				vkCmdSetViewport(m_DrawCommandBuffer, 0, 1, &viewport);
 
+				vkCmdSetViewport(m_DrawCommandBuffer, 0, 1, &viewport);
+                
                 VkRect2D scissor = {};
 				scissor.extent.width = width;
 				scissor.extent.height = height;
 				scissor.offset.x = 0;
 				scissor.offset.y = 0;
-				vkCmdSetScissor(m_DrawCommandBuffer, 0, 1, &scissor);
 
+				vkCmdSetScissor(m_DrawCommandBuffer, 0, 1, &scissor);
 
             }
         }
@@ -72,7 +75,7 @@ namespace Snow {
         void VulkanRenderCommand::EndScene() {
             {
                 vkCmdEndRenderPass(m_DrawCommandBuffer);
-                vkEndCommandBuffer(m_DrawCommandBuffer);
+                VKCheckError(vkEndCommandBuffer(m_DrawCommandBuffer));
 
                 VulkanContext* vkContext = VulkanContext::Get();
 

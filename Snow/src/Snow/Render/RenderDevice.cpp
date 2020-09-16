@@ -4,7 +4,6 @@
 #include "Snow/Render/Renderer.h"
 
 #include "Snow/Platform/OpenGL/OpenGLDevice.h"
-#include "Snow/Platform/Vulkan/VulkanDevice.h"
 
 namespace Snow {
 	namespace Render {
@@ -12,7 +11,6 @@ namespace Snow {
 			switch (Renderer::GetRenderAPI()) {
 			case RenderAPI::None:	return nullptr;
 			case RenderAPI::OpenGL:	return new OpenGLDevice(spec);
-			//case RenderAPI::Vulkan:	return new VulkanDevice(spec);
 			}
 		}
 	}

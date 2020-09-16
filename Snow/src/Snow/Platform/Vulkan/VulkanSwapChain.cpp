@@ -56,16 +56,19 @@ namespace Snow {
 
 
 		void VulkanSwapChain::InitSurface() {
+			SNOW_CORE_INFO("Creating Vulkan surface");
             Core::Window* window = Core::Application::Get().GetWindow();
 #if defined(SNOW_WINDOW_WIN32)
+			SNOW_CORE_INFO("Creating win32 window surface");
             VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
             surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
             surfaceCreateInfo.hinstance = (HINSTANCE)GetWindowLong((HWND)window->GetWindowHandle(), GWLP_HINSTANCE);
             surfaceCreateInfo.hwnd = (HWND)window->GetWindowHandle();
-            m_Result = vkCreateWin32SurfaceKHR(m_Instance, &surfaceCreateInfo, NULL, &m_VulkanSurface);
+            VKCheckError(vkCreateWin32SurfaceKHR(m_Instance, &surfaceCreateInfo, NULL, &m_VulkanSurface));
 #elif defined(SNOW_WINDOW_GLFW)
-            m_Result = glfwCreateWindowSurface(m_Instance, (GLFWwindow*)window->GetWindowHandle(), nullptr, &m_VulkanSurface);
-            SNOW_CORE_TRACE("glfwCreateWindowSurface VkResult: {0}", m_Result);
+			SNOW_CORE_INFO("Creating GLFW window surface");
+            VKCheckError(glfwCreateWindowSurface(m_Instance, (GLFWwindow*)window->GetWindowHandle(), nullptr, &m_VulkanSurface));
+            
 
 #endif
 
@@ -134,6 +137,8 @@ namespace Snow {
 		}
 
 		void VulkanSwapChain::Create(uint32_t* width, uint32_t* height, bool vsync) {
+			SNOW_CORE_INFO("Creating Vulkan SwapChain");
+
 			VkSwapchainKHR oldSwapChain = m_VulkanSwapchain;
 			VkSurfaceCapabilitiesKHR surfaceCaps;
 			m_Result = fpGetPhysicalDeviceSurfaceCapabilitiesKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &surfaceCaps);
@@ -220,12 +225,8 @@ namespace Snow {
 			if(surfaceCaps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 				swapchainCreateInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-			//int* x = (int*)m_Device.GetDevice();
-			//int x1 = *x;
 
-			vkCreateSwapchainKHR(m_Device->GetDevice(), &swapchainCreateInfo, nullptr, &m_VulkanSwapchain);
-
-			//VkResult result = fpCreateSwapchainKHR(m_Device.GetDevice(), &swapchainCreateInfo, nullptr, &m_VulkanSwapchain);
+			VKCheckError(vkCreateSwapchainKHR(m_Device->GetDevice(), &swapchainCreateInfo, nullptr, &m_VulkanSwapchain));
 
 			if(oldSwapChain != VK_NULL_HANDLE) {
 				for(uint32_t i=0; i< m_ImageCount; i++) {
@@ -260,14 +261,14 @@ namespace Snow {
 
 				m_Buffers[i].Image = m_Images[i];
 				colorAttachmentView.image = m_Buffers[i].Image;
-				vkCreateImageView(m_Device->GetDevice(), &colorAttachmentView, nullptr, &m_Buffers[i].View);
+				VKCheckError(vkCreateImageView(m_Device->GetDevice(), &colorAttachmentView, nullptr, &m_Buffers[i].View));
 			}
 			CreateDrawBuffers();
 
 			VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 			semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			vkCreateSemaphore(m_Device->GetDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete);
-			vkCreateSemaphore(m_Device->GetDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.RenderComplete);
+			VKCheckError(vkCreateSemaphore(m_Device->GetDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
+			VKCheckError(vkCreateSemaphore(m_Device->GetDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.RenderComplete));
 
 			VkPipelineStageFlags pipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -284,7 +285,7 @@ namespace Snow {
 			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 			m_WaitFences.resize(m_DrawCommandBuffers.size());
 			for(auto& fence : m_WaitFences) {
-				vkCreateFence(m_Device->GetDevice(), &fenceCreateInfo, nullptr, &fence);
+				VKCheckError(vkCreateFence(m_Device->GetDevice(), &fenceCreateInfo, nullptr, &fence));
 			}
 
 			CreateDepthStencil();
@@ -345,7 +346,7 @@ namespace Snow {
 			renderPassCreateInfo.dependencyCount = 1;
 			renderPassCreateInfo.pDependencies = &dependency;
 
-			vkCreateRenderPass(m_Device->GetDevice(), &renderPassCreateInfo, nullptr, &m_RenderPass);
+			VKCheckError(vkCreateRenderPass(m_Device->GetDevice(), &renderPassCreateInfo, nullptr, &m_RenderPass));
 
 			CreateFramebuffer();
 		}
@@ -379,11 +380,11 @@ namespace Snow {
 			imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 			imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-			vkCreateImage(m_Device->GetDevice(), &imageCreateInfo, nullptr, &m_DepthStencil.Image);
+			VKCheckError(vkCreateImage(m_Device->GetDevice(), &imageCreateInfo, nullptr, &m_DepthStencil.Image));
 			VkMemoryRequirements memreqs = {};
 			vkGetImageMemoryRequirements(m_Device->GetDevice(), m_DepthStencil.Image, &memreqs);
 			m_Allocator.Allocate(memreqs, &m_DepthStencil.DeviceMemory);
-			vkBindImageMemory(m_Device->GetDevice(), m_DepthStencil.Image, m_DepthStencil.DeviceMemory, 0);
+			VKCheckError(vkBindImageMemory(m_Device->GetDevice(), m_DepthStencil.Image, m_DepthStencil.DeviceMemory, 0));
 
 			VkImageViewCreateInfo imageViewCreateInfo = {};
 			imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -398,7 +399,7 @@ namespace Snow {
 			if(m_DepthBufferFormat >= VK_FORMAT_D16_UNORM_S8_UINT)
 				imageViewCreateInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-			vkCreateImageView(m_Device->GetDevice(), &imageViewCreateInfo, nullptr, &m_DepthStencil.ImageView);
+			VKCheckError(vkCreateImageView(m_Device->GetDevice(), &imageViewCreateInfo, nullptr, &m_DepthStencil.ImageView));
 		}
 
 		void VulkanSwapChain::CreateFramebuffer() {
@@ -419,7 +420,7 @@ namespace Snow {
 			m_Framebuffers.resize(m_ImageCount);
 			for(uint32_t i=0; i< m_Framebuffers.size(); i++) {
 				ivAttachments[0] = m_Buffers[i].View;
-				vkCreateFramebuffer(m_Device->GetDevice(), &framebufferCreateInfo, nullptr, &m_Framebuffers[i]);
+				VKCheckError(vkCreateFramebuffer(m_Device->GetDevice(), &framebufferCreateInfo, nullptr, &m_Framebuffers[i]));
 			}
 		}
 
@@ -430,19 +431,19 @@ namespace Snow {
 			commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			commandPoolCreateInfo.queueFamilyIndex = m_QueueNodeIndex;
 			commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			vkCreateCommandPool(m_Device->GetDevice(), &commandPoolCreateInfo, nullptr, &m_CommandPool);
+			VKCheckError(vkCreateCommandPool(m_Device->GetDevice(), &commandPoolCreateInfo, nullptr, &m_CommandPool));
 
 			VkCommandBufferAllocateInfo commandBufferAllocInfo = {};
 			commandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			commandBufferAllocInfo.commandPool = m_CommandPool;
 			commandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			commandBufferAllocInfo.commandBufferCount = static_cast<uint32_t>(m_DrawCommandBuffers.size());
-			vkAllocateCommandBuffers(m_Device->GetDevice(), &commandBufferAllocInfo, m_DrawCommandBuffers.data());
+			VKCheckError(vkAllocateCommandBuffers(m_Device->GetDevice(), &commandBufferAllocInfo, m_DrawCommandBuffers.data()));
 
 		}
 
 		void VulkanSwapChain::OnResize(uint32_t width, uint32_t height) {
-			vkDeviceWaitIdle(m_Device->GetDevice());
+			VKCheckError(vkDeviceWaitIdle(m_Device->GetDevice()));
 
 			Create(&width, &height);
 			vkDestroyImageView(m_Device->GetDevice(), m_DepthStencil.ImageView, nullptr);
@@ -459,7 +460,7 @@ namespace Snow {
 			vkFreeCommandBuffers(m_Device->GetDevice(), m_CommandPool, static_cast<uint32_t>(m_DrawCommandBuffers.size()), m_DrawCommandBuffers.data());
 			CreateDrawBuffers();
 
-			vkDeviceWaitIdle(m_Device->GetDevice());
+			VKCheckError(vkDeviceWaitIdle(m_Device->GetDevice()));
 
 		}
 
@@ -470,8 +471,8 @@ namespace Snow {
 		void VulkanSwapChain::SwapBuffers() {
 			const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
-			vkWaitForFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX);
-			vkResetFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]);
+			VKCheckError(vkWaitForFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+			VKCheckError(vkResetFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
 
 			VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -485,7 +486,7 @@ namespace Snow {
 			submitInfo.commandBufferCount = 1;
 			submitInfo.pCommandBuffers = &m_DrawCommandBuffers[m_CurrentBufferIndex];
 
-			vkQueueSubmit(m_Device->GetQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]);
+			VKCheckError(vkQueueSubmit(m_Device->GetQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
 
 			VkResult result = QueuePresent(m_Device->GetQueue(), m_CurrentBufferIndex, m_Semaphores.RenderComplete);
 
@@ -496,7 +497,7 @@ namespace Snow {
 				}
 			}
 
-			vkWaitForFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT);
+			VKCheckError(vkWaitForFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 		}
 
 		VkResult VulkanSwapChain::AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex) {

@@ -13,7 +13,7 @@ namespace Snow {
 
 
         void Input::Init() {
-            SNOW_CORE_TRACE("Input Initialzed");
+            SNOW_CORE_INFO("Input Initialzed");
             if(!PlatformInit())
                 SNOW_CORE_ERROR("Platform Init failed");
         }

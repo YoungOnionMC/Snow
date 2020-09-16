@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vulkan/vulkan.h>
+#include "Snow/Platform/Vulkan/VulkanCommon.h"
 #include "Snow/Platform/Vulkan/VulkanDevice.h"
 
 #include "Snow/Core/Ref.h"

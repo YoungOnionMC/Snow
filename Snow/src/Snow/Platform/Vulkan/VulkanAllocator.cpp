@@ -17,7 +17,7 @@ namespace Snow {
             memAlloc.allocationSize = reqs.size;
             
             memAlloc.memoryTypeIndex = m_Device->GetMemoryTypeIndex(reqs.memoryTypeBits, flags);
-            vkAllocateMemory(m_Device->GetDevice(), &memAlloc, nullptr, dest);
+            VKCheckError(vkAllocateMemory(m_Device->GetDevice(), &memAlloc, nullptr, dest));
         }
     }
 }

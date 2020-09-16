@@ -75,7 +75,7 @@ namespace Snow {
 #endif
 
         bool Window::PlatformInit() {
-            SNOW_CORE_TRACE("Creating Linux window");
+            SNOW_CORE_INFO("Creating Linux window");
 #if defined(SNOW_WINDOW_GLFW)
             GLFWResult = glfwInit();
             if(!GLFWResult)

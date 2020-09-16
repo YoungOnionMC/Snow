@@ -17,10 +17,11 @@ namespace Snow {
         VulkanContext::VulkanContext(const ContextSpecification& spec) :
             m_Specification(spec) {
 
-            SNOW_CORE_TRACE("Creating Vulkan Context");
+            SNOW_CORE_INFO("Creating Vulkan Context");
 #if defined(SNOW_WINDOW_GLFW)
             glfwMakeContextCurrent((GLFWwindow*)m_Specification.WindowHandle);
-            SNOW_CORE_TRACE("GLFW Vulkan supported {0}", glfwVulkanSupported());
+            if(!glfwVulkanSupported())
+                SNOW_CORE_ERROR("GLFW does not support vulkan");
 #endif
             
             CreateInstance();
@@ -33,8 +34,6 @@ namespace Snow {
 
             uint32_t width = 1080, height = 720;
             m_SwapChain.Create(&width, &height);
-            //vkEnumerateInstanceExtensionProperties(nullptr, &m_ExtensionCount, nullptr);
-            //vkEnumerateInstanceExtensionProperties(nullptr, &m_ExtensionCount, nullptr);
         }
 
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
@@ -70,7 +69,7 @@ namespace Snow {
 
             for(uint32_t i=0; i< extensionCount; i++){
                 m_InstanceExtensions.push_back(extensions[i]);
-                SNOW_CORE_TRACE("Extensions {0}", extensions[i]);
+                //SNOW_CORE_TRACE("Extensions {0}", extensions[i]);
             }
             //m_InstanceExtensions = glfwGetRequiredInstanceExtensions(&extensionCount);
 
@@ -97,11 +96,8 @@ namespace Snow {
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
             SNOW_CORE_TRACE("7");
 	        m_InstanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-#else
-            SNOW_CORE_TRACE("8");
 #endif
 
-            SNOW_CORE_TRACE("Creating Vulkan Instance Info");
             VkInstanceCreateInfo instanceCreateInfo = {};
             instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
             instanceCreateInfo.pApplicationInfo = &applicationInfo;
@@ -115,15 +111,16 @@ namespace Snow {
                 debugMessageCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
                 debugMessageCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
                 debugMessageCreateInfo.pfnUserCallback = debugCallback;
+                SNOW_CORE_INFO("Using Vulkan debug message callback");
                 instanceCreateInfo.pNext = nullptr;
             }
 
             uint32_t instanceLayerCount = 0;
-            m_Result = vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
+            VKCheckError(vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr));
             std::vector<VkLayerProperties> availableLayers(instanceLayerCount);
-            m_Result = vkEnumerateInstanceLayerProperties(&instanceLayerCount, availableLayers.data());
+            VKCheckError(vkEnumerateInstanceLayerProperties(&instanceLayerCount, availableLayers.data()));
 
-            bool validationLayerPresent = false;
+            bool allValidationLayersPresent = true;
             for (const char* layerName : m_InstanceLayers) {
                 bool layerFound = false;
                 for (const auto& layerProperties : availableLayers) {
@@ -134,25 +131,24 @@ namespace Snow {
                     }
                 }
                 if (!layerFound) {
-                    SNOW_CORE_ERROR("Validation Layer {0} not found", layerName);
-                    validationLayerPresent = false;
+                    SNOW_CORE_WARN("Validation Layer {0} not found", layerName);
+                    allValidationLayersPresent &= false;
                 }
                 else {
-                    validationLayerPresent = true;
+                    allValidationLayersPresent &= true;
                 }
             }
 
-            if (validationLayerPresent) {
+            if (allValidationLayersPresent) {
                 instanceCreateInfo.ppEnabledLayerNames = m_InstanceLayers.data();
                 instanceCreateInfo.enabledLayerCount = m_InstanceLayers.size();
             }
             else {
-                SNOW_CORE_CRITICAL("No validation layer is present");
+                SNOW_CORE_WARN("Not all validation layers are present");
             }
 
 
-            m_Result = vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance);
-            SNOW_CORE_TRACE("VkResult: {0}", m_Result);
+            VKCheckError(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
             
         }
 

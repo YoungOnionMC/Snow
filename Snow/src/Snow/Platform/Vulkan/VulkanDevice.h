@@ -2,7 +2,7 @@
 
 #include "Snow/Render/RenderDevice.h"
 
-#include <vulkan/vulkan.h>
+#include "Snow/Platform/Vulkan/VulkanCommon.h"
 
 #include <unordered_set>
 
@@ -59,8 +59,6 @@ namespace Snow {
 			VkCommandPool m_CommandPool;
 
 			VkDevice m_VulkanDevice;
-
-			VkResult m_Result;
 		};
 	}
 }

@@ -17,18 +17,18 @@ namespace Snow {
 			m_QueueFamiliesProperties.resize(familyCount);
 			vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, m_QueueFamiliesProperties.data());
 
-			SNOW_CORE_TRACE("Family count {0}", familyCount);
 			return true;
 		}
 
 		void VulkanDevice::PickPhysicalDevice() {
 			uint32_t deviceCount = 0;
-			vkEnumeratePhysicalDevices(VulkanContext::GetVulkanInstance(), &deviceCount, nullptr);
-			SNOW_CORE_TRACE("Device Count {0}", deviceCount);
+			VKCheckError(vkEnumeratePhysicalDevices(VulkanContext::GetVulkanInstance(), &deviceCount, nullptr));
+
 			if (deviceCount == 0)
 				SNOW_CORE_ERROR("Failed to find a GPU supporting vulkan");
+
 			std::vector<VkPhysicalDevice> devices(deviceCount);
-			vkEnumeratePhysicalDevices(VulkanContext::GetVulkanInstance(), &deviceCount, devices.data());
+			VKCheckError(vkEnumeratePhysicalDevices(VulkanContext::GetVulkanInstance(), &deviceCount, devices.data()));
 
 			for (auto device : devices) {
 				if (IsDeviceSuitable(device))
@@ -38,13 +38,13 @@ namespace Snow {
 
 		void VulkanDevice::GetDeviceExtensions() {
 			uint32_t extensionCount = 0;
-			vkEnumerateDeviceExtensionProperties(m_VulkanPhysicalDevice, nullptr, &extensionCount, nullptr);
+			VKCheckError(vkEnumerateDeviceExtensionProperties(m_VulkanPhysicalDevice, nullptr, &extensionCount, nullptr));
 			if (extensionCount > 0) {
 				std::vector<VkExtensionProperties> extensions(extensionCount);
 				if (vkEnumerateDeviceExtensionProperties(m_VulkanPhysicalDevice, nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS) {
 					for (const auto& ext : extensions) {
 						m_ExtensionProperties.emplace(ext.extensionName);
-						SNOW_CORE_TRACE("Extension {0}", ext.extensionName);
+						SNOW_CORE_INFO("	Found Vulkan device extension {0}", ext.extensionName);
 					}
 				}
 			}
@@ -127,7 +127,15 @@ namespace Snow {
 		}
 
 		bool VulkanDevice::IsExtensionSupported(const std::string& extensionName) const {
-			return m_ExtensionProperties.find(extensionName) != m_ExtensionProperties.end();
+			bool ExtensionFound = m_ExtensionProperties.find(extensionName) != m_ExtensionProperties.end();
+			if(ExtensionFound){
+				SNOW_CORE_INFO("Found extension {0}", extensionName);
+				return true;
+			}
+			else {
+				SNOW_CORE_WARN("Could not find extension {0}", extensionName);
+				return false;
+			}
 		}
 
 		uint32_t VulkanDevice::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags props) const {
@@ -162,7 +170,7 @@ namespace Snow {
 				deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 			}
 
-			m_Result = vkCreateDevice(m_VulkanPhysicalDevice, &deviceCreateInfo, nullptr, &m_VulkanDevice);
+			VKCheckError(vkCreateDevice(m_VulkanPhysicalDevice, &deviceCreateInfo, nullptr, &m_VulkanDevice));
 		}
 
 		VulkanDevice::VulkanDevice() {
@@ -182,7 +190,7 @@ namespace Snow {
 			commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			commandPoolCreateInfo.queueFamilyIndex = m_QueueFamilyIndices.Graphics;
 			commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			m_Result = vkCreateCommandPool(m_VulkanDevice, &commandPoolCreateInfo, nullptr, &m_CommandPool);
+			VKCheckError(vkCreateCommandPool(m_VulkanDevice, &commandPoolCreateInfo, nullptr, &m_CommandPool));
 
 			vkGetDeviceQueue(m_VulkanDevice, m_QueueFamilyIndices.Graphics, 0, &m_Queue);
 		}
@@ -194,12 +202,12 @@ namespace Snow {
 			cmdBufferAllocateInfo.commandPool = m_CommandPool;
 			cmdBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			cmdBufferAllocateInfo.commandBufferCount = 1;
-			m_Result = vkAllocateCommandBuffers(m_VulkanDevice, &cmdBufferAllocateInfo, &cmdBuffer);
+			VKCheckError(vkAllocateCommandBuffers(m_VulkanDevice, &cmdBufferAllocateInfo, &cmdBuffer));
 
 			if (begin) {
 				VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
 				cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-				m_Result = vkBeginCommandBuffer(cmdBuffer, &cmdBufferBeginInfo);
+				VKCheckError(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBeginInfo));
 			}
 			return cmdBuffer;
 		}
@@ -215,10 +223,10 @@ namespace Snow {
 			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			fenceCreateInfo.flags = 0;
 			VkFence fence;
-			m_Result = vkCreateFence(m_VulkanDevice, &fenceCreateInfo, nullptr, &fence);
+			VKCheckError(vkCreateFence(m_VulkanDevice, &fenceCreateInfo, nullptr, &fence));
 
-			m_Result = vkQueueSubmit(m_Queue, 1, &submitInfo, fence);
-			m_Result = vkWaitForFences(m_VulkanDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT);
+			VKCheckError(vkQueueSubmit(m_Queue, 1, &submitInfo, fence));
+			VKCheckError(vkWaitForFences(m_VulkanDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
 			vkDestroyFence(m_VulkanDevice, fence, nullptr);
 			vkFreeCommandBuffers(m_VulkanDevice, m_CommandPool, 1, &commandBuffer);

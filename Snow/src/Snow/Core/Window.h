@@ -78,7 +78,7 @@ namespace Snow {
 
                 virtual void HandleEvent(BaseEvent* event) override {
                    WindowMovedEvent* e = (WindowMovedEvent*)event;
-                   SNOW_CORE_TRACE("Window X {0}, Y {1}", e->GetXPos(), e->GetYPos());
+                   //SNOW_CORE_TRACE("Window X {0}, Y {1}", e->GetXPos(), e->GetYPos());
                 }
             };
         }

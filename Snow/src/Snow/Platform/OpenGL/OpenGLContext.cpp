@@ -62,6 +62,8 @@ namespace Snow {
             GLint attribList[] = {
                 GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None
             };
+
+            
             
             XVisualInfo* visualInfo = glXChooseVisual(display, 0, attribList);
             SNOW_CORE_TRACE("BRUH2");

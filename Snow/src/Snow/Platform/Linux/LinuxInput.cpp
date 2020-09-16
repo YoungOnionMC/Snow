@@ -52,7 +52,7 @@ namespace Snow {
     }
 
     bool Core::Input::PlatformInit() {
-        SNOW_CORE_TRACE("Linux Input Initializing using GLFW");
+        SNOW_CORE_INFO("Linux Input Initializing using GLFW");
 
         auto win = static_cast<GLFWwindow*>(Application::Get().GetWindow()->GetWindowHandle());
         glfwSetKeyCallback(win, KeyCallback);
