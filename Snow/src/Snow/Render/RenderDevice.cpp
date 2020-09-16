@@ -12,7 +12,7 @@ namespace Snow {
 			switch (Renderer::GetRenderAPI()) {
 			case RenderAPI::None:	return nullptr;
 			case RenderAPI::OpenGL:	return new OpenGLDevice(spec);
-			case RenderAPI::Vulkan:	return new VulkanDevice(spec);
+			//case RenderAPI::Vulkan:	return new VulkanDevice(spec);
 			}
 		}
 	}

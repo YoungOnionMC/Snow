@@ -1,7 +1,6 @@
 #include "spch.h"
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 
-#define SNOW_WINDOW_GLFW
 #if defined(SNOW_WINDOW_GLFW)
 #include <GLFW/glfw3.h>
 #elif defined(SNOW_WINDOW_WIN32)
@@ -19,14 +18,15 @@ namespace Snow {
             m_Specification(spec) {
 
             SNOW_CORE_TRACE("Creating Vulkan Context");
-
+#if defined(SNOW_WINDOW_GLFW)
             glfwMakeContextCurrent((GLFWwindow*)m_Specification.WindowHandle);
             SNOW_CORE_TRACE("GLFW Vulkan supported {0}", glfwVulkanSupported());
+#endif
             
             CreateInstance();
 
             DeviceSpecification deviceSpec;
-            m_Device = static_cast<VulkanDevice*>(Device::Create(deviceSpec));
+            m_Device = Ref<VulkanDevice>::Create();
 
             SwapChainSpecification swapchainSpec;
             m_SwapChain.Init(s_VulkanInstance, m_Device);

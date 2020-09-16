@@ -2,10 +2,19 @@
 
 #include "Snow/Render/SwapChain.h"
 
+
+#if defined(SNOW_WINDOW_WIN32)
+#define VK_USE_PLATFORM_WIN32_KHR
+#elif defined(SNOW_WINDOW_GLFW)
+//#define VK_USE_PLATFOMR_XLIB_KHR
+#define VK_USE_PLATFORM_XCB_KHR
+#endif
 #include <vulkan/vulkan.h>
 
 #include "Snow/Platform/Vulkan/VulkanDevice.h"
 #include "Snow/Platform/Vulkan/VulkanAllocator.h"
+
+#include "Snow/Core/Ref.h"
 
 namespace Snow {
 	namespace Render {
@@ -13,7 +22,7 @@ namespace Snow {
 		public:
 			VulkanSwapChain() = default;
 
-			void Init(VkInstance instance, VulkanDevice* device);
+			void Init(VkInstance instance, Ref<VulkanDevice>& device);
 
 			void InitSurface();
 
@@ -51,9 +60,9 @@ namespace Snow {
 		
 
 			VkInstance m_Instance;
-			VulkanDevice* m_Device;
+			Ref<VulkanDevice> m_Device;
 
-			VkSwapchainKHR m_VulkanSwapchain = nullptr;
+			VkSwapchainKHR m_VulkanSwapchain;
 
 			VulkanAllocator m_Allocator;
 

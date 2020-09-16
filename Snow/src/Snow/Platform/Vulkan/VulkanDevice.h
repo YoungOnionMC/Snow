@@ -6,11 +6,13 @@
 
 #include <unordered_set>
 
+#include "Snow/Core/Ref.h"
+
 namespace Snow {
 	namespace Render {
-		class VulkanDevice : public Device {
+		class VulkanDevice : public RefCounted {
 		public:
-			VulkanDevice(const DeviceSpecification& spec);
+			VulkanDevice();
 
 			bool IsExtensionSupported(const std::string& extensionName) const;
 
@@ -22,6 +24,7 @@ namespace Snow {
 
 			VkPhysicalDevice GetPhysicalDevice() { return m_VulkanPhysicalDevice; }
 			VkDevice GetDevice() { return m_VulkanDevice; }
+
 
 		private:
 			void PickPhysicalDevice();

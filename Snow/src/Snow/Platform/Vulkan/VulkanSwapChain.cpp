@@ -33,7 +33,7 @@ namespace Snow {
 	namespace Render {
 		
 
-		void VulkanSwapChain::Init(VkInstance instance, VulkanDevice* device) {
+		void VulkanSwapChain::Init(VkInstance instance, Ref<VulkanDevice>& device) {
 			m_Instance = instance;
 			m_Device = device;
 			m_Allocator = VulkanAllocator(device, "SwapChain");
@@ -62,7 +62,7 @@ namespace Snow {
             surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
             surfaceCreateInfo.hinstance = (HINSTANCE)GetWindowLong((HWND)window->GetWindowHandle(), GWLP_HINSTANCE);
             surfaceCreateInfo.hwnd = (HWND)window->GetWindowHandle();
-            m_Result = vkCreateWin32SurfaceKHR(s_VulkanInstance, &surfaceCreateInfo, NULL, &m_VulkanSurface);
+            m_Result = vkCreateWin32SurfaceKHR(m_Instance, &surfaceCreateInfo, NULL, &m_VulkanSurface);
 #elif defined(SNOW_WINDOW_GLFW)
             m_Result = glfwCreateWindowSurface(m_Instance, (GLFWwindow*)window->GetWindowHandle(), nullptr, &m_VulkanSurface);
             SNOW_CORE_TRACE("glfwCreateWindowSurface VkResult: {0}", m_Result);
@@ -73,7 +73,7 @@ namespace Snow {
 			vkGetPhysicalDeviceQueueFamilyProperties(m_Device->GetPhysicalDevice(), &queueCount, nullptr);
 			std::vector<VkQueueFamilyProperties> queueProperties(queueCount);
 			vkGetPhysicalDeviceQueueFamilyProperties(m_Device->GetPhysicalDevice(), &queueCount, queueProperties.data());
-			SNOW_CORE_ERROR("BRUH1");
+
 			std::vector<VkBool32> supportsPresent(queueCount);
 			for(uint32_t i=0; i<queueCount; i++) {
 				fpGetPhysicalDeviceSurfaceSupportKHR(m_Device->GetPhysicalDevice(), i, m_VulkanSurface, &supportsPresent[i]);
@@ -92,7 +92,7 @@ namespace Snow {
 					}
 				}
 			}
-			SNOW_CORE_ERROR("BRUH2");
+
 			if(presentQueueNodeIndex == UINT32_MAX) {
 				for(uint32_t i=0; i< queueCount; i++) {
 					if(supportsPresent[i] == VK_TRUE) {
@@ -103,7 +103,6 @@ namespace Snow {
 			}
 
 			m_QueueNodeIndex = graphicsQueueNodeIndex;
-			SNOW_CORE_ERROR("BRUH3");
 			FindImageFormatAndColorSpace();
         }
 
@@ -112,7 +111,6 @@ namespace Snow {
 			fpGetPhysicalDeviceSurfaceFormatsKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &formatCount, nullptr);
 			std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
 			fpGetPhysicalDeviceSurfaceFormatsKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &formatCount, surfaceFormats.data());
-			SNOW_CORE_ERROR("BRUH4");
 			if((formatCount == 1) && (surfaceFormats[0].format == VK_FORMAT_UNDEFINED)){
 				m_ColorFormat = VK_FORMAT_B8G8R8A8_UNORM;
 				m_ColorSpace = surfaceFormats[0].colorSpace;
@@ -133,19 +131,17 @@ namespace Snow {
 					m_ColorSpace = surfaceFormats[0].colorSpace;
 				}
 			}
-			SNOW_CORE_ERROR("BRUH5");
 		}
 
 		void VulkanSwapChain::Create(uint32_t* width, uint32_t* height, bool vsync) {
 			VkSwapchainKHR oldSwapChain = m_VulkanSwapchain;
-			SNOW_CORE_ERROR("BRUH6");
 			VkSurfaceCapabilitiesKHR surfaceCaps;
-			fpGetPhysicalDeviceSurfaceCapabilitiesKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &surfaceCaps);
+			m_Result = fpGetPhysicalDeviceSurfaceCapabilitiesKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &surfaceCaps);
 
 			uint32_t presentModeCount;
-			fpGetPhysicalDeviceSurfacePresentModesKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &presentModeCount, nullptr);
+			m_Result = fpGetPhysicalDeviceSurfacePresentModesKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &presentModeCount, nullptr);
 			std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-			fpGetPhysicalDeviceSurfacePresentModesKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &presentModeCount, presentModes.data());
+			m_Result = fpGetPhysicalDeviceSurfacePresentModesKHR(m_Device->GetPhysicalDevice(), m_VulkanSurface, &presentModeCount, presentModes.data());
 
 			VkExtent2D swapchainExtent = {};
 			if(surfaceCaps.currentExtent.width == (uint32_t)-1){
@@ -157,7 +153,6 @@ namespace Snow {
 				*width = surfaceCaps.currentExtent.width;
 				*height = surfaceCaps.currentExtent.height;
 			}
-			SNOW_CORE_ERROR("BRUH7");
 			m_Width = *width;
 			m_Height = *height;
 
@@ -225,14 +220,12 @@ namespace Snow {
 			if(surfaceCaps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 				swapchainCreateInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-			int* x = (int*)m_Device->GetDevice();
-			int x1 = *x;
-			SNOW_CORE_ERROR("BRUH7.5, {0}", (uintptr_t)(&m_VulkanSwapchain));
+			//int* x = (int*)m_Device.GetDevice();
+			//int x1 = *x;
 
 			vkCreateSwapchainKHR(m_Device->GetDevice(), &swapchainCreateInfo, nullptr, &m_VulkanSwapchain);
-			SNOW_CORE_ERROR("BRUH8 ");
 
-			//VkResult result = fpCreateSwapchainKHR(m_Device->GetDevice(), &swapchainCreateInfo, nullptr, &m_VulkanSwapchain);
+			//VkResult result = fpCreateSwapchainKHR(m_Device.GetDevice(), &swapchainCreateInfo, nullptr, &m_VulkanSwapchain);
 
 			if(oldSwapChain != VK_NULL_HANDLE) {
 				for(uint32_t i=0; i< m_ImageCount; i++) {
@@ -240,10 +233,10 @@ namespace Snow {
 				}
 				fpDestroySwapchainKHR(m_Device->GetDevice(), oldSwapChain, nullptr);
 			}
-			fpGetSwapchainImagesKHR(m_Device->GetDevice(), m_VulkanSwapchain, &m_ImageCount, nullptr);
+			m_Result = fpGetSwapchainImagesKHR(m_Device->GetDevice(), m_VulkanSwapchain, &m_ImageCount, nullptr);
 
 			m_Images.resize(m_ImageCount);
-			fpGetSwapchainImagesKHR(m_Device->GetDevice(), m_VulkanSwapchain, &m_ImageCount, m_Images.data());
+			m_Result = fpGetSwapchainImagesKHR(m_Device->GetDevice(), m_VulkanSwapchain, &m_ImageCount, m_Images.data());
 
 			m_Buffers.resize(m_ImageCount);
 			for(uint32_t i=0; i< m_ImageCount; i++) {
@@ -269,7 +262,6 @@ namespace Snow {
 				colorAttachmentView.image = m_Buffers[i].Image;
 				vkCreateImageView(m_Device->GetDevice(), &colorAttachmentView, nullptr, &m_Buffers[i].View);
 			}
-			SNOW_CORE_ERROR("BRUH9");
 			CreateDrawBuffers();
 
 			VkSemaphoreCreateInfo semaphoreCreateInfo = {};

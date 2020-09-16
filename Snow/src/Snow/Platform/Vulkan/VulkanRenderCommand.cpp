@@ -24,7 +24,7 @@ namespace Snow {
             commandBufferInfo.pNext = nullptr;
 
             VkClearValue clearValues[2];
-            clearValues[0].color = { { 1.0f, 0.0f, 0.2f, 1.0f } };
+            clearValues[0].color = { { 0.3f, 0.3f, 0.8f, 1.0f } };
             clearValues[1].depthStencil = {1.0f, 0};
 
             uint32_t width = vkSwapChain.GetWidth();

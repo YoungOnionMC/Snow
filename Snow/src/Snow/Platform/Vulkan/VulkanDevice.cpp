@@ -41,7 +41,7 @@ namespace Snow {
 			vkEnumerateDeviceExtensionProperties(m_VulkanPhysicalDevice, nullptr, &extensionCount, nullptr);
 			if (extensionCount > 0) {
 				std::vector<VkExtensionProperties> extensions(extensionCount);
-				if (vkEnumerateDeviceExtensionProperties(m_VulkanPhysicalDevice, nullptr, &extensionCount, &extensions.front())) {
+				if (vkEnumerateDeviceExtensionProperties(m_VulkanPhysicalDevice, nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS) {
 					for (const auto& ext : extensions) {
 						m_ExtensionProperties.emplace(ext.extensionName);
 						SNOW_CORE_TRACE("Extension {0}", ext.extensionName);
@@ -165,7 +165,7 @@ namespace Snow {
 			m_Result = vkCreateDevice(m_VulkanPhysicalDevice, &deviceCreateInfo, nullptr, &m_VulkanDevice);
 		}
 
-		VulkanDevice::VulkanDevice(const DeviceSpecification& spec) {
+		VulkanDevice::VulkanDevice() {
 
 			PickPhysicalDevice();
 			GetDeviceExtensions();
@@ -182,7 +182,7 @@ namespace Snow {
 			commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			commandPoolCreateInfo.queueFamilyIndex = m_QueueFamilyIndices.Graphics;
 			commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			vkCreateCommandPool(m_VulkanDevice, &commandPoolCreateInfo, nullptr, &m_CommandPool);
+			m_Result = vkCreateCommandPool(m_VulkanDevice, &commandPoolCreateInfo, nullptr, &m_CommandPool);
 
 			vkGetDeviceQueue(m_VulkanDevice, m_QueueFamilyIndices.Graphics, 0, &m_Queue);
 		}
@@ -194,12 +194,12 @@ namespace Snow {
 			cmdBufferAllocateInfo.commandPool = m_CommandPool;
 			cmdBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			cmdBufferAllocateInfo.commandBufferCount = 1;
-			vkAllocateCommandBuffers(m_VulkanDevice, &cmdBufferAllocateInfo, &cmdBuffer);
+			m_Result = vkAllocateCommandBuffers(m_VulkanDevice, &cmdBufferAllocateInfo, &cmdBuffer);
 
 			if (begin) {
 				VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
 				cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-				vkBeginCommandBuffer(cmdBuffer, &cmdBufferBeginInfo);
+				m_Result = vkBeginCommandBuffer(cmdBuffer, &cmdBufferBeginInfo);
 			}
 			return cmdBuffer;
 		}
@@ -215,10 +215,10 @@ namespace Snow {
 			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			fenceCreateInfo.flags = 0;
 			VkFence fence;
-			vkCreateFence(m_VulkanDevice, &fenceCreateInfo, nullptr, &fence);
+			m_Result = vkCreateFence(m_VulkanDevice, &fenceCreateInfo, nullptr, &fence);
 
-			vkQueueSubmit(m_Queue, 1, &submitInfo, fence);
-			vkWaitForFences(m_VulkanDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT);
+			m_Result = vkQueueSubmit(m_Queue, 1, &submitInfo, fence);
+			m_Result = vkWaitForFences(m_VulkanDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT);
 
 			vkDestroyFence(m_VulkanDevice, fence, nullptr);
 			vkFreeCommandBuffers(m_VulkanDevice, m_CommandPool, 1, &commandBuffer);

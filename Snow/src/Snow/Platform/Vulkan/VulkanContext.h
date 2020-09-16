@@ -13,6 +13,10 @@
 
 #include "Snow/Render/Renderer.h"
 
+#include "Snow/Core/Base.h"
+
+#include "Snow/Core/Ref.h"
+
 #include <vector>
 
 
@@ -27,11 +31,11 @@ namespace Snow {
 
             virtual const ContextSpecification& GetSpecification() const override { return m_Specification; }
 
-            VulkanDevice* GetDevice() { return m_Device; }
+            Ref<VulkanDevice> GetDevice() { return m_Device; }
             VulkanSwapChain GetSwapChain() {return m_SwapChain; }
 
             static VulkanContext* Get() {return static_cast<VulkanContext*>(Renderer::GetContext());}
-            static VulkanDevice* GetCurrentDevice() { return Get()->GetDevice(); }
+            static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
         private:
             void CreateInstance();
 
@@ -40,7 +44,7 @@ namespace Snow {
             static VkInstance s_VulkanInstance;
             
 
-            VulkanDevice* m_Device;
+            Ref<VulkanDevice> m_Device;
             VulkanSwapChain m_SwapChain;
 
             VkResult m_Result;
@@ -48,7 +52,7 @@ namespace Snow {
             std::vector<const char*> m_InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
             std::vector<VkExtensionProperties> m_Extensions;
 
-            std::vector<const char*> m_InstanceLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_standard_validation"/*, "VK_LAYER_LUNARG_api_dump"*/ };
+            std::vector<const char*> m_InstanceLayers = { "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_standard_validation", /*"VK_LAYER_LUNARG_api_dump"*/ };
 
 
             ContextSpecification m_Specification;
