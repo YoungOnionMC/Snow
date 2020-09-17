@@ -511,7 +511,7 @@ namespace Snow {
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = &m_VulkanSwapchain;
 			presentInfo.pImageIndices = &imageIndex;
-			if(waitSemaphore != VK_NULL_HANDLE){
+			if(waitSemaphore != VK_NULL_HANDLE) {
 				presentInfo.waitSemaphoreCount = 1;
 				presentInfo.pWaitSemaphores = &waitSemaphore;
 			}

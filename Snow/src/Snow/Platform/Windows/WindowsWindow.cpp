@@ -151,8 +151,8 @@ namespace Snow {
                 SNOW_CORE_INFO("GLFW initialized");
             }
 
-
-            GLFWWindowHandle = glfwCreateWindow(720, 720, "Test Window", nullptr, nullptr);
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            GLFWWindowHandle = glfwCreateWindow(1080, 720, "Test Window", nullptr, nullptr);
             SNOW_CORE_INFO("Using GLFW window");
 
             glfwSetWindowCloseCallback(GLFWWindowHandle, WindowCloseCallback);

@@ -12,6 +12,8 @@ namespace Snow {
 
         }
 
+        static float r = 0.0f;
+
         void VulkanRenderCommand::BeginScene() {
             VulkanContext* vkContext = VulkanContext::Get();
 
@@ -25,8 +27,12 @@ namespace Snow {
             commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             commandBufferInfo.pNext = nullptr;
 
+            r += 1.0f/8192.0f;
+            if (r > 1.0)
+                r = 0.0f;
+
             VkClearValue clearValues[2];
-            clearValues[0].color = { { 0.3f, 0.3f, 0.8f, 1.0f } };
+            clearValues[0].color = { { r, 0.3f, 0.8f, 1.0f } };
             clearValues[1].depthStencil = {1.0f, 0};
 
             uint32_t width = vkSwapChain.GetWidth();

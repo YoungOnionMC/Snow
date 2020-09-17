@@ -45,8 +45,8 @@ project "Snow"
     if os.target() == "windows" then
         defines { 
             "SNOW_PLATFORM_WINDOWS",
-            "SNOW_WINDOW_WIN32",
-            --"SNOW_WINDOW_GLFW",
+            --"SNOW_WINDOW_WIN32",
+            "SNOW_WINDOW_GLFW",
         }
 
         characterset("MBCS")

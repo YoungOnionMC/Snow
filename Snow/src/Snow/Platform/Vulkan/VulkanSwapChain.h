@@ -6,8 +6,11 @@
 #if defined(SNOW_WINDOW_WIN32)
 #define VK_USE_PLATFORM_WIN32_KHR
 #elif defined(SNOW_WINDOW_GLFW)
-//#define VK_USE_PLATFOMR_XLIB_KHR
-#define VK_USE_PLATFORM_XCB_KHR
+	#if defined(__WIN32__)
+		#define VK_USE_PLATFORM_WIN32_KHR
+	#elif defined(__linux__)
+		#define VK_USE_PLATFORM_XCB_KHR
+	#endif
 #endif
 #include <vulkan/vulkan.h>
 
@@ -62,7 +65,7 @@ namespace Snow {
 			VkInstance m_Instance;
 			Ref<VulkanDevice> m_Device;
 
-			VkSwapchainKHR m_VulkanSwapchain;
+			VkSwapchainKHR m_VulkanSwapchain = VK_NULL_HANDLE;
 
 			VulkanAllocator m_Allocator;
 
