@@ -6,13 +6,13 @@
 #if defined(SNOW_WINDOW_WIN32)
 #define VK_USE_PLATFORM_WIN32_KHR
 #elif defined(SNOW_WINDOW_GLFW)
-	#if defined(__WIN32__)
-		#define VK_USE_PLATFORM_WIN32_KHR
-	#elif defined(__linux__)
-		#define VK_USE_PLATFORM_XCB_KHR
-	#endif
+	#if defined(SNOW_PLATFORM_WINDOWS)
+        #define VK_USE_PLATFORM_WIN32_KHR
+    #elif defined(SNOW_PLATFORM_LINUX)
+        #define VK_USE_PLATFORM_XCB_KHR
+    #endif
 #endif
-#include <vulkan/vulkan.h>
+#include "Snow/Platform/Vulkan/VulkanCommon.h"
 
 #include "Snow/Platform/Vulkan/VulkanDevice.h"
 #include "Snow/Platform/Vulkan/VulkanAllocator.h"
@@ -45,6 +45,9 @@ namespace Snow {
 			VkFramebuffer GetFramebuffer(uint32_t index) { return m_Framebuffers[index]; }
 			VkCommandBuffer GetDrawCommandBuffer(uint32_t index) { return m_DrawCommandBuffers[index]; }
 
+			uint32_t GetImageCount() { return m_ImageCount; }
+			uint32_t GetMinimumImageCount() { return m_MinimumImageCount; }
+
 			uint32_t GetWidth() { return m_Width; }
 			uint32_t GetHeight() { return m_Height; }
 
@@ -65,7 +68,7 @@ namespace Snow {
 			VkInstance m_Instance;
 			Ref<VulkanDevice> m_Device;
 
-			VkSwapchainKHR m_VulkanSwapchain = VK_NULL_HANDLE;
+			VkSwapchainKHR m_VulkanSwapchain;
 
 			VulkanAllocator m_Allocator;
 
@@ -75,6 +78,7 @@ namespace Snow {
 			VkColorSpaceKHR m_ColorSpace;
 
 			uint32_t m_ImageCount = 0;
+			uint32_t m_MinimumImageCount = 0;
 			std::vector<VkImage> m_Images;
 
 			struct SwapchainBuffer {

@@ -3,6 +3,8 @@
 #include "Snow/Core/Application.h"
 #include "Snow/Render/Renderer.h"
 
+#include "Snow/Render/Renderer2D.h"
+
 namespace Snow {
     namespace Core {
 
@@ -41,6 +43,7 @@ namespace Snow {
                 OnUpdate();
 
                 Render::Renderer::BeginScene();
+                Render::Renderer2D::DrawQuad({0.0f, 0.0f},{1.0f , 1.0f});
                 Render::Renderer::EndScene();
             }
         }

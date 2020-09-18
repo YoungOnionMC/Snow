@@ -3,9 +3,9 @@
 #if defined(SNOW_WINDOW_WIN32)
     #define VK_USE_PLATFORM_WIN32_KHR
 #elif defined(SNOW_WINDOW_GLFW)
-    #if defined(__WIN32__)
+    #if defined(SNOW_PLATFORM_WINDOWS)
         #define VK_USE_PLATFORM_WIN32_KHR
-    #elif defined(__linux__)
+    #elif defined(SNOW_PLATFORM_LINUX)
         #define VK_USE_PLATFORM_XCB_KHR
     #endif
 #endif

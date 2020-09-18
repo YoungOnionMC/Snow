@@ -1,8 +1,6 @@
 #include <spch.h>
 #include "Snow/Core/Window.h"
 
-//#define SNOW_WINDOW_XLIB
-
 #if defined(SNOW_WINDOW_GLFW)
     #include <GLFW/glfw3.h>
     #include <GLFW/glfw3native.h>
@@ -84,7 +82,7 @@ namespace Snow {
                 SNOW_CORE_INFO("GLFW initialized");        
             }
                 
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             GLFWWindowHandle = glfwCreateWindow(720, 720, "Test Window", nullptr, nullptr);
             SNOW_CORE_INFO("Using GLFW window platform");
 

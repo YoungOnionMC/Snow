@@ -8,12 +8,21 @@
 namespace Snow {
     namespace Render {
         namespace API {
-            VertexBuffer* VertexBuffer::Create(void* data, uint32_t size) {
+            Ref<VertexBuffer> VertexBuffer::Create(void* data, uint32_t size) {
                 switch(Renderer::GetRenderAPI()) {
-                    case RenderAPI::OpenGL: return new OpenGLVertexBuffer(data, size);
+                    case RenderAPI::OpenGL: return Ref<OpenGLVertexBuffer>::Create(data, size);
                 }
                 return nullptr;
             }
+
+            Ref<IndexBuffer> IndexBuffer::Create(void* data, uint32_t size) {
+                switch(Renderer::GetRenderAPI()) {
+                    case RenderAPI::OpenGL: return Ref<OpenGLIndexBuffer>::Create(data, size);
+                }
+                return nullptr;
+            }
+
+            
         }
     }
 }

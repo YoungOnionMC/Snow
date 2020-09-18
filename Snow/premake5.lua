@@ -20,7 +20,7 @@ project "Snow"
         "src/Snow/Render/**.*",
         "src/Snow/Math/**.*",
         "src/Snow/Platform/OpenGL/**.*",
-        "src/Snow/Platform/Vulkan/**.*"
+        --"src/Snow/Platform/Vulkan/**.*"
     }
 
     includedirs {
@@ -33,7 +33,6 @@ project "Snow"
     
     links {
         "Glad",
-        "GLFW",
     }
 
     defines {
@@ -62,7 +61,9 @@ project "Snow"
             "d3d12.lib",
             "D3DCompiler.lib",
 
-            "%{LibraryIncludeDir.WindowsVulkan}"
+            "%{LibraryIncludeDir.WindowsVulkan}",
+
+            "GLFW",
         }
 
         files {
@@ -79,10 +80,15 @@ project "Snow"
             "SNOW_WINDOW_GLFW",
         }
 
+        includedirs {
+            --"%{VendorIncludeDir.LinuxVulkan}"
+        }
+
         links {
             --"GL",
-            "%{LibraryIncludeDir.LinuxVulkan}",
+            --"%{LibraryIncludeDir.LinuxVulkan}",
             
+            "GLFW",
             "X11",
             "Xi",
             "xcb",

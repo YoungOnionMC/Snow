@@ -55,7 +55,7 @@ ifneq (,$(Snow_config))
 	@${MAKE} --no-print-directory -C Snow -f Makefile config=$(Snow_config)
 endif
 
-Glacier: Snow GLFW Glad
+Glacier: Snow Glad GLFW
 ifneq (,$(Glacier_config))
 	@echo "==== Building Glacier ($(Glacier_config)) ===="
 	@${MAKE} --no-print-directory -C Glacier -f Makefile config=$(Glacier_config)

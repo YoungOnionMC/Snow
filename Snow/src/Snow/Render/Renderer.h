@@ -25,6 +25,8 @@ namespace Snow {
             static void EndScene();
             static void SetViewport(int width, int height);
 
+            static void DrawIndexed(uint32_t count = 0);
+
             static void SwapBuffers();
 
 

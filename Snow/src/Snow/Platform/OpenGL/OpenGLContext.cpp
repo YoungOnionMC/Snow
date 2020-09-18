@@ -3,8 +3,6 @@
 
 #include <glad/glad.h>
 
-#define SNOW_WINDOW_XLIB
-
 #if defined(SNOW_WINDOW_WIN32)
     #include <glad/glad_wgl.h>
 #elif defined(SNOW_WINDOW_GLFW)

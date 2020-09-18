@@ -2,7 +2,7 @@
 
 #include "Snow/Render/RenderCommand.h"
 
-#include <vulkan/vulkan.h>
+#include "Snow/Platform/Vulkan/VulkanCommon.h"
 
 namespace Snow {
     namespace Render {

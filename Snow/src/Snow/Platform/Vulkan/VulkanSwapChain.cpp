@@ -175,6 +175,7 @@ namespace Snow {
 			}
 
 			uint32_t numSwapChainImages = surfaceCaps.minImageCount + 1;
+			m_MinimumImageCount = surfaceCaps.minImageCount + 1;
 			if((surfaceCaps.maxImageCount > 0) && (numSwapChainImages > surfaceCaps.maxImageCount))
 				numSwapChainImages = surfaceCaps.maxImageCount;
 
@@ -469,6 +470,8 @@ namespace Snow {
 		}
 
 		void VulkanSwapChain::SwapBuffers() {
+
+
 			const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
 			VKCheckError(vkWaitForFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
@@ -489,6 +492,7 @@ namespace Snow {
 			VKCheckError(vkQueueSubmit(m_Device->GetQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
 
 			VkResult result = QueuePresent(m_Device->GetQueue(), m_CurrentBufferIndex, m_Semaphores.RenderComplete);
+			SNOW_CORE_TRACE("VK Result{0}", result);
 
 			if(result != VK_SUCCESS || result == VK_SUBOPTIMAL_KHR) {
 				if(result == VK_ERROR_OUT_OF_DATE_KHR) {

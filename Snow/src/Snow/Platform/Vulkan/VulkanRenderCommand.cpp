@@ -50,12 +50,12 @@ namespace Snow {
             renderpassBeginInfo.pClearValues = clearValues;
 
             renderpassBeginInfo.framebuffer = vkSwapChain.GetCurrentFramebuffer();
-
             {
                 m_DrawCommandBuffer = vkSwapChain.GetCurrentDrawCommandBuffer();
                 VKCheckError(vkBeginCommandBuffer(m_DrawCommandBuffer, &commandBufferInfo));
-
+                SNOW_CORE_TRACE("Swapchain Image index {0}", vkSwapChain.GetCurrentBufferIndex());
                 vkCmdBeginRenderPass(m_DrawCommandBuffer, &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+                SNOW_CORE_TRACE("HMHMMHMHMH");
 
                 VkViewport viewport = {};
 				viewport.x = 0.0f;

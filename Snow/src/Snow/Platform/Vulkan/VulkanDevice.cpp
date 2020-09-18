@@ -144,7 +144,7 @@ namespace Snow {
 					if((m_VulkanPhysicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & props)==props)
 						return i;
 				}
-				typeBits >> 1;
+				typeBits >>= 1;
 			}
 			return UINT32_MAX;
 		}

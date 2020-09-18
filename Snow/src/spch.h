@@ -10,6 +10,8 @@
 
 #include <algorithm>
 #include <fstream>
+#include <istream>
+#include <iostream>
 #include <sstream>
 
 #include "Snow/Core/Log.h"

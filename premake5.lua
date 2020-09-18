@@ -22,7 +22,7 @@ VendorIncludeDir["WindowsVulkan"] = "%{wks.location}/Snow/vendor/vulkan/Include"
 
 LibraryIncludeDir = {}
 LibraryIncludeDir["WindowsVulkan"] = "%{wks.location}/Snow/vendor/vulkan/Lib/Windows/vulkan-1.lib"
-LibraryIncludeDir["LinuxVulkan"] = "vendor/vulkan/lib/libvulkan.so"
+LibraryIncludeDir["LinuxVulkan"] = "%{wks.location}/Snow/vendor/vulkan/Lib/Linux/libvulkan.so"
 
 
 group "Vendor"

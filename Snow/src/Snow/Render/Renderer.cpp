@@ -28,7 +28,7 @@ namespace Snow {
         void Renderer::Init() {
             SNOW_CORE_INFO("Initializing Renderer");
             ContextSpecification contextSpec;
-            contextSpec.s_RenderAPI = RenderAPI::Vulkan;
+            contextSpec.s_RenderAPI = RenderAPI::OpenGL;
             contextSpec.WindowHandle = Core::Application::Get().GetWindow()->GetWindowHandle();
 
             s_RenderAPI = contextSpec.s_RenderAPI;
@@ -46,6 +46,10 @@ namespace Snow {
 
         void Renderer::EndScene() {
             s_RenderCommand->EndScene();
+        }
+
+        void Renderer::DrawIndexed(uint32_t count) {
+            s_RenderCommand->DrawIndexed(count);
         }
 
         void Renderer::SetViewport(int width, int height) {

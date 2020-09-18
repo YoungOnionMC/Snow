@@ -18,7 +18,7 @@ project "Glacier"
         "%{wks.location}/Snow/src",
         "%{wks.location}/Snow/vendor/spdlog/include",
 
-        "%{VendorIncludeDir.GLFW}"
+        --"%{VendorIncludeDir.GLFW}"
     }
 
     if os.target() == "windows" then
@@ -28,11 +28,15 @@ project "Glacier"
     end
 
     if os.target() == "linux" then
+        includedirs {
+            --"%{LibraryIncludeDir.LinuxVulkan}"
+        }
+
     links { 
         "Snow",
-        "vulkan",
-        "GLFW",
         "Glad",
+        --"%{LibraryIncludeDir.LinuxVulkan}",
+        "GLFW",
         "X11",
         "Xi",
         "xcb",

@@ -10,6 +10,9 @@ namespace Snow {
 
             void BeginScene() override;
             void EndScene() override;
+
+            void DrawIndexed(uint32_t count) override;
+
             void SetViewport(int width, int height) override;
 
         private:
