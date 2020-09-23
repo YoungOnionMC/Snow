@@ -57,7 +57,7 @@ namespace Snow {
 
 		void VulkanSwapChain::InitSurface() {
 			SNOW_CORE_INFO("Creating Vulkan surface");
-            Core::Window* window = Core::Application::Get().GetWindow();
+            Ref<Core::Window> window = Core::Application::Get().GetWindow();
 #if defined(SNOW_WINDOW_WIN32)
 			SNOW_CORE_INFO("Creating win32 window surface");
             VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};

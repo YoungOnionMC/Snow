@@ -2,11 +2,10 @@
 
 #include "Snow/Core/Layer.h"
 
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 namespace Snow {
     class ImGuiLayer : public Core::Layer {
-
     public:
         ImGuiLayer();
         ~ImGuiLayer();

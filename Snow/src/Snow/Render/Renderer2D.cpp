@@ -3,24 +3,45 @@
 
 namespace Snow {
     namespace Render {
-        void Renderer2D::DrawQuad(Math::Vector2f position, Math::Vector2f size) {
 
-            float vboData[] = {
-                position.x - size.x/2, position.y - size.y/2,
-                position.x + size.x/2, position.y - size.y/2,
-                position.x + size.x/2, position.y + size.y/2,
-                position.x - size.x/2, position.y + size.y/2
-                
-            };
+        struct Vertex {
+            Math::Vector2f Position;
+            Math::Vector2f TexCoord;
+        };
 
-            uint32_t iboData[] = {
-                0, 1, 2,
-                2, 3, 0
-            };
+        struct Renderer2DStaticData {
+            Ref<API::VertexBuffer> VBO;
+            Ref<API::IndexBuffer> IBO;
+            Vertex* VertexData;
+            Vertex* VertexBase;
 
-            Ref<API::VertexBuffer> vbo = API::VertexBuffer::Create(vboData, sizeof(vboData));
-            Ref<API::IndexBuffer> ibo = API::IndexBuffer::Create(iboData, sizeof(iboData));
+            static const uint32_t MaxQuads = 2500;
+            static const uint32_t MaxVerticies = MaxQuads * 4;
+            static const uint32_t MaxIndicies = MaxQuads * 6;
+        };
+        static Renderer2DStaticData s_Data;
+        
 
+
+        void Renderer2D::Init() {
+
+            s_Data.VBO = API::VertexBuffer::Create(nullptr, sizeof(Vertex) * s_Data.MaxVerticies);
+
+            uint32_t* indicies = new uint32_t[s_Data.MaxIndicies];
+            uint32_t offset = 0;
+            for(uint32_t i=0; i < s_Data.MaxQuads; i++) {
+                indicies[i * 6 + 0] = 0 + offset;
+                indicies[i * 6 + 1] = 1 + offset;
+                indicies[i * 6 + 2] = 2 + offset;
+                indicies[i * 6 + 3] = 2 + offset;
+                indicies[i * 6 + 4] = 3 + offset;
+                indicies[i * 6 + 5] = 0 + offset;
+
+                offset +=4;
+            }
+
+            s_Data.IBO = API::IndexBuffer::Create(indicies, sizeof(uint32_t) * s_Data.MaxIndicies);
+            delete[] indicies;
             
 
             // Pipeline
@@ -33,11 +54,6 @@ namespace Snow {
 
             Ref<Pipeline> pipeline = Pipeline::Create(pipelineSpec);
 
-            pipeline->Bind();
-            vbo->Bind();
-            ibo->Bind();
-
-            Renderer::DrawIndexed(ibo->GetCount());
         }
     }
 }

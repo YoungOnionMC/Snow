@@ -14,20 +14,23 @@ project "Snow"
     files {
         "src/spch.h",
         "src/spch.cpp",
+        "src/Snow.h",
         "src/Snow/EntryPoint.h",
 
         "src/Snow/Core/**.*",
+        "src/Snow/ImGui/**.*",
         "src/Snow/Render/**.*",
         "src/Snow/Math/**.*",
         "src/Snow/Platform/OpenGL/**.*",
-        --"src/Snow/Platform/Vulkan/**.*"
+        "src/Snow/Platform/Vulkan/**.*"
     }
 
     includedirs {
         "src",
         "vendor/spdlog/include",
         "%{VendorIncludeDir.GLFW}",
-        "%{VendorIncludeDir.Glad}"
+        "%{VendorIncludeDir.Glad}",
+        "%{VendorIncludeDir.ImGui}",
         
     }
     
@@ -81,12 +84,14 @@ project "Snow"
         }
 
         includedirs {
-            --"%{VendorIncludeDir.LinuxVulkan}"
+            "%{VendorIncludeDir.LinuxVulkan}"
         }
 
         links {
             --"GL",
             --"%{LibraryIncludeDir.LinuxVulkan}",
+            "vulkan",
+            "ImGui",
             
             "GLFW",
             "X11",

@@ -27,29 +27,55 @@ namespace Snow {
             m_Window = new Window();
             Input::Init();
 
+            m_LayerStack = LayerStack();
+            
+
 
             //m_Window->SetEventCallback(SNOW_BIND_EVENT_FN(Application::OnEvent));
 
             Render::Renderer::Init();
+            m_ImGuiLayer = new ImGuiLayer();
+            m_LayerStack.PushOverlay(m_ImGuiLayer);
         }
 
         Application::~Application() {
-            delete m_Window;
+            //delete m_Window;
             SNOW_CORE_TRACE("Destroying Application");
+        }
+
+        void Application::OnImGuiRender() {
+            m_ImGuiLayer->Begin();
+            ImGui::Begin("Viewport");
+            ImGui::Text("hey");
+            ImGui::End();
+
+            for(Layer* layer : m_LayerStack)
+                layer->OnImGuiRender();
+
+            m_ImGuiLayer->End();
         }
 
         void Application::Run() {
             while(m_Running) {
                 OnUpdate();
 
+
+                
                 Render::Renderer::BeginScene();
-                Render::Renderer2D::DrawQuad({0.0f, 0.0f},{1.0f , 1.0f});
+                
+
+                //Render::Renderer2D::DrawQuad({0.0f, 0.0f},{1.0f , 1.0f});
+                OnImGuiRender();
                 Render::Renderer::EndScene();
+
             }
         }
 
         void Application::OnUpdate() {
             m_Window->OnUpdate();
+
+            for(Layer* layer : m_LayerStack)
+                layer->OnUpdate();
 
             Event::EventSystem::Get().ProcessEvents();
         }

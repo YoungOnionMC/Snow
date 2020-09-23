@@ -26,7 +26,6 @@ namespace Snow {
             
             CreateInstance();
 
-            DeviceSpecification deviceSpec;
             m_Device = Ref<VulkanDevice>::Create();
 
             SwapChainSpecification swapchainSpec;

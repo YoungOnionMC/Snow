@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Snow/Render/RenderDevice.h"
 
 #include "Snow/Platform/Vulkan/VulkanCommon.h"
 

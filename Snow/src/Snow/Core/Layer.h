@@ -12,6 +12,9 @@ namespace Snow {
             virtual void OnAttach() {};
             virtual void OnDetach() {};
             virtual void OnUpdate() {};
+
+            virtual void OnImGuiRender() {};
+            
             inline const std::string& GetName() const { return m_Name; }
 
         protected:

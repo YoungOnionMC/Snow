@@ -7,7 +7,7 @@ namespace Snow {
         template<typename T>
         struct Vector<2, T> {
             typedef T valueType;
-            typedef Vector<2, T> type;
+            typedef Vector<2, T> Type;
             typedef Vector<2, bool> boolType;
 
             typedef size_t lengthType;

@@ -1,10 +1,15 @@
 #pragma once
 
+#include "Snow/Core/Ref.h"
+
 #include "Snow/Core/Window.h"
 #include "Snow/Core/Input.h"
 
 #include "Snow/Core/Base.h"
 #include "Snow/Core/Event/EventSystem.h"
+
+#include "Snow/Core/Layer.h"
+#include "Snow/ImGui/ImGuiLayer.h"
 
 namespace Snow {
     namespace Core {
@@ -24,16 +29,24 @@ namespace Snow {
 
 
             static Application& Get() { return *s_Instance; }
-            Window* GetWindow() { return Get().m_Window; }
+            Ref<Window> GetWindow() { return Get().m_Window; }
+
+            void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }
+            void PopLayer(Layer* layer) { m_LayerStack.PopLayer(layer); }
 
             virtual void OnUpdate();
+
+            void OnImGuiRender();
 
             inline void SetRunning(bool running) { m_Running = running; }
         private:
 
             static Application* s_Instance;
 
-            Window* m_Window;
+            Ref<Window> m_Window;
+
+            LayerStack m_LayerStack;
+            ImGuiLayer* m_ImGuiLayer;
 
             bool m_Running = true;
 

@@ -72,6 +72,9 @@ namespace Snow {
 
 #endif
 
+        uint32_t WindowWidth = 0;
+        uint32_t WindowHeight = 0;
+
         bool Window::PlatformInit() {
             SNOW_CORE_INFO("Creating Linux window");
 #if defined(SNOW_WINDOW_GLFW)
@@ -83,7 +86,9 @@ namespace Snow {
             }
                 
             //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            GLFWWindowHandle = glfwCreateWindow(720, 720, "Test Window", nullptr, nullptr);
+            WindowWidth = 720;
+            WindowHeight = 720;
+            GLFWWindowHandle = glfwCreateWindow(WindowWidth, WindowHeight, "Test Window", nullptr, nullptr);
             SNOW_CORE_INFO("Using GLFW window platform");
 
             glfwSetWindowCloseCallback(GLFWWindowHandle, WindowCloseCallback);
@@ -158,6 +163,14 @@ namespace Snow {
 #elif defined(SNOW_WINDOW_XLIB)
             XNextEvent(MainDisplay, &Events);
 #endif
+        }
+
+        uint32_t Window::GetWidth() {
+            return WindowWidth;
+        }
+
+        uint32_t Window::GetHeight() {
+            return WindowHeight;
         }
 
         void* Window::GetWindowHandle() {

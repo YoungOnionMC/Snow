@@ -22,7 +22,7 @@ namespace Snow {
 
         void OpenGLSwapChain::SwapBuffers() {
 
-            Core::Window* window = Core::Application::Get().GetWindow();
+            Ref<Core::Window> window = Core::Application::Get().GetWindow();
 #if defined(SNOW_WINDOW_WIN32)
             auto dc = GetDC((HWND)window->GetWindowHandle());
             

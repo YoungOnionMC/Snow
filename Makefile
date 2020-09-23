@@ -13,29 +13,32 @@ endif
 ifeq ($(config),debug)
   Glad_config = debug
   GLFW_config = debug
+  ImGui_config = debug
   Snow_config = debug
   Glacier_config = debug
 endif
 ifeq ($(config),release)
   Glad_config = release
   GLFW_config = release
+  ImGui_config = release
   Snow_config = release
   Glacier_config = release
 endif
 ifeq ($(config),dist)
   Glad_config = dist
   GLFW_config = dist
+  ImGui_config = dist
   Snow_config = dist
   Glacier_config = dist
 endif
 
-PROJECTS := Glad GLFW Snow Glacier
+PROJECTS := Glad GLFW ImGui Snow Glacier
 
 .PHONY: all clean help $(PROJECTS) Vendor
 
 all: $(PROJECTS)
 
-Vendor: GLFW Glad
+Vendor: GLFW Glad ImGui
 
 Glad:
 ifneq (,$(Glad_config))
@@ -49,13 +52,19 @@ ifneq (,$(GLFW_config))
 	@${MAKE} --no-print-directory -C Snow/vendor/GLFW -f Makefile config=$(GLFW_config)
 endif
 
-Snow: Glad GLFW
+ImGui:
+ifneq (,$(ImGui_config))
+	@echo "==== Building ImGui ($(ImGui_config)) ===="
+	@${MAKE} --no-print-directory -C Snow/vendor/imgui -f Makefile config=$(ImGui_config)
+endif
+
+Snow: Glad ImGui GLFW
 ifneq (,$(Snow_config))
 	@echo "==== Building Snow ($(Snow_config)) ===="
 	@${MAKE} --no-print-directory -C Snow -f Makefile config=$(Snow_config)
 endif
 
-Glacier: Snow Glad GLFW
+Glacier: Snow Glad ImGui GLFW
 ifneq (,$(Glacier_config))
 	@echo "==== Building Glacier ($(Glacier_config)) ===="
 	@${MAKE} --no-print-directory -C Glacier -f Makefile config=$(Glacier_config)
@@ -64,6 +73,7 @@ endif
 clean:
 	@${MAKE} --no-print-directory -C Snow/vendor/Glad -f Makefile clean
 	@${MAKE} --no-print-directory -C Snow/vendor/GLFW -f Makefile clean
+	@${MAKE} --no-print-directory -C Snow/vendor/imgui -f Makefile clean
 	@${MAKE} --no-print-directory -C Snow -f Makefile clean
 	@${MAKE} --no-print-directory -C Glacier -f Makefile clean
 
@@ -80,6 +90,7 @@ help:
 	@echo "   clean"
 	@echo "   Glad"
 	@echo "   GLFW"
+	@echo "   ImGui"
 	@echo "   Snow"
 	@echo "   Glacier"
 	@echo ""

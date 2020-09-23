@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "Snow/Core/Ref.h"
 
 #include "Snow/Core/Event/EventSystem.h"
 
@@ -83,13 +83,16 @@ namespace Snow {
             };
         }
 
-        class Window {
+        class Window : public RefCounted {
         public:
 
             Window();
             ~Window();
 
             void OnUpdate();
+
+            uint32_t GetWidth();
+            uint32_t GetHeight();
 
             void* GetWindowHandle();
         private:
