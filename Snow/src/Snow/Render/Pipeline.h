@@ -3,6 +3,7 @@
 #include "Snow/Core/Ref.h"
 
 #include "Snow/Render/Shader/Shader.h"
+#include "Snow/Render/RenderPass.h"
 
 #include <string>
 #include <vector>
@@ -100,6 +101,7 @@ namespace Snow {
         struct PipelineSpecification {
             std::vector<Ref<Shader>> Shaders;
             VertexBufferLayout Layout;
+            Ref<RenderPass> RenderPass;
         };
 
         class Pipeline : public RefCounted {

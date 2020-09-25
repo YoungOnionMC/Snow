@@ -110,13 +110,13 @@ namespace Snow {
         }
 
         template<size_t L, typename T>
-        inline constexpr Vector<L, T> clamp(const Vector<L, T>& vec, T min, T max) {
-            return functor3<Vector, L, T>::call(clamp, vec, Vector<L, T>(min), Vector<L, T>(max));
+        inline constexpr Vector<L, T> clamp(const Vector<L, T>& vec, T minVec, T maxVec) {
+            return functor3<Vector, L, T>::call(clamp, vec, Vector<L, T>(minVec), Vector<L, T>(maxVec));
         }
 
         template<size_t L, typename T>
-        inline constexpr Vector<L, T> clamp(const Vector<L, T>& vec, const Vector<L, T>& min, const Vector<L, T>& max) {
-            return functor3<Vector, L, T>::call(clamp, vec, min, max);
+        inline constexpr Vector<L, T> clamp(const Vector<L, T>& vec, const Vector<L, T>& minVec, const Vector<L, T>& maxVec) {
+            return functor3<Vector, L, T>::call(clamp, vec, minVec, maxVec);
         }
 
         template<size_t L, typename T>
@@ -146,6 +146,54 @@ namespace Snow {
         inline constexpr Vector<L, bool> isNan(const Vector<L, T>& vec) {
             return functor1<Vector, L, bool, T>::call(isNan, vec);
         }
+
+        template<size_t L, typename T>
+        inline constexpr Vector<L, T> ldexp(const Vector<L, T>& vec, const Vector<L, int>& exp) {
+            Vector<L, T> v;
+            for(uint32_t i=0; i<v.length(); i++) 
+                v[i] = std::ldexp(vec[i], &exp[i]);
+            return v;
+        }
+
+        template<size_t L, typename T>
+		inline constexpr Vector<L, T> max(const Vector<L, T>& vec, T value) {
+			return functor2<Vector, L, T>::call(max, vec, Vector<L, T>(value));
+		}
+
+        template<size_t L, typename T>
+		inline constexpr Vector<L, T> max(T value, const Vector<L, T>& vec) {
+			return functor2<Vector, L, T>::call(max, Vector<L, T>(value), vec);
+		}
+
+		template<size_t L, typename T>
+		inline constexpr Vector<L, T> max(const Vector<L, T>& vec1, const Vector<L, T>& vec2) {
+			return functor2<Vector, L, T>::call(max, vec1, vec2);
+		}
+
+        template<size_t L, typename T>
+		inline constexpr Vector<L, T> min(const Vector<L, T>& vec, T value) {
+			return functor2<Vector, L, T>::call(min, vec, Vector<L, T>(value));
+		}
+
+        template<size_t L, typename T>
+		inline constexpr Vector<L, T> min(T value, const Vector<L, T>& vec) {
+			return functor2<Vector, L, T>::call(min, Vector<L, T>(value), vec);
+		}
+
+		template<size_t L, typename T>
+		inline constexpr Vector<L, T> min(const Vector<L, T>& vec1, const Vector<L, T>& vec2) {
+			return functor2<Vector, L, T>::call(min, vec1, vec2);
+		}
+
+		template<size_t L, typename T, typename U>
+		inline constexpr Vector<L, T> mix(const Vector<L, T>& vec1, const Vector<L, T>& vec2, U a) {
+			return functor3<Vector, L, T>::call(mix, vec1, vec2, Vector<L, T>(a));
+		}
+
+        template<size_t L, typename T, typename U>
+		inline constexpr Vector<L, T> mix(const Vector<L, T>& vec1, const Vector<L, T>& vec2, const Vector<L, U>& a) {
+			return functor3<Vector, L, T>::call(mix, vec1, vec2, Vector<L, T>(a));
+		}
 
 
 

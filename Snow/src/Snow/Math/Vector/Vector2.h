@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Snow/Math/Vector/Common.h"
+#include "Snow/Math/Vector/VectorSwizzle.h"
 
 namespace Snow {
     namespace Math {
@@ -9,6 +10,8 @@ namespace Snow {
             typedef T valueType;
             typedef Vector<2, T> Type;
             typedef Vector<2, bool> boolType;
+
+            SNOW_SWIZZLE_GEN_VECTOR_FROM_VECTOR2(T)
 
             typedef size_t lengthType;
             inline static constexpr lengthType length() { return 2; }
@@ -29,7 +32,7 @@ namespace Snow {
             template<typename U>
             inline constexpr explicit Vector(const Vector<1, U>& vec);
 
-            // Explicit onversion constructors
+            // Explicit conversion constructors
             template<typename A, typename B>
             inline constexpr Vector(A x, B y);
 
@@ -68,7 +71,7 @@ namespace Snow {
             inline constexpr Vector<2, T>& operator+=(const Vector<2, U>& vec);
 
             template<typename U>
-            inline constexpr Vector<2, T>& operator-=(U val);
+            inline constexpr Vector<2, T>& operator-=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator-=(const Vector<1, U>& vec);
@@ -77,7 +80,7 @@ namespace Snow {
             inline constexpr Vector<2, T>& operator-=(const Vector<2, U>& vec);
 
             template<typename U>
-            inline constexpr Vector<2, T>& operator*=(U val);
+            inline constexpr Vector<2, T>& operator*=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator*=(const Vector<1, U>& vec);
@@ -86,7 +89,7 @@ namespace Snow {
             inline constexpr Vector<2, T>& operator*=(const Vector<2, U>& vec);
 
             template<typename U>
-            inline constexpr Vector<2, T>& operator/=(U val);
+            inline constexpr Vector<2, T>& operator/=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator/=(const Vector<1, U>& vec);
@@ -102,7 +105,7 @@ namespace Snow {
 
             // Unary bit operator
             template<typename U>
-            inline constexpr Vector<2, T>& operator%=(U val);
+            inline constexpr Vector<2, T>& operator%=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator%=(const Vector<1, U>& vec);
@@ -111,7 +114,7 @@ namespace Snow {
             inline constexpr Vector<2, T>& operator%=(const Vector<2, U>& vec);
 
             template<typename U>
-            inline constexpr Vector<2, T>& operator&=(U val);
+            inline constexpr Vector<2, T>& operator&=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator&=(const Vector<1, U>& vec);
@@ -120,7 +123,7 @@ namespace Snow {
             inline constexpr Vector<2, T>& operator&=(const Vector<2, U>& vec);
 
             template<typename U>
-            inline constexpr Vector<2, T>& operator|=(U val);
+            inline constexpr Vector<2, T>& operator|=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator|=(const Vector<1, U>& vec);
@@ -129,7 +132,7 @@ namespace Snow {
             inline constexpr Vector<2, T>& operator|=(const Vector<2, U>& vec);
 
             template<typename U>
-            inline constexpr Vector<2, T>& operator^=(U val);
+            inline constexpr Vector<2, T>& operator^=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator^=(const Vector<1, U>& vec);
@@ -138,7 +141,7 @@ namespace Snow {
             inline constexpr Vector<2, T>& operator^=(const Vector<2, U>& vec);
 
             template<typename U>
-            inline constexpr Vector<2, T>& operator<<=(U val);
+            inline constexpr Vector<2, T>& operator<<=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator<<=(const Vector<1, U>& vec);
@@ -147,7 +150,7 @@ namespace Snow {
             inline constexpr Vector<2, T>& operator<<=(const Vector<2, U>& vec);
 
             template<typename U>
-            inline constexpr Vector<2, T>& operator>>=(U val);
+            inline constexpr Vector<2, T>& operator>>=(U value);
 
             template<typename U>
             inline constexpr Vector<2, T>& operator>>=(const Vector<1, U>& vec);
@@ -335,10 +338,13 @@ namespace Snow {
         inline constexpr Vector<2, bool> operator||(const Vector<2, T>& vec1, const Vector<2, T>& vec2);
 
         typedef Vector<2, float>        Vector2f;
-        typedef Vector<2, bool>         Vector2b;
         typedef Vector<2, double>       Vector2d;
+        typedef Vector<2, bool>         Vector2b;
+        typedef Vector<2, short>        Vector2s;
         typedef Vector<2, int>          Vector2i;
         typedef Vector<2, unsigned int> Vector2ui;
+        typedef Vector<2, long>         Vector2l;
+        typedef Vector<2, unsigned long> Vector2ul;
     }
 }
 
