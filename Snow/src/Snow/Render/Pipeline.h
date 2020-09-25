@@ -101,7 +101,7 @@ namespace Snow {
         struct PipelineSpecification {
             std::vector<Ref<Shader>> Shaders;
             VertexBufferLayout Layout;
-            Ref<RenderPass> RenderPass;
+            Ref<RenderPass> BindedRenderPass;
         };
 
         class Pipeline : public RefCounted {
