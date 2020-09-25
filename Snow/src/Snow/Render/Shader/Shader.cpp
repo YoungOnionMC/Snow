@@ -12,6 +12,8 @@ namespace Snow {
             case RenderAPI::None:   return nullptr;
             case RenderAPI::OpenGL: return Ref<OpenGLShader>::Create(type, path);
             }
+
+            return nullptr;
         }
         
     }

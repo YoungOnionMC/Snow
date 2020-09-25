@@ -35,7 +35,7 @@ namespace Snow {
             x(0), y(0), z(0), w(0) {}
 
         template<typename T>
-        inline constexpr Vector<4, T>::Vector(const Vector<4, T>& vecec) :
+        inline constexpr Vector<4, T>::Vector(const Vector<4, T>& vec) :
             x(vec.x), y(vec.y), z(vec.z), w(vec.w) {}
 
         template<typename T>
@@ -247,7 +247,7 @@ namespace Snow {
             this->y += static_cast<T>(value);
             this->z += static_cast<T>(value);
             this->w += static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -257,7 +257,7 @@ namespace Snow {
             this->y += static_cast<T>(vec.x);
             this->z += static_cast<T>(vec.x);
             this->w += static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -267,7 +267,7 @@ namespace Snow {
             this->y += static_cast<T>(vec.y);
             this->z += static_cast<T>(vec.z);
             this->w += static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -277,7 +277,7 @@ namespace Snow {
             this->y -= static_cast<T>(value);
             this->z -= static_cast<T>(value);
             this->w -= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -287,7 +287,7 @@ namespace Snow {
             this->y -= static_cast<T>(vec.x);
             this->z -= static_cast<T>(vec.x);
             this->w -= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -297,7 +297,7 @@ namespace Snow {
             this->y -= static_cast<T>(vec.y);
             this->z -= static_cast<T>(vec.z);
             this->w -= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -307,7 +307,7 @@ namespace Snow {
             this->y *= static_cast<T>(value);
             this->z *= static_cast<T>(value);
             this->w *= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -317,7 +317,7 @@ namespace Snow {
             this->y *= static_cast<T>(vec.x);
             this->z *= static_cast<T>(vec.x);
             this->w *= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -327,7 +327,7 @@ namespace Snow {
             this->y *= static_cast<T>(vec.y);
             this->z *= static_cast<T>(vec.z);
             this->w *= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -337,7 +337,7 @@ namespace Snow {
             this->y /= static_cast<T>(value);
             this->z /= static_cast<T>(value);
             this->w /= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -347,7 +347,7 @@ namespace Snow {
             this->y /= static_cast<T>(vec.x);
             this->z /= static_cast<T>(vec.x);
             this->w /= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -357,7 +357,7 @@ namespace Snow {
             this->y /= static_cast<T>(vec.y);
             this->z /= static_cast<T>(vec.z);
             this->w /= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -380,14 +380,14 @@ namespace Snow {
 
         template<typename T>
         inline constexpr Vector<4, T> Vector<4, T>::operator++(int) {
-            Vector<4, T> result(*this)
+            Vector<4, T> result(*this);
             ++ *this;
             return result;
         }
 
         template<typename T>
         inline constexpr Vector<4, T> Vector<4, T>::operator--(int) {
-            Vector<4, T> result(*this)
+            Vector<4, T> result(*this);
             -- *this;
             return result;
         }
@@ -399,7 +399,7 @@ namespace Snow {
             this->y %= static_cast<T>(value);
             this->z %= static_cast<T>(value);
             this->w %= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -409,7 +409,7 @@ namespace Snow {
             this->y %= static_cast<T>(vec.x);
             this->z %= static_cast<T>(vec.x);
             this->w %= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -419,7 +419,7 @@ namespace Snow {
             this->y %= static_cast<T>(vec.y);
             this->z %= static_cast<T>(vec.z);
             this->w %= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -429,7 +429,7 @@ namespace Snow {
             this->y &= static_cast<T>(value);
             this->z &= static_cast<T>(value);
             this->w &= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -439,7 +439,7 @@ namespace Snow {
             this->y &= static_cast<T>(vec.x);
             this->z &= static_cast<T>(vec.x);
             this->w &= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -449,7 +449,7 @@ namespace Snow {
             this->y &= static_cast<T>(vec.y);
             this->z &= static_cast<T>(vec.z);
             this->w &= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -459,7 +459,7 @@ namespace Snow {
             this->y |= static_cast<T>(value);
             this->z |= static_cast<T>(value);
             this->w |= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -469,7 +469,7 @@ namespace Snow {
             this->y |= static_cast<T>(vec.x);
             this->z |= static_cast<T>(vec.x);
             this->w |= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -479,7 +479,7 @@ namespace Snow {
             this->y |= static_cast<T>(vec.y);
             this->z |= static_cast<T>(vec.z);
             this->w |= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -489,7 +489,7 @@ namespace Snow {
             this->y ^= static_cast<T>(value);
             this->z ^= static_cast<T>(value);
             this->w ^= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -499,7 +499,7 @@ namespace Snow {
             this->y ^= static_cast<T>(vec.x);
             this->z ^= static_cast<T>(vec.x);
             this->w ^= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -509,7 +509,7 @@ namespace Snow {
             this->y ^= static_cast<T>(vec.y);
             this->z ^= static_cast<T>(vec.z);
             this->w ^= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -519,7 +519,7 @@ namespace Snow {
             this->y <<= static_cast<T>(value);
             this->z <<= static_cast<T>(value);
             this->w <<= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -529,7 +529,7 @@ namespace Snow {
             this->y <<= static_cast<T>(vec.x);
             this->z <<= static_cast<T>(vec.x);
             this->w <<= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -539,7 +539,7 @@ namespace Snow {
             this->y <<= static_cast<T>(vec.y);
             this->z <<= static_cast<T>(vec.z);
             this->w <<= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -549,7 +549,7 @@ namespace Snow {
             this->y >>= static_cast<T>(value);
             this->z >>= static_cast<T>(value);
             this->w >>= static_cast<T>(value);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -559,7 +559,7 @@ namespace Snow {
             this->y >>= static_cast<T>(vec.x);
             this->z >>= static_cast<T>(vec.x);
             this->w >>= static_cast<T>(vec.x);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -569,7 +569,7 @@ namespace Snow {
             this->y >>= static_cast<T>(vec.y);
             this->z >>= static_cast<T>(vec.z);
             this->w >>= static_cast<T>(vec.w);
-            return *this
+            return *this;
         }
 
         template<typename T>
@@ -598,7 +598,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator+(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator+(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x + vec2.x, vec1.x + vec2.y, vec1.x + vec2.z, vec1.x + vec2.w);
 		}
 
@@ -623,7 +623,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator-(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator-(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x - vec2.x, vec1.x - vec2.y, vec1.x - vec2.z, vec1.x - vec2.w);
 		}
 
@@ -648,7 +648,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator*(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator*(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x * vec2.x, vec1.x * vec2.y, vec1.x * vec2.z, vec1.x * vec2.w);
 		}
 
@@ -673,7 +673,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator/(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator/(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x / vec2.x, vec1.x / vec2.y, vec1.x / vec2.z, vec1.x / vec2.w);
 		}
 
@@ -698,7 +698,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator%(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator%(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x % vec2.x, vec1.x % vec2.y, vec1.x % vec2.z, vec1.x % vec2.w);
 		}
 
@@ -723,7 +723,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator&(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator&(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x & vec2.x, vec1.x & vec2.y, vec1.x & vec2.z, vec1.x & vec2.w);
 		}
 
@@ -748,7 +748,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator|(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator|(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x | vec2.x, vec1.x | vec2.y, vec1.x | vec2.z, vec1.x | vec2.w);
 		}
 
@@ -773,7 +773,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator^(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator^(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x ^ vec2.x, vec1.x ^ vec2.y, vec1.x ^ vec2.z, vec1.x ^ vec2.w);
 		}
 
@@ -798,7 +798,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator<<(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator<<(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x << vec2.x, vec1.x << vec2.y, vec1.x << vec2.z, vec1.x << vec2.w);
 		}
 
@@ -823,7 +823,7 @@ namespace Snow {
 		}
 
 		template<typename T>
-		inline constexpr Vector<4, T> operator>>(const Vector<1, T> v1, const Vector<4, T>& vec2) {
+		inline constexpr Vector<4, T> operator>>(const Vector<1, T> vec1, const Vector<4, T>& vec2) {
 			return Vector<4, T>(vec1.x >> vec2.x, vec1.x >> vec2.y, vec1.x >> vec2.z, vec1.x >> vec2.w);
 		}
 

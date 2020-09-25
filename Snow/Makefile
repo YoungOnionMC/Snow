@@ -116,9 +116,12 @@ OBJECTS := \
 	$(OBJDIR)/VulkanRenderCommand.o \
 	$(OBJDIR)/VulkanSwapChain.o \
 	$(OBJDIR)/Buffer.o \
+	$(OBJDIR)/Fraembuffer.o \
+	$(OBJDIR)/Texture.o \
 	$(OBJDIR)/Pipeline.o \
 	$(OBJDIR)/RenderCommand.o \
 	$(OBJDIR)/RenderContext.o \
+	$(OBJDIR)/RenderPass.o \
 	$(OBJDIR)/Renderer.o \
 	$(OBJDIR)/Renderer2D.o \
 	$(OBJDIR)/Shader.o \
@@ -254,6 +257,12 @@ $(OBJDIR)/VulkanSwapChain.o: src/Snow/Platform/Vulkan/VulkanSwapChain.cpp
 $(OBJDIR)/Buffer.o: src/Snow/Render/API/Buffer.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Fraembuffer.o: src/Snow/Render/API/Fraembuffer.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Texture.o: src/Snow/Render/API/Texture.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Pipeline.o: src/Snow/Render/Pipeline.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -261,6 +270,9 @@ $(OBJDIR)/RenderCommand.o: src/Snow/Render/RenderCommand.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/RenderContext.o: src/Snow/Render/RenderContext.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/RenderPass.o: src/Snow/Render/RenderPass.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Renderer.o: src/Snow/Render/Renderer.cpp

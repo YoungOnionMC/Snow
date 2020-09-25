@@ -15,6 +15,8 @@ namespace Snow {
         case RenderAPI::None: return nullptr;
         case RenderAPI::OpenGL: return new OpenGLSwapChain(spec);
         }
+
+        return nullptr;
         }
     }
 }

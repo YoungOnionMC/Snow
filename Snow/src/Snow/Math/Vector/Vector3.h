@@ -181,7 +181,7 @@ namespace Snow {
 
             union { T x, r, s; };
             union { T y, g, t; };
-            union { T z, b, u; };
+            union { T z, b, p; };
         };
 
         // Unary operators

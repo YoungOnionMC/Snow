@@ -12,6 +12,8 @@ namespace Snow {
             case RenderAPI::None:   return nullptr;
             case RenderAPI::OpenGL: return Ref<OpenGLPipeline>::Create(spec);
             }
+
+            return nullptr;
         }
     }
 }
