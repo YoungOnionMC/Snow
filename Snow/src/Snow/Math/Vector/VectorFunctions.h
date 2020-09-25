@@ -51,8 +51,7 @@ namespace Snow {
         template<size_t L, typename T>
         inline constexpr Vector<L, T> min(const Vector<L, T>& vec, const Vector<L, T>& min);
 
-        template<size_t L, typename T>
-        template<typename U>
+        template<size_t L, typename T, typename U>
         inline constexpr Vector<L, T> mix(const Vector<L, T>& vec1, const Vector<L, T>& vec2, U a);
 
         template<size_t L, typename T, typename U>
