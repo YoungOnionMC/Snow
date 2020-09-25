@@ -4,6 +4,3 @@
 [submodule "Snow/vendor/spdlog"]
 	path = Snow/vendor/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "Snow/vendor/imgui"]
-	path = Snow/vendor/imgui
-	url = https://github.com/ocornut/imgui
