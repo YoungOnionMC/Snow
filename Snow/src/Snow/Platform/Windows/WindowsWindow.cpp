@@ -70,6 +70,9 @@ namespace Snow {
         GLFWwindow* GLFWWindowHandle;
         int GLFWResult;
 
+        int WindowWidth = 1080;
+        int WindowHeight = 720;
+
         void WindowCloseCallback(GLFWwindow* window) {
             Event::WindowCloseEvent event;
             Event::EventSystem::AddEvent(event);
@@ -152,7 +155,7 @@ namespace Snow {
             }
 
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            GLFWWindowHandle = glfwCreateWindow(1080, 720, "Test Window", nullptr, nullptr);
+            GLFWWindowHandle = glfwCreateWindow(WindowWidth, WindowHeight, "Test Window", nullptr, nullptr);
             SNOW_CORE_INFO("Using GLFW window");
 
             glfwSetWindowCloseCallback(GLFWWindowHandle, WindowCloseCallback);
@@ -199,6 +202,14 @@ namespace Snow {
 #elif defined(SNOW_WINDOW_GLFW)
             return GLFWWindowHandle;
 #endif
+        }
+
+        uint32_t Window::GetWidth() {
+            return WindowWidth;
+        }
+
+        uint32_t Window::GetHeight() {
+            return WindowHeight;
         }
 
 #if defined(SNOW_WINDOW_WIN32)

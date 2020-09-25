@@ -17,7 +17,7 @@ namespace Snow {
             LinkShaders();
         }
 
-        void OpenGLPipeline::Bind() const {
+        void OpenGLPipeline::Bind() {
             glUseProgram(m_PipelineHandle);
 
             uint32_t layoutIndex = 0;

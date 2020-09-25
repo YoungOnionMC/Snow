@@ -67,6 +67,7 @@ project "Snow"
             "%{LibraryIncludeDir.WindowsVulkan}",
 
             "GLFW",
+            "ImGui"
         }
 
         files {

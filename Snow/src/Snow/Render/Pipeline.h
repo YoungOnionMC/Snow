@@ -108,7 +108,7 @@ namespace Snow {
         public:
             ~Pipeline() = default;
 
-            virtual void Bind() const = 0; 
+            virtual void Bind() = 0; 
 
             virtual const PipelineSpecification& GetSpecification() const = 0;
 

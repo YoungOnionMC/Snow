@@ -22,7 +22,7 @@ namespace Snow {
 			void FlushCommandBuffer(VkCommandBuffer commandBuffer);
 
 			VkPhysicalDevice GetPhysicalDevice() { return m_VulkanPhysicalDevice; }
-			VkDevice GetDevice() { return m_VulkanDevice; }
+			VkDevice GetVulkanDevice() { return m_VulkanDevice; }
 
 
 		private:

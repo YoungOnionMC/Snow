@@ -6,7 +6,7 @@
 
 namespace Snow {
     namespace Render {
-        class OpenGLShader : public Shader::Shader {
+        class OpenGLShader : public Shader {
         public:
             OpenGLShader(ShaderType type, const std::string& path);
 

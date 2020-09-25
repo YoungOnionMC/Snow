@@ -34,8 +34,8 @@ namespace Snow {
             //m_Window->SetEventCallback(SNOW_BIND_EVENT_FN(Application::OnEvent));
 
             Render::Renderer::Init();
-            m_ImGuiLayer = new ImGuiLayer();
-            m_LayerStack.PushOverlay(m_ImGuiLayer);
+            //m_ImGuiLayer = new ImGuiLayer();
+            //m_LayerStack.PushOverlay(m_ImGuiLayer);
         }
 
         Application::~Application() {
@@ -65,7 +65,7 @@ namespace Snow {
                 
 
                 //Render::Renderer2D::DrawQuad({0.0f, 0.0f},{1.0f , 1.0f});
-                OnImGuiRender();
+                //OnImGuiRender();
                 Render::Renderer::EndScene();
 
             }

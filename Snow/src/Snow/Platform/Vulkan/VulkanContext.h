@@ -53,7 +53,7 @@ namespace Snow {
             std::vector<const char*> m_InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
             std::vector<VkExtensionProperties> m_Extensions;
 
-            std::vector<const char*> m_InstanceLayers = { "VK_LAYER_KHRONOS_validation",/*"VK_LAYER_LUNARG_api_dump",*/ "VK_LAYER_LUNARG_standard_validation", };
+            std::vector<const char*> m_InstanceLayers = { "VK_LAYER_KHRONOS_validation","VK_LAYER_LUNARG_api_dump", "VK_LAYER_LUNARG_standard_validation", };
 
 
             ContextSpecification m_Specification;
