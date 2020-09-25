@@ -1,6 +1,6 @@
-[submodule "Snow/vendor/GLFW"]
-	path = Snow/vendor/GLFW
-	url = https://github.com/glfw/glfw
 [submodule "Snow/vendor/spdlog"]
 	path = Snow/vendor/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "Snow/vendor/imgui"]
+	path = Snow/vendor/imgui
+	url = https://github.com/JamesStroebe/imgui
