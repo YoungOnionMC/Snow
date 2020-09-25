@@ -9,7 +9,7 @@ namespace Snow {
         public:
             OpenGLPipeline(const PipelineSpecification& spec);
 
-            void Bind() const override;
+            void Bind() override;
 
             const PipelineSpecification& GetSpecification() const override { return m_Specification; }
 

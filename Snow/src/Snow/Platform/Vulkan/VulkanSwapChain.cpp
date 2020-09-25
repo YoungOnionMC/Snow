@@ -38,11 +38,11 @@ namespace Snow {
 			m_Device = device;
 			m_Allocator = VulkanAllocator(device, "SwapChain");
 
-			GETDEVICEPROCADDR(m_Device->GetDevice(), CreateSwapchainKHR);
-			GETDEVICEPROCADDR(m_Device->GetDevice(), DestroySwapchainKHR);
-			GETDEVICEPROCADDR(m_Device->GetDevice(), GetSwapchainImagesKHR);
-			GETDEVICEPROCADDR(m_Device->GetDevice(), AcquireNextImageKHR);
-			GETDEVICEPROCADDR(m_Device->GetDevice(), QueuePresentKHR);
+			GETDEVICEPROCADDR(m_Device->GetVulkanDevice(), CreateSwapchainKHR);
+			GETDEVICEPROCADDR(m_Device->GetVulkanDevice(), DestroySwapchainKHR);
+			GETDEVICEPROCADDR(m_Device->GetVulkanDevice(), GetSwapchainImagesKHR);
+			GETDEVICEPROCADDR(m_Device->GetVulkanDevice(), AcquireNextImageKHR);
+			GETDEVICEPROCADDR(m_Device->GetVulkanDevice(), QueuePresentKHR);
 
 			GETINSTANCEPROCADDR(instance, GetPhysicalDeviceSurfaceSupportKHR);
 			GETINSTANCEPROCADDR(instance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
@@ -227,18 +227,18 @@ namespace Snow {
 				swapchainCreateInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 
-			VKCheckError(vkCreateSwapchainKHR(m_Device->GetDevice(), &swapchainCreateInfo, nullptr, &m_VulkanSwapchain));
+			VKCheckError(vkCreateSwapchainKHR(m_Device->GetVulkanDevice(), &swapchainCreateInfo, nullptr, &m_VulkanSwapchain));
 
 			if(oldSwapChain != VK_NULL_HANDLE) {
 				for(uint32_t i=0; i< m_ImageCount; i++) {
-					vkDestroyImageView(m_Device->GetDevice(), m_Buffers[i].View, nullptr);
+					vkDestroyImageView(m_Device->GetVulkanDevice(), m_Buffers[i].View, nullptr);
 				}
-				fpDestroySwapchainKHR(m_Device->GetDevice(), oldSwapChain, nullptr);
+				fpDestroySwapchainKHR(m_Device->GetVulkanDevice(), oldSwapChain, nullptr);
 			}
-			m_Result = fpGetSwapchainImagesKHR(m_Device->GetDevice(), m_VulkanSwapchain, &m_ImageCount, nullptr);
+			m_Result = fpGetSwapchainImagesKHR(m_Device->GetVulkanDevice(), m_VulkanSwapchain, &m_ImageCount, nullptr);
 
 			m_Images.resize(m_ImageCount);
-			m_Result = fpGetSwapchainImagesKHR(m_Device->GetDevice(), m_VulkanSwapchain, &m_ImageCount, m_Images.data());
+			m_Result = fpGetSwapchainImagesKHR(m_Device->GetVulkanDevice(), m_VulkanSwapchain, &m_ImageCount, m_Images.data());
 
 			m_Buffers.resize(m_ImageCount);
 			for(uint32_t i=0; i< m_ImageCount; i++) {
@@ -262,14 +262,14 @@ namespace Snow {
 
 				m_Buffers[i].Image = m_Images[i];
 				colorAttachmentView.image = m_Buffers[i].Image;
-				VKCheckError(vkCreateImageView(m_Device->GetDevice(), &colorAttachmentView, nullptr, &m_Buffers[i].View));
+				VKCheckError(vkCreateImageView(m_Device->GetVulkanDevice(), &colorAttachmentView, nullptr, &m_Buffers[i].View));
 			}
 			CreateDrawBuffers();
 
 			VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 			semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			VKCheckError(vkCreateSemaphore(m_Device->GetDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
-			VKCheckError(vkCreateSemaphore(m_Device->GetDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.RenderComplete));
+			VKCheckError(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
+			VKCheckError(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.RenderComplete));
 
 			VkPipelineStageFlags pipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -286,7 +286,7 @@ namespace Snow {
 			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 			m_WaitFences.resize(m_DrawCommandBuffers.size());
 			for(auto& fence : m_WaitFences) {
-				VKCheckError(vkCreateFence(m_Device->GetDevice(), &fenceCreateInfo, nullptr, &fence));
+				VKCheckError(vkCreateFence(m_Device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &fence));
 			}
 
 			CreateDepthStencil();
@@ -347,7 +347,7 @@ namespace Snow {
 			renderPassCreateInfo.dependencyCount = 1;
 			renderPassCreateInfo.pDependencies = &dependency;
 
-			VKCheckError(vkCreateRenderPass(m_Device->GetDevice(), &renderPassCreateInfo, nullptr, &m_RenderPass));
+			VKCheckError(vkCreateRenderPass(m_Device->GetVulkanDevice(), &renderPassCreateInfo, nullptr, &m_RenderPass));
 
 			CreateFramebuffer();
 		}
@@ -381,11 +381,11 @@ namespace Snow {
 			imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 			imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-			VKCheckError(vkCreateImage(m_Device->GetDevice(), &imageCreateInfo, nullptr, &m_DepthStencil.Image));
+			VKCheckError(vkCreateImage(m_Device->GetVulkanDevice(), &imageCreateInfo, nullptr, &m_DepthStencil.Image));
 			VkMemoryRequirements memreqs = {};
-			vkGetImageMemoryRequirements(m_Device->GetDevice(), m_DepthStencil.Image, &memreqs);
+			vkGetImageMemoryRequirements(m_Device->GetVulkanDevice(), m_DepthStencil.Image, &memreqs);
 			m_Allocator.Allocate(memreqs, &m_DepthStencil.DeviceMemory);
-			VKCheckError(vkBindImageMemory(m_Device->GetDevice(), m_DepthStencil.Image, m_DepthStencil.DeviceMemory, 0));
+			VKCheckError(vkBindImageMemory(m_Device->GetVulkanDevice(), m_DepthStencil.Image, m_DepthStencil.DeviceMemory, 0));
 
 			VkImageViewCreateInfo imageViewCreateInfo = {};
 			imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -400,7 +400,7 @@ namespace Snow {
 			if(m_DepthBufferFormat >= VK_FORMAT_D16_UNORM_S8_UINT)
 				imageViewCreateInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-			VKCheckError(vkCreateImageView(m_Device->GetDevice(), &imageViewCreateInfo, nullptr, &m_DepthStencil.ImageView));
+			VKCheckError(vkCreateImageView(m_Device->GetVulkanDevice(), &imageViewCreateInfo, nullptr, &m_DepthStencil.ImageView));
 		}
 
 		void VulkanSwapChain::CreateFramebuffer() {
@@ -421,7 +421,7 @@ namespace Snow {
 			m_Framebuffers.resize(m_ImageCount);
 			for(uint32_t i=0; i< m_Framebuffers.size(); i++) {
 				ivAttachments[0] = m_Buffers[i].View;
-				VKCheckError(vkCreateFramebuffer(m_Device->GetDevice(), &framebufferCreateInfo, nullptr, &m_Framebuffers[i]));
+				VKCheckError(vkCreateFramebuffer(m_Device->GetVulkanDevice(), &framebufferCreateInfo, nullptr, &m_Framebuffers[i]));
 			}
 		}
 
@@ -432,36 +432,36 @@ namespace Snow {
 			commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			commandPoolCreateInfo.queueFamilyIndex = m_QueueNodeIndex;
 			commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			VKCheckError(vkCreateCommandPool(m_Device->GetDevice(), &commandPoolCreateInfo, nullptr, &m_CommandPool));
+			VKCheckError(vkCreateCommandPool(m_Device->GetVulkanDevice(), &commandPoolCreateInfo, nullptr, &m_CommandPool));
 
 			VkCommandBufferAllocateInfo commandBufferAllocInfo = {};
 			commandBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			commandBufferAllocInfo.commandPool = m_CommandPool;
 			commandBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			commandBufferAllocInfo.commandBufferCount = static_cast<uint32_t>(m_DrawCommandBuffers.size());
-			VKCheckError(vkAllocateCommandBuffers(m_Device->GetDevice(), &commandBufferAllocInfo, m_DrawCommandBuffers.data()));
+			VKCheckError(vkAllocateCommandBuffers(m_Device->GetVulkanDevice(), &commandBufferAllocInfo, m_DrawCommandBuffers.data()));
 
 		}
 
 		void VulkanSwapChain::OnResize(uint32_t width, uint32_t height) {
-			VKCheckError(vkDeviceWaitIdle(m_Device->GetDevice()));
+			VKCheckError(vkDeviceWaitIdle(m_Device->GetVulkanDevice()));
 
 			Create(&width, &height);
-			vkDestroyImageView(m_Device->GetDevice(), m_DepthStencil.ImageView, nullptr);
-			vkDestroyImage(m_Device->GetDevice(), m_DepthStencil.Image, nullptr);
-			vkFreeMemory(m_Device->GetDevice(), m_DepthStencil.DeviceMemory, nullptr);
+			vkDestroyImageView(m_Device->GetVulkanDevice(), m_DepthStencil.ImageView, nullptr);
+			vkDestroyImage(m_Device->GetVulkanDevice(), m_DepthStencil.Image, nullptr);
+			vkFreeMemory(m_Device->GetVulkanDevice(), m_DepthStencil.DeviceMemory, nullptr);
 
 			CreateDepthStencil();
 
 			for(auto& framebuffer: m_Framebuffers)
-				vkDestroyFramebuffer(m_Device->GetDevice(), framebuffer, nullptr);
+				vkDestroyFramebuffer(m_Device->GetVulkanDevice(), framebuffer, nullptr);
 
 			CreateFramebuffer();
 
-			vkFreeCommandBuffers(m_Device->GetDevice(), m_CommandPool, static_cast<uint32_t>(m_DrawCommandBuffers.size()), m_DrawCommandBuffers.data());
+			vkFreeCommandBuffers(m_Device->GetVulkanDevice(), m_CommandPool, static_cast<uint32_t>(m_DrawCommandBuffers.size()), m_DrawCommandBuffers.data());
 			CreateDrawBuffers();
 
-			VKCheckError(vkDeviceWaitIdle(m_Device->GetDevice()));
+			VKCheckError(vkDeviceWaitIdle(m_Device->GetVulkanDevice()));
 
 		}
 
@@ -474,8 +474,8 @@ namespace Snow {
 
 			const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
-			VKCheckError(vkWaitForFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
-			VKCheckError(vkResetFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
+			VKCheckError(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+			VKCheckError(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
 
 			VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -501,11 +501,11 @@ namespace Snow {
 				}
 			}
 
-			VKCheckError(vkWaitForFences(m_Device->GetDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+			VKCheckError(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 		}
 
 		VkResult VulkanSwapChain::AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex) {
-			return fpAcquireNextImageKHR(m_Device->GetDevice(), m_VulkanSwapchain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, imageIndex);
+			return fpAcquireNextImageKHR(m_Device->GetVulkanDevice(), m_VulkanSwapchain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, imageIndex);
 		}
 
 		VkResult VulkanSwapChain::QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore) {
