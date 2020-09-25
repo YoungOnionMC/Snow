@@ -584,277 +584,277 @@ namespace Snow {
 
         template<typename T>
 		inline constexpr Vector<4, T> operator+(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x + value, v.y + value, v.z + value, v.w + value);
+			return Vector<4, T>(vec.x + value, vec.y + value, vec.z + value, vec.w + value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator+(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x + v2.x, v1.y + v2.x, v1.z + v2.x, v1.w + v2.x);
+			return Vector<4, T>(vec1.x + vec2.x, vec1.y + vec2.x, vec1.z + vec2.x, vec1.w + vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator+(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value + v.x, value + v.y, value + v.z, value + v.w);
+			return Vector<4, T>(value + vec.x, value + vec.y, value + vec.z, value + vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator+(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x + v2.x, v1.x + v2.y, v1.x + v2.z, v1.x + v2.w);
+			return Vector<4, T>(vec1.x + vec2.x, vec1.x + vec2.y, vec1.x + vec2.z, vec1.x + vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator+(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w);
+			return Vector<4, T>(vec1.x + vec2.x, vec1.y + vec2.y, vec1.z + vec2.z, vec1.w + vec2.w);
 		}
 
         template<typename T>
 		inline constexpr Vector<4, T> operator-(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x - value, v.y - value, v.z - value, v.w - value);
+			return Vector<4, T>(vec.x - value, vec.y - value, vec.z - value, vec.w - value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator-(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x - v2.x, v1.y - v2.x, v1.z - v2.x, v1.w - v2.x);
+			return Vector<4, T>(vec1.x - vec2.x, vec1.y - vec2.x, vec1.z - vec2.x, vec1.w - vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator-(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value - v.x, value - v.y, value - v.z, value - v.w);
+			return Vector<4, T>(value - vec.x, value - vec.y, value - vec.z, value - vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator-(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x - v2.x, v1.x - v2.y, v1.x - v2.z, v1.x - v2.w);
+			return Vector<4, T>(vec1.x - vec2.x, vec1.x - vec2.y, vec1.x - vec2.z, vec1.x - vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator-(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w);
+			return Vector<4, T>(vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z, vec1.w - vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator*(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x * value, v.y * value, v.z * value, v.w * value);
+			return Vector<4, T>(vec.x * value, vec.y * value, vec.z * value, vec.w * value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator*(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x * v2.x, v1.y * v2.x, v1.z * v2.x, v1.w * v2.x);
+			return Vector<4, T>(vec1.x * vec2.x, vec1.y * vec2.x, vec1.z * vec2.x, vec1.w * vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator*(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value * v.x, value * v.y, value * v.z, value * v.w);
+			return Vector<4, T>(value * vec.x, value * vec.y, value * vec.z, value * vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator*(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x * v2.x, v1.x * v2.y, v1.x * v2.z, v1.x * v2.w);
+			return Vector<4, T>(vec1.x * vec2.x, vec1.x * vec2.y, vec1.x * vec2.z, vec1.x * vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator*(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z, v1.w * v2.w);
+			return Vector<4, T>(vec1.x * vec2.x, vec1.y * vec2.y, vec1.z * vec2.z, vec1.w * vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator/(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x / value, v.y / value, v.z / value, v.w / value);
+			return Vector<4, T>(vec.x / value, vec.y / value, vec.z / value, vec.w / value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator/(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x / v2.x, v1.y / v2.x, v1.z / v2.x, v1.w / v2.x);
+			return Vector<4, T>(vec1.x / vec2.x, vec1.y / vec2.x, vec1.z / vec2.x, vec1.w / vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator/(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value / v.x, value / v.y, value / v.z, value / v.w);
+			return Vector<4, T>(value / vec.x, value / vec.y, value / vec.z, value / vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator/(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x / v2.x, v1.x / v2.y, v1.x / v2.z, v1.x / v2.w);
+			return Vector<4, T>(vec1.x / vec2.x, vec1.x / vec2.y, vec1.x / vec2.z, vec1.x / vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator/(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z, v1.w / v2.w);
+			return Vector<4, T>(vec1.x / vec2.x, vec1.y / vec2.y, vec1.z / vec2.z, vec1.w / vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator%(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x % value, v.y % value, v.z % value, v.w % value);
+			return Vector<4, T>(vec.x % value, vec.y % value, vec.z % value, vec.w % value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator%(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x % v2.x, v1.y % v2.x, v1.z % v2.x, v1.w % v2.x);
+			return Vector<4, T>(vec1.x % vec2.x, vec1.y % vec2.x, vec1.z % vec2.x, vec1.w % vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator%(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value % v.x, value % v.y, value % v.z, value % v.w);
+			return Vector<4, T>(value % vec.x, value % vec.y, value % vec.z, value % vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator%(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x % v2.x, v1.x % v2.y, v1.x % v2.z, v1.x % v2.w);
+			return Vector<4, T>(vec1.x % vec2.x, vec1.x % vec2.y, vec1.x % vec2.z, vec1.x % vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator%(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x % v2.x, v1.y % v2.y, v1.z % v2.z, v1.w % v2.w);
+			return Vector<4, T>(vec1.x % vec2.x, vec1.y % vec2.y, vec1.z % vec2.z, vec1.w % vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator&(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x & value, v.y & value, v.z & value, v.w & value);
+			return Vector<4, T>(vec.x & value, vec.y & value, vec.z & value, vec.w & value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator&(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x & v2.x, v1.y & v2.x, v1.z & v2.x, v1.w & v2.x);
+			return Vector<4, T>(vec1.x & vec2.x, vec1.y & vec2.x, vec1.z & vec2.x, vec1.w & vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator&(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value & v.x, value & v.y, value & v.z, value & v.w);
+			return Vector<4, T>(value & vec.x, value & vec.y, value & vec.z, value & vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator&(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x & v2.x, v1.x & v2.y, v1.x & v2.z, v1.x & v2.w);
+			return Vector<4, T>(vec1.x & vec2.x, vec1.x & vec2.y, vec1.x & vec2.z, vec1.x & vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator&(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x & v2.x, v1.y & v2.y, v1.z & v2.z, v1.w & v2.w);
+			return Vector<4, T>(vec1.x & vec2.x, vec1.y & vec2.y, vec1.z & vec2.z, vec1.w & vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator|(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x | value, v.y | value, v.z | value, v.w | value);
+			return Vector<4, T>(vec.x | value, vec.y | value, vec.z | value, vec.w | value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator|(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x | v2.x, v1.y | v2.x, v1.z | v2.x, v1.w | v2.x);
+			return Vector<4, T>(vec1.x | vec2.x, vec1.y | vec2.x, vec1.z | vec2.x, vec1.w | vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator|(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value | v.x, value | v.y, value | v.z, value | v.w);
+			return Vector<4, T>(value | vec.x, value | vec.y, value | vec.z, value | vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator|(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x | v2.x, v1.x | v2.y, v1.x | v2.z, v1.x | v2.w);
+			return Vector<4, T>(vec1.x | vec2.x, vec1.x | vec2.y, vec1.x | vec2.z, vec1.x | vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator|(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x | v2.x, v1.y | v2.y, v1.z | v2.z, v1.w | v2.w);
+			return Vector<4, T>(vec1.x | vec2.x, vec1.y | vec2.y, vec1.z | vec2.z, vec1.w | vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator^(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x ^ value, v.y ^ value, v.z ^ value, v.w ^ value);
+			return Vector<4, T>(vec.x ^ value, vec.y ^ value, vec.z ^ value, vec.w ^ value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator^(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x ^ v2.x, v1.y ^ v2.x, v1.z ^ v2.x, v1.w ^ v2.x);
+			return Vector<4, T>(vec1.x ^ vec2.x, vec1.y ^ vec2.x, vec1.z ^ vec2.x, vec1.w ^ vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator^(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value ^ v.x, value ^ v.y, value ^ v.z, value ^ v.w);
+			return Vector<4, T>(value ^ vec.x, value ^ vec.y, value ^ vec.z, value ^ vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator^(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x ^ v2.x, v1.x ^ v2.y, v1.x ^ v2.z, v1.x ^ v2.w);
+			return Vector<4, T>(vec1.x ^ vec2.x, vec1.x ^ vec2.y, vec1.x ^ vec2.z, vec1.x ^ vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator^(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x ^ v2.x, v1.y ^ v2.y, v1.z ^ v2.z, v1.w ^ v2.w);
+			return Vector<4, T>(vec1.x ^ vec2.x, vec1.y ^ vec2.y, vec1.z ^ vec2.z, vec1.w ^ vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator<<(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x << value, v.y << value, v.z << value, v.w << value);
+			return Vector<4, T>(vec.x << value, vec.y << value, vec.z << value, vec.w << value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator<<(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x << v2.x, v1.y << v2.x, v1.z << v2.x, v1.w << v2.x);
+			return Vector<4, T>(vec1.x << vec2.x, vec1.y << vec2.x, vec1.z << vec2.x, vec1.w << vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator<<(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value << v.x, value << v.y, value << v.z, value << v.w);
+			return Vector<4, T>(value << vec.x, value << vec.y, value << vec.z, value << vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator<<(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x << v2.x, v1.x << v2.y, v1.x << v2.z, v1.x << v2.w);
+			return Vector<4, T>(vec1.x << vec2.x, vec1.x << vec2.y, vec1.x << vec2.z, vec1.x << vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator<<(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x << v2.x, v1.y << v2.y, v1.z << v2.z, v1.w << v2.w);
+			return Vector<4, T>(vec1.x << vec2.x, vec1.y << vec2.y, vec1.z << vec2.z, vec1.w << vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator>>(const Vector<4, T>& vec, T value) {
-			return Vector<4, T>(v.x >> value, v.y >> value, v.z >> value, v.w >> value);
+			return Vector<4, T>(vec.x >> value, vec.y >> value, vec.z >> value, vec.w >> value);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator>>(const Vector<4, T>& vec1, const Vector<1, T>& vec2) {
-			return Vector<4, T>(v1.x >> v2.x, v1.y >> v2.x, v1.z >> v2.x, v1.w >> v2.x);
+			return Vector<4, T>(vec1.x >> vec2.x, vec1.y >> vec2.x, vec1.z >> vec2.x, vec1.w >> vec2.x);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator>>(T value, const Vector<4, T>& vec) {
-			return Vector<4, T>(value >> v.x, value >> v.y, value >> v.z, value >> v.w);
+			return Vector<4, T>(value >> vec.x, value >> vec.y, value >> vec.z, value >> vec.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator>>(const Vector<1, T> v1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x >> v2.x, v1.x >> v2.y, v1.x >> v2.z, v1.x >> v2.w);
+			return Vector<4, T>(vec1.x >> vec2.x, vec1.x >> vec2.y, vec1.x >> vec2.z, vec1.x >> vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator>>(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, T>(v1.x >> v2.x, v1.y >> v2.y, v1.z >> v2.z, v1.w >> v2.w);
+			return Vector<4, T>(vec1.x >> vec2.x, vec1.y >> vec2.y, vec1.z >> vec2.z, vec1.w >> vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, T> operator~(const Vector<4, T>& vec) {
-			return Vector<4, T>(~v.x, ~v.y, ~v.z, ~v.w);
+			return Vector<4, T>(~vec.x, ~vec.y, ~vec.z, ~vec.w);
 		}
 
 		template<typename T>
 		inline constexpr bool operator==(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z && v1.w == v2.w;
+			return vec1.x == vec2.x && vec1.y == vec2.y && vec1.z == vec2.z && vec1.w == vec2.w;
 		}
 
 		template<typename T>
 		inline constexpr bool operator!=(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return v1.x != v2.x || v1.y != v2.y || v1.z != v2.z || v1.w != v2.w;
+			return vec1.x != vec2.x || vec1.y != vec2.y || vec1.z != vec2.z || vec1.w != vec2.w;
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, bool> operator&&(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, bool>(v1.x && v2.x, v1.y && v2.y, v1.z && v2.z, v1.w && v2.w);
+			return Vector<4, bool>(vec1.x && vec2.x, vec1.y && vec2.y, vec1.z && vec2.z, vec1.w && vec2.w);
 		}
 
 		template<typename T>
 		inline constexpr Vector<4, bool> operator||(const Vector<4, T>& vec1, const Vector<4, T>& vec2) {
-			return Vector<4, bool>(v1.x || v2.x, v1.y || v2.y, v1.z || v2.z, v1.w || v2.w);
+			return Vector<4, bool>(vec1.x || vec2.x, vec1.y || vec2.y, vec1.z || vec2.z, vec1.w || vec2.w);
 		}
     }
 }
