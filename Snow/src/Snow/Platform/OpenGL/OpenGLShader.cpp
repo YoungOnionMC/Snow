@@ -4,13 +4,23 @@
 
 #include <glad/glad.h>
 
+#include <shaderc/shaderc.hpp>
+
 namespace Snow {
     namespace Render {
+        shaderc_shader_kind ShadercKindFromShaderType(ShaderType type) {
+            switch(type){
+                case ShaderType::Vertex:    return shaderc_shader_kind::shaderc_glsl_vertex_shader;
+                case ShaderType::Pixel:     return shaderc_shader_kind::shaderc_glsl_fragment_shader;
+            }
+        }
+
         OpenGLShader::OpenGLShader(ShaderType type, const std::string& path) :
             m_Path(path), m_Type(type) {
 
             m_Source = ReadShaderFromFile(m_Path);
-            Load(m_Source);
+            CompileAsSPIRVBinary();
+            //Load(m_Source);
 
         }
 
@@ -32,6 +42,30 @@ namespace Snow {
                 SNOW_CORE_ERROR("Shader compilation failed {0}, Shader Path {1}", &infoLog[0], m_Path);
                 glDeleteShader(m_RendererID);
             }
+        }
+
+        std::vector<uint32_t> OpenGLShader::CompileAsSPIRVBinary() {
+            shaderc::Compiler compiler;
+            shaderc::CompileOptions options;
+
+            const bool optimize = true;
+            if(optimize)
+                options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+            shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_Source, ShadercKindFromShaderType(m_Type), m_Path.c_str(), options);
+
+            if(module.GetCompilationStatus() != shaderc_compilation_status_success) {
+                SNOW_CORE_ERROR(module.GetErrorMessage());
+            }
+
+            const uint8_t* begin = (uint8_t*)module.cbegin();
+            const uint8_t* end = (uint8_t*)module.cend();
+            const ptrdiff_t size = end - begin;
+            SNOW_CORE_TRACE("Size of shader {0}", size);
+
+            m_RendererID = glCreateShader(GetShaderType(m_Type));
+            glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, (const void*)begin, size);
+            glSpecializeShader(m_RendererID, "main", 0, nullptr, nullptr);
         }
 
         std::string OpenGLShader::ReadShaderFromFile(const std::string& path) {

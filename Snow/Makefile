@@ -16,15 +16,15 @@ ifeq ($(config),debug)
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Debug-linux-x86_64/Snow
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW -DSNOW_DEBUG
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -I.
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/include/Linux -Ivendor/shaderc/include/Linux
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lxcb -lpthread -ldl
+  LIBS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lLinux -lLinux
   LDDEPS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib -Lvendor/shaderc/lib -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -43,15 +43,15 @@ ifeq ($(config),release)
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Release-linux-x86_64/Snow
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -I.
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/include/Linux -Ivendor/shaderc/include/Linux
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lxcb -lpthread -ldl
+  LIBS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lLinux -lLinux
   LDDEPS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib -Lvendor/shaderc/lib -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -70,15 +70,15 @@ ifeq ($(config),dist)
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Dist-linux-x86_64/Snow
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -I.
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/include/Linux -Ivendor/shaderc/include/Linux
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lvulkan -lX11 -lXi -lxcb -lpthread -ldl
+  LIBS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lLinux -lLinux
   LDDEPS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib -Lvendor/shaderc/lib -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -113,7 +113,9 @@ OBJECTS := \
 	$(OBJDIR)/VulkanAllocator.o \
 	$(OBJDIR)/VulkanContext.o \
 	$(OBJDIR)/VulkanDevice.o \
+	$(OBJDIR)/VulkanPipeline.o \
 	$(OBJDIR)/VulkanRenderCommand.o \
+	$(OBJDIR)/VulkanShader.o \
 	$(OBJDIR)/VulkanSwapChain.o \
 	$(OBJDIR)/Buffer.o \
 	$(OBJDIR)/Fraembuffer.o \
@@ -248,7 +250,13 @@ $(OBJDIR)/VulkanContext.o: src/Snow/Platform/Vulkan/VulkanContext.cpp
 $(OBJDIR)/VulkanDevice.o: src/Snow/Platform/Vulkan/VulkanDevice.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanPipeline.o: src/Snow/Platform/Vulkan/VulkanPipeline.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanRenderCommand.o: src/Snow/Platform/Vulkan/VulkanRenderCommand.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/VulkanShader.o: src/Snow/Platform/Vulkan/VulkanShader.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/VulkanSwapChain.o: src/Snow/Platform/Vulkan/VulkanSwapChain.cpp

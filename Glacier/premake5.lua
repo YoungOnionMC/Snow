@@ -29,23 +29,28 @@ project "Glacier"
     end
 
     if os.target() == "linux" then
-        includedirs {
-            "%{LibraryIncludeDir.LinuxVulkan}"
-        }
+        
+        --libdirs {
+        --    "%{LibraryIncludeDir.LinuxVulkan}",
+        --    "%{LibraryIncludeDir.shaderc}/Linux",
+--
+        --}
 
-    links { 
-        "Snow",
-        "Glad",
-        "vulkan",
-        "ImGui",
-        --"%{LibraryIncludeDir.LinuxVulkan}",
-        "GLFW",
-        "X11",
-        "Xi",
-        "xcb",
-        "pthread",
-        "dl",
-    }
+        links { 
+            "Snow",
+            "Glad",
+            "ImGui",
+            "GLFW",
+            "X11",
+            "Xi",
+            "xcb",
+            "pthread",
+            "dl",
+
+            "%{LibraryIncludeDir.LinuxVulkan}",
+            "%{LibraryIncludeDir.Linuxshaderc}",
+            "%{LibraryIncludeDir.Linuxshaderc_util}",
+        }
     end
 
 

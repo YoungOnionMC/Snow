@@ -19,11 +19,16 @@ VendorIncludeDir = {}
 VendorIncludeDir["Glad"] = "%{wks.location}/Snow/vendor/Glad/include"
 VendorIncludeDir["GLFW"] = "%{wks.location}/Snow/vendor/GLFW/include"
 VendorIncludeDir["ImGui"] = "%{wks.location}/Snow/vendor/imgui"
-VendorIncludeDir["WindowsVulkan"] = "%{wks.location}/Snow/vendor/vulkan/Include"
+
+VendorIncludeDir["WindowsVulkan"] = "%{wks.location}/Snow/vendor/vulkan/include/Windows"
+VendorIncludeDir["LinuxVulkan"] = "%{wks.location}/Snow/vendor/vulkan/include/Linux"
+
+VendorIncludeDir["LinuxShaderc"] = "%{wks.location}/Snow/vendor/shaderc/include/Linux"
 
 LibraryIncludeDir = {}
-LibraryIncludeDir["WindowsVulkan"] = "%{wks.location}/Snow/vendor/vulkan/Lib/Windows/vulkan-1.lib"
-LibraryIncludeDir["LinuxVulkan"] = "%{wks.location}/Snow/vendor/vulkan/Lib/Linux/libvulkan.so"
+LibraryIncludeDir["LinuxVulkan"] = "%{wks.location}/Snow/vendor/vulkan/Lib/Linux"--/vulkan.so.1.2.148"
+LibraryIncludeDir["Linuxshaderc"] = "%{wks.location}/Snow/vendor/shaderc/lib/Linux"--/shaderc.a"
+LibraryIncludeDir["Linuxshaderc_util"] = "%{wks.location}/Snow/vendor/shaderc/lib/Linux"--/shaderc_util.a"
 
 
 group "Vendor"

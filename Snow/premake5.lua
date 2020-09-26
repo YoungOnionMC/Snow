@@ -64,7 +64,7 @@ project "Snow"
             "d3d12.lib",
             "D3DCompiler.lib",
 
-            "%{LibraryIncludeDir.WindowsVulkan}",
+            "%{LibraryIncludeDir.Vulkan}/Windows/vulkan-1.lib",
 
             "GLFW",
             "ImGui"
@@ -85,13 +85,20 @@ project "Snow"
         }
 
         includedirs {
-            "%{VendorIncludeDir.LinuxVulkan}"
+            "%{VendorIncludeDir.LinuxVulkan}",
+            "%{VendorIncludeDir.LinuxShaderc}",
+
         }
+
+        --libdirs {
+        --    "%{LibraryIncludeDir.Vulkan}/Linux/",
+        --    "%{LibraryIncludeDir.shaderc}/Linux"
+        --}
 
         links {
             --"GL",
-            --"%{LibraryIncludeDir.LinuxVulkan}",
-            "vulkan",
+            
+            
             "ImGui",
             
             "GLFW",
@@ -100,6 +107,9 @@ project "Snow"
             "xcb",
             "pthread",
             "dl",
+            "%{LibraryIncludeDir.LinuxVulkan}",
+            "%{LibraryIncludeDir.Linuxshaderc}",
+            "%{LibraryIncludeDir.Linuxshaderc_util}",
         }
 
         files { 

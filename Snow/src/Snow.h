@@ -17,3 +17,4 @@
 #include "Snow/Render/RenderCommand.h"
 #include "Snow/Render/Renderer.h"
 #include "Snow/Render/RenderContext.h"
+#include "Snow/Render/Renderer2D.h"
