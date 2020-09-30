@@ -4,7 +4,7 @@
 
 #include <glad/glad.h>
 
-#include <shaderc/shaderc.hpp>
+#include <shaderc.hpp>
 
 namespace Snow {
     namespace Render {
@@ -20,6 +20,7 @@ namespace Snow {
 
             m_Source = ReadShaderFromFile(m_Path);
             CompileAsSPIRVBinary();
+
             //Load(m_Source);
 
         }
@@ -44,7 +45,7 @@ namespace Snow {
             }
         }
 
-        std::vector<uint32_t> OpenGLShader::CompileAsSPIRVBinary() {
+        void OpenGLShader::CompileAsSPIRVBinary() {
             shaderc::Compiler compiler;
             shaderc::CompileOptions options;
 
@@ -66,6 +67,7 @@ namespace Snow {
             m_RendererID = glCreateShader(GetShaderType(m_Type));
             glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, (const void*)begin, size);
             glSpecializeShader(m_RendererID, "main", 0, nullptr, nullptr);
+            SNOW_CORE_TRACE("Shader created {0}", m_RendererID);
         }
 
         std::string OpenGLShader::ReadShaderFromFile(const std::string& path) {

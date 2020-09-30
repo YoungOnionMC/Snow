@@ -19,7 +19,7 @@ namespace Snow {
 
         void OpenGLPipeline::Bind() {
             glUseProgram(m_PipelineHandle);
-
+            
             uint32_t layoutIndex = 0;
             for(const auto& element : m_Specification.Layout) {
                 glEnableVertexAttribArray(layoutIndex);
@@ -46,7 +46,7 @@ namespace Snow {
         void OpenGLPipeline::LinkShaders() {
 
             m_PipelineHandle = glCreateProgram();
-
+            SNOW_CORE_TRACE("Created program for pipeline");
             int glShaderIDIndex = 0;
             for(uint32_t i=0; i< m_Specification.Shaders.size(); i++) {
                 Ref<OpenGLShader> glShader = m_Specification.Shaders[i].As<OpenGLShader>();
@@ -72,7 +72,6 @@ namespace Snow {
 			    	glDetachShader(m_PipelineHandle, glShader->GetShaderID());
 			    }
             }
-
         }
 
     }

@@ -19,6 +19,11 @@ namespace Snow {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 
+        void OpenGLVertexBuffer::SetData(void* data, uint32_t size) {
+            glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+            glBufferData(GL_ARRAY_BUFFER, size, (void*)data, GL_STATIC_DRAW);
+        }
+
         OpenGLIndexBuffer::OpenGLIndexBuffer(void* data, uint32_t size) :
             m_Count(size / sizeof(uint32_t)) {
 

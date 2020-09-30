@@ -1,0 +1,1 @@
+./BuildOptions/Linux/premake5 /systemscript=BuildOptions/Linux/PremakeCodeblocks/codeblocks.lua codeblocks 

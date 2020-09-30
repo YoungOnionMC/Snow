@@ -36,6 +36,18 @@ project "Glacier"
 --
         --}
 
+        includedirs {
+            "%{VendorIncludeDir.Vulkan}/Linux",
+            "%{VendorIncludeDir.shaderc}",
+        }
+
+        libdirs {
+            "%{VendorLibraryDir.Vulkan}/Linux",
+            "%{VendorLibraryDir.shaderc}/Linux",
+            "%{VendorLibraryDir.glslang}/Linux",
+            "%{VendorLibraryDir.SPIRVTools}/Linux",
+        }
+
         links { 
             "Snow",
             "Glad",
@@ -47,9 +59,22 @@ project "Glacier"
             "pthread",
             "dl",
 
-            "%{LibraryIncludeDir.LinuxVulkan}",
-            "%{LibraryIncludeDir.Linuxshaderc}",
-            "%{LibraryIncludeDir.Linuxshaderc_util}",
+            "vulkan",
+
+            --"glslc",
+            "shaderc",
+            "shaderc_util",
+            "glslang",
+            "MachineIndependent",
+            "SPIRV",
+            "OGLCompiler",
+            "OSDependent",
+            "GenericCodeGen",
+
+            "SPIRV-Tools-opt",
+            "SPIRV-Tools",
+
+            
         }
     end
 

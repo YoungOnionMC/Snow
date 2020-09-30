@@ -85,15 +85,16 @@ project "Snow"
         }
 
         includedirs {
-            "%{VendorIncludeDir.LinuxVulkan}",
-            "%{VendorIncludeDir.LinuxShaderc}",
-
+            "%{VendorIncludeDir.Vulkan}/Linux",
+            "%{VendorIncludeDir.shaderc}",
         }
 
-        --libdirs {
-        --    "%{LibraryIncludeDir.Vulkan}/Linux/",
-        --    "%{LibraryIncludeDir.shaderc}/Linux"
-        --}
+        libdirs {
+            "%{VendorLibraryDir.Vulkan}/Linux",
+            "%{VendorLibraryDir.shaderc}/Linux",
+            "%{VendorLibraryDir.glslang}/Linux",
+            "%{VendorLibraryDir.SPIRVTools}/Linux",
+        }
 
         links {
             --"GL",
@@ -107,9 +108,24 @@ project "Snow"
             "xcb",
             "pthread",
             "dl",
-            "%{LibraryIncludeDir.LinuxVulkan}",
-            "%{LibraryIncludeDir.Linuxshaderc}",
-            "%{LibraryIncludeDir.Linuxshaderc_util}",
+
+            "vulkan",
+            
+            --"glslc",
+            "shaderc",
+            "shaderc_util",
+            "glslang",
+            "MachineIndependent",
+            "libSPIRV",
+            "OGLCompiler",
+            "OSDependent",
+            "GenericCodeGen",
+
+            "SPIRV-Tools-opt",
+            "SPIRV-Tools",
+
+            
+
         }
 
         files { 

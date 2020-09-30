@@ -16,7 +16,7 @@ namespace Snow {
 
         private:
 
-            std::vector<uint32_t> CompileAsSPIRVBinary();
+            void CompileAsSPIRVBinary();
 
             GLenum GetShaderType(ShaderType type);
 

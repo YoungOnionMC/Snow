@@ -16,15 +16,15 @@ ifeq ($(config),debug)
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Debug-linux-x86_64/Snow
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW -DSNOW_DEBUG
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/include/Linux -Ivendor/shaderc/include/Linux
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/Include/Linux -Ivendor/shaderc/Include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lLinux -lLinux
+  LIBS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -llibSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
   LDDEPS += vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib -Lvendor/shaderc/lib -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib/Linux -Lvendor/shaderc/Lib/Linux -Lvendor/glslang/Lib/Linux -Lvendor/SPIRV-Tools/Lib/Linux -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -43,15 +43,15 @@ ifeq ($(config),release)
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Release-linux-x86_64/Snow
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/include/Linux -Ivendor/shaderc/include/Linux
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/Include/Linux -Ivendor/shaderc/Include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lLinux -lLinux
+  LIBS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -llibSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
   LDDEPS += vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib -Lvendor/shaderc/lib -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib/Linux -Lvendor/shaderc/Lib/Linux -Lvendor/glslang/Lib/Linux -Lvendor/SPIRV-Tools/Lib/Linux -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -70,15 +70,15 @@ ifeq ($(config),dist)
   TARGET = $(TARGETDIR)/libSnow.a
   OBJDIR = ../bin-int/Dist-linux-x86_64/Snow
   DEFINES += -DGLFW_INCLUDE_NONE -DSNOW_PLATFORM_LINUX -DSNOW_WINDOW_GLFW
-  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/include/Linux -Ivendor/shaderc/include/Linux
+  INCLUDES += -Isrc -Ivendor/spdlog/include -Ivendor/GLFW/include -Ivendor/Glad/include -Ivendor/imgui -Ivendor/vulkan/Include/Linux -Ivendor/shaderc/Include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lLinux -lLinux
+  LIBS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -llibSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
   LDDEPS += vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a
-  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib -Lvendor/shaderc/lib -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -Lvendor/vulkan/Lib/Linux -Lvendor/shaderc/Lib/Linux -Lvendor/glslang/Lib/Linux -Lvendor/SPIRV-Tools/Lib/Linux -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -118,7 +118,7 @@ OBJECTS := \
 	$(OBJDIR)/VulkanShader.o \
 	$(OBJDIR)/VulkanSwapChain.o \
 	$(OBJDIR)/Buffer.o \
-	$(OBJDIR)/Fraembuffer.o \
+	$(OBJDIR)/Framebuffer.o \
 	$(OBJDIR)/Texture.o \
 	$(OBJDIR)/Pipeline.o \
 	$(OBJDIR)/RenderCommand.o \
@@ -265,7 +265,7 @@ $(OBJDIR)/VulkanSwapChain.o: src/Snow/Platform/Vulkan/VulkanSwapChain.cpp
 $(OBJDIR)/Buffer.o: src/Snow/Render/API/Buffer.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/Fraembuffer.o: src/Snow/Render/API/Fraembuffer.cpp
+$(OBJDIR)/Framebuffer.o: src/Snow/Render/API/Framebuffer.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Texture.o: src/Snow/Render/API/Texture.cpp

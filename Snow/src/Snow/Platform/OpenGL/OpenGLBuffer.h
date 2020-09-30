@@ -10,6 +10,8 @@ namespace Snow {
             void Bind() const override;
             void Unbind() const override;
 
+            void SetData(void* data, uint32_t size) override;
+
         private:
             uint32_t m_RendererID;
         };

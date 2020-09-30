@@ -57,11 +57,11 @@ namespace Snow {
 
         void Application::Run() {
             while(m_Running) {
-                OnUpdate();
 
 
                 
                 Render::Renderer::BeginScene();
+                OnUpdate();
                 
 
                 //Render::Renderer2D::DrawQuad({0.0f, 0.0f},{1.0f , 1.0f});

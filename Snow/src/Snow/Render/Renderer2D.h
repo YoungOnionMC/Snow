@@ -15,11 +15,16 @@ namespace Snow {
             static void Init();
             static void Shutdown();
 
+
+
             static void PresentBatch();
 
 
             static void SubmitQuad(Math::Vector2f position, Math::Vector2f size);
 
+        private:
+            static void BeginBatch();
+            static void EndBatch();
         };
     }
 }
