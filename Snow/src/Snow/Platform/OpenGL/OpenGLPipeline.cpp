@@ -88,16 +88,16 @@ namespace Snow {
 
                 SNOW_CORE_INFO("==========================");
                 SNOW_CORE_INFO("Shader file {0}", glShader->GetPath());
-                SNOW_CORE_INFO("    {0} Inputs in current stage", res.stage_inputs.size());
-                SNOW_CORE_INFO("    {0} Uniform buffers", res.uniform_buffers.size());
-                SNOW_CORE_INFO("    {0} Resources", res.sampled_images.size());
+                //SNOW_CORE_INFO("    {0} Inputs in current stage", res.stage_inputs.size());
+                //SNOW_CORE_INFO("    {0} Uniform buffers", res.uniform_buffers.size());
+               // SNOW_CORE_INFO("    {0} Resources", res.sampled_images.size());
 
                 uint32_t inputAttribIndex = 0;
                 for(const auto inputAttrib : res.stage_inputs) {
                     auto attribType = compiler.get_type(inputAttrib.type_id);
                     
 
-                    SNOW_CORE_TRACE("   Input attrib type {0}", attribType);
+                    //SNOW_CORE_TRACE("   Input attrib type {0}", attribType);
                 }
 
                 uint32_t bufferIndex = 0;
@@ -106,7 +106,7 @@ namespace Snow {
                     int memberCount = bufferType.member_types.size();
                     uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
                     auto& name = resource.name;
-                    SNOW_CORE_TRACE("Uniform {0} bound at bindingPoint {1}", name, bindingPoint);
+                    //SNOW_CORE_TRACE("Uniform {0} bound at bindingPoint {1}", name, bindingPoint);
                     //if(s_UniformBuffers.find(bindingPoint) == s_UniformBuffers.end()) {
 //
                     //}
@@ -118,20 +118,20 @@ namespace Snow {
                     auto& type = compiler.get_type(resource.type_id);
                     auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
                     const auto& name = resource.name;
-                    SNOW_CORE_INFO("    Resource Name {0}", name.c_str());
+                    //SNOW_CORE_INFO("    Resource Name {0}", name.c_str());
                     uint32_t dimension = type.image.dim;
 
                     GLint location = glGetUniformLocation(m_PipelineHandle, name.c_str());
                     m_Resources[name] = ShaderResource(name, binding, 1);
                     glUniform1i(location, binding);
 
-                    SNOW_CORE_INFO("   Binding resource {0}, at location {1}", name, location);
+                    //SNOW_CORE_INFO("   Binding resource {0}, at location {1}", name, location);
 
                     
                 }
 
-                SNOW_CORE_INFO("=======================");
-                SNOW_CORE_INFO("");
+                //SNOW_CORE_INFO("=======================");
+                //SNOW_CORE_INFO("");
             }
         }
 

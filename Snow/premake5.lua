@@ -70,8 +70,16 @@ project "Snow"
         characterset("MBCS")
 
         includedirs {
-            "%{VendorIncludeDir.WindowsVulkan}",  
-		}
+            "%{VendorIncludeDir.Vulkan}/Windows", 
+            "%{VendorIncludeDir.shaderc}",
+        }
+        
+        libdirs {
+            "%{VendorLibraryDir.Vulkan}/Windows",
+            "%{VendorLibraryDir.shaderc}/Windows",
+            "%{VendorLibraryDir.glslang}/Windows",
+            "%{VendorLibraryDir.SPIRVTools}/Windows",
+        }
 
         links {
             "opengl32.lib",
@@ -80,10 +88,25 @@ project "Snow"
             "d3d12.lib",
             "D3DCompiler.lib",
 
-            "%{LibraryIncludeDir.Vulkan}/Windows/vulkan-1.lib",
+            "vulkan-1.lib",
+            "shaderc.lib",
+            "shaderc_util.lib",
+
+            "glslangd.lib",
+            "MachineIndependentd.lib",
+            "SPIRVd.lib",
+            "OGLCompilerd.lib",
+            "OSDependentd.lib",
+            "GenericCodeGend.lib",
+
+            "SPIRV-Tools.lib",
+            "SPIRV-Tools-opt.lib",
+            
 
             "GLFW",
-            "ImGui"
+            "ImGui",
+
+            "SPIRVCross",
         }
 
         files {
