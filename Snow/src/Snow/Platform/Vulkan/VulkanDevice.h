@@ -10,6 +10,7 @@
 namespace Snow {
 	namespace Render {
 		class VulkanDevice : public RefCounted {
+			struct QueueFamilyIndices;
 		public:
 			VulkanDevice();
 
@@ -24,6 +25,7 @@ namespace Snow {
 			VkPhysicalDevice GetPhysicalDevice() { return m_VulkanPhysicalDevice; }
 			VkDevice GetVulkanDevice() { return m_VulkanDevice; }
 
+			const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
 
 		private:
 			void PickPhysicalDevice();

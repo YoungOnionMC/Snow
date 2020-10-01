@@ -22,8 +22,8 @@ ifeq ($(config),debug)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
-  LDDEPS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a
+  LIBS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Debug-linux-x86_64/SPIRVCross/libSPIRVCross.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
+  LDDEPS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Debug-linux-x86_64/SPIRVCross/libSPIRVCross.a
   ALL_LDFLAGS += $(LDFLAGS) -L../Snow/vendor/vulkan/Lib/Linux -L../Snow/vendor/shaderc/Lib/Linux -L../Snow/vendor/glslang/Lib/Linux -L../Snow/vendor/SPIRV-Tools/Lib/Linux -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
@@ -49,8 +49,8 @@ ifeq ($(config),release)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
-  LDDEPS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a
+  LIBS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Release-linux-x86_64/SPIRVCross/libSPIRVCross.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
+  LDDEPS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Release-linux-x86_64/SPIRVCross/libSPIRVCross.a
   ALL_LDFLAGS += $(LDFLAGS) -L../Snow/vendor/vulkan/Lib/Linux -L../Snow/vendor/shaderc/Lib/Linux -L../Snow/vendor/glslang/Lib/Linux -L../Snow/vendor/SPIRV-Tools/Lib/Linux -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
@@ -76,8 +76,8 @@ ifeq ($(config),dist)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
-  LDDEPS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a
+  LIBS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Dist-linux-x86_64/SPIRVCross/libSPIRVCross.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
+  LDDEPS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Dist-linux-x86_64/SPIRVCross/libSPIRVCross.a
   ALL_LDFLAGS += $(LDFLAGS) -L../Snow/vendor/vulkan/Lib/Linux -L../Snow/vendor/shaderc/Lib/Linux -L../Snow/vendor/glslang/Lib/Linux -L../Snow/vendor/SPIRV-Tools/Lib/Linux -L/usr/lib64 -m64 -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS

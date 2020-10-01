@@ -6,6 +6,8 @@
 
 #include <shaderc.hpp>
 
+#include <spirv_glsl.hpp>
+
 namespace Snow {
     namespace Render {
         shaderc_shader_kind ShadercKindFromShaderType(ShaderType type) {
@@ -20,7 +22,6 @@ namespace Snow {
 
             m_Source = ReadShaderFromFile(m_Path);
             CompileAsSPIRVBinary();
-
             //Load(m_Source);
 
         }
@@ -48,6 +49,7 @@ namespace Snow {
         void OpenGLShader::CompileAsSPIRVBinary() {
             shaderc::Compiler compiler;
             shaderc::CompileOptions options;
+            options.SetTargetEnvironment(shaderc_target_env_opengl, 450);
 
             const bool optimize = true;
             if(optimize)
@@ -59,15 +61,14 @@ namespace Snow {
                 SNOW_CORE_ERROR(module.GetErrorMessage());
             }
 
-            const uint8_t* begin = (uint8_t*)module.cbegin();
-            const uint8_t* end = (uint8_t*)module.cend();
-            const ptrdiff_t size = end - begin;
-            SNOW_CORE_TRACE("Size of shader {0}", size);
+            m_SPIRVBinaryData = std::vector<uint32_t>(module.cbegin(), module.cend());
+            SNOW_CORE_TRACE("Size of shader {0}", m_SPIRVBinaryData.size());
 
             m_RendererID = glCreateShader(GetShaderType(m_Type));
-            glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, (const void*)begin, size);
+            glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, m_SPIRVBinaryData.data(), m_SPIRVBinaryData.size() * sizeof(uint32_t));
             glSpecializeShader(m_RendererID, "main", 0, nullptr, nullptr);
             SNOW_CORE_TRACE("Shader created {0}", m_RendererID);
+
         }
 
         std::string OpenGLShader::ReadShaderFromFile(const std::string& path) {

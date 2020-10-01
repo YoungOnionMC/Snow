@@ -2,6 +2,7 @@
 
 #include "Snow/Render/Renderer.h"
 #include "Snow/Render/API/Buffer.h"
+#include "Snow/Render/API/Texture.h"
 
 #include "Snow/Render/Pipeline.h"
 
@@ -20,7 +21,7 @@ namespace Snow {
             static void PresentBatch();
 
 
-            static void SubmitQuad(Math::Vector2f position, Math::Vector2f size);
+            static void SubmitQuad(Math::Vector2f position, Math::Vector2f size, Math::Vector4f tint = Math::Vector4f(1.0f));
 
         private:
             static void BeginBatch();

@@ -44,15 +44,12 @@ namespace Snow {
         }
 
         void Application::OnImGuiRender() {
-            m_ImGuiLayer->Begin();
-            ImGui::Begin("Viewport");
-            ImGui::Text("hey");
-            ImGui::End();
+            m_ImGuiLayer->BeginImGuiFrame();
 
             for(Layer* layer : m_LayerStack)
                 layer->OnImGuiRender();
 
-            m_ImGuiLayer->End();
+            m_ImGuiLayer->EndImGuiFrame();
         }
 
         void Application::Run() {

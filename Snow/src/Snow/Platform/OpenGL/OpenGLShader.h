@@ -14,6 +14,10 @@ namespace Snow {
 
             const ShaderType GetType() const override { return m_Type; }
 
+            const std::string& GetPath() const override { return m_Path; }
+
+            const std::vector<uint32_t>& GetSPIRVBinaryData() const { return m_SPIRVBinaryData; }
+
         private:
 
             void CompileAsSPIRVBinary();
@@ -29,6 +33,8 @@ namespace Snow {
             std::string m_Source;
 
             uint32_t m_RendererID;
+
+            std::vector<uint32_t> m_SPIRVBinaryData;
         };
     }
 }

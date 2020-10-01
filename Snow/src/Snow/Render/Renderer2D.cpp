@@ -7,6 +7,8 @@ namespace Snow {
         struct Vertex {
             Math::Vector3f Position;
             Math::Vector2f TexCoord;
+            float TexID;
+            Math::Vector4f Color;
         };
 
         struct Renderer2DStaticData {
@@ -20,6 +22,11 @@ namespace Snow {
             static const uint32_t MaxIndicies = MaxQuads * 6;
 
             Ref<Pipeline> MainPipeline;
+
+            Ref<API::Texture2D> WhiteTexture;
+
+            std::vector<Ref<API::Texture2D>> TextureSlots;
+            uint32_t TextureSlotIndex = 1;
 
 
             Math::Vector2f TexCoords[4] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
@@ -59,23 +66,39 @@ namespace Snow {
             PipelineSpecification pipelineSpec;
             pipelineSpec.Layout = {
                 { AttribType::Float3, "Position" },
-                { AttribType::Float2, "TexCoord" }
+                { AttribType::Float2, "TexCoord" },
+                { AttribType::Float, "TexID" },
+                { AttribType::Float4, "Color" },
             };
             pipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/TestVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/TestFrag.glsl") };
 
             s_Data.MainPipeline = Pipeline::Create(pipelineSpec);
 
+            s_Data.WhiteTexture = API::Texture2D::Create(API::TextureFormat::RGBA, 1, 1);
+            uint32_t whiteTextureData = 0xffffffff;
+            s_Data.WhiteTexture->Lock();
+            s_Data.WhiteTexture->GetWriteableBuffer().Write(&whiteTextureData, sizeof(uint32_t), 0);
+            s_Data.WhiteTexture->Unlock();
+
+            s_Data.TextureSlots.resize(32);
+            s_Data.TextureSlots[0] = s_Data.WhiteTexture;
         }
 
         void Renderer2D::BeginBatch() {
             s_Data.VertexData = s_Data.VertexBase;
             s_Data.IndexCount = 0;
+
+            s_Data.TextureSlotIndex = 1;
         }
 
         void Renderer2D::EndBatch() {
             ptrdiff_t size = (uint8_t*)s_Data.VertexData - (uint8_t*)s_Data.VertexBase;
             s_Data.VBO->Bind();
             s_Data.VBO->SetData(s_Data.VertexBase, size);
+
+            for(uint32_t i=0; i< s_Data.TextureSlotIndex; i++) {
+                s_Data.TextureSlots[i]->Bind(i);
+            }
         }
 
         void Renderer2D::PresentBatch() {
@@ -89,13 +112,15 @@ namespace Snow {
             BeginBatch();
         }
 
-        void Renderer2D::SubmitQuad(Math::Vector2f position, Math::Vector2f size) {
+        void Renderer2D::SubmitQuad(Math::Vector2f position, Math::Vector2f size, Math::Vector4f tint) {
             
             Math::Vector3f scale[] = { {0.0f, 0.0f, 0.0f}, {size.x, 0.0f, 0.0f}, {size.x, size.y, 0.0f}, {0.0f, size.y, 0.0f} };
 
             for(size_t i=0; i<4; i++) {
                 s_Data.VertexData->Position = Math::Vector3f(position, 0.0f) + scale[i];
                 s_Data.VertexData->TexCoord = s_Data.TexCoords[i];
+                s_Data.VertexData->TexID = 0;
+                s_Data.VertexData->Color = tint;
                 s_Data.VertexData++;
             }
 

@@ -7,3 +7,9 @@
 [submodule "Snow/vendor/GLFW"]
 	path = Snow/vendor/GLFW
 	url = https://github.com/JamesStroebe/glfw
+[submodule "Snow/vendor/stb"]
+	path = Snow/vendor/stb
+	url = https://github.com/JamesStroebe/stb
+[submodule "Snow/vendor/SPIRV-Cross"]
+	path = Snow/vendor/SPIRV-Cross
+	url = https://github.com/JamesStroebe/SPIRV-Cross

@@ -14,6 +14,7 @@ ifeq ($(config),debug)
   Glad_config = debug
   GLFW_config = debug
   ImGui_config = debug
+  SPIRVCross_config = debug
   Snow_config = debug
   Glacier_config = debug
 endif
@@ -21,6 +22,7 @@ ifeq ($(config),release)
   Glad_config = release
   GLFW_config = release
   ImGui_config = release
+  SPIRVCross_config = release
   Snow_config = release
   Glacier_config = release
 endif
@@ -28,17 +30,18 @@ ifeq ($(config),dist)
   Glad_config = dist
   GLFW_config = dist
   ImGui_config = dist
+  SPIRVCross_config = dist
   Snow_config = dist
   Glacier_config = dist
 endif
 
-PROJECTS := Glad GLFW ImGui Snow Glacier
+PROJECTS := Glad GLFW ImGui SPIRVCross Snow Glacier
 
 .PHONY: all clean help $(PROJECTS) Vendor
 
 all: $(PROJECTS)
 
-Vendor: GLFW Glad ImGui
+Vendor: GLFW Glad ImGui SPIRVCross
 
 Glad:
 ifneq (,$(Glad_config))
@@ -58,13 +61,19 @@ ifneq (,$(ImGui_config))
 	@${MAKE} --no-print-directory -C Snow/vendor/imgui -f Makefile config=$(ImGui_config)
 endif
 
-Snow: Glad ImGui GLFW
+SPIRVCross:
+ifneq (,$(SPIRVCross_config))
+	@echo "==== Building SPIRVCross ($(SPIRVCross_config)) ===="
+	@${MAKE} --no-print-directory -C Snow/vendor/SPIRV-Cross -f Makefile config=$(SPIRVCross_config)
+endif
+
+Snow: Glad ImGui GLFW SPIRVCross
 ifneq (,$(Snow_config))
 	@echo "==== Building Snow ($(Snow_config)) ===="
 	@${MAKE} --no-print-directory -C Snow -f Makefile config=$(Snow_config)
 endif
 
-Glacier: Snow Glad ImGui GLFW
+Glacier: Snow Glad ImGui GLFW SPIRVCross
 ifneq (,$(Glacier_config))
 	@echo "==== Building Glacier ($(Glacier_config)) ===="
 	@${MAKE} --no-print-directory -C Glacier -f Makefile config=$(Glacier_config)
@@ -74,6 +83,7 @@ clean:
 	@${MAKE} --no-print-directory -C Snow/vendor/Glad -f Makefile clean
 	@${MAKE} --no-print-directory -C Snow/vendor/GLFW -f Makefile clean
 	@${MAKE} --no-print-directory -C Snow/vendor/imgui -f Makefile clean
+	@${MAKE} --no-print-directory -C Snow/vendor/SPIRV-Cross -f Makefile clean
 	@${MAKE} --no-print-directory -C Snow -f Makefile clean
 	@${MAKE} --no-print-directory -C Glacier -f Makefile clean
 
@@ -91,6 +101,7 @@ help:
 	@echo "   Glad"
 	@echo "   GLFW"
 	@echo "   ImGui"
+	@echo "   SPIRVCross"
 	@echo "   Snow"
 	@echo "   Glacier"
 	@echo ""

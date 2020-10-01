@@ -22,7 +22,21 @@ project "Snow"
         "src/Snow/Render/**.*",
         "src/Snow/Math/**.*",
         "src/Snow/Platform/OpenGL/**.*",
-        "src/Snow/Platform/Vulkan/**.*"
+        "src/Snow/Platform/Vulkan/**.*",
+
+        
+        "vendor/stb/stb_image.cpp",
+        "vendor/stb/stb_image.h",
+        "vendor/stb/stb_image_resize.h",
+        "vendor/stb/stb_image_write.h",
+        "vendor/stb/stb_include.h",
+        "vendor/stb/stb_perlin.h",
+        "vendor/stb/stb_rect_pack.h",
+        "vendor/stb/stb_truetype.h",
+        "vendor/stb/stb_textedit.h",
+        "vendor/stb/stb_tilemap_editor.h",
+        "vendor/stb/stb.h",
+        
     }
 
     includedirs {
@@ -31,6 +45,8 @@ project "Snow"
         "%{VendorIncludeDir.GLFW}",
         "%{VendorIncludeDir.Glad}",
         "%{VendorIncludeDir.ImGui}",
+        "%{VendorIncludeDir.stb}",
+        "%{VendorIncludeDir.SPIRVCross}",
         
     }
     
@@ -124,7 +140,7 @@ project "Snow"
             "SPIRV-Tools-opt",
             "SPIRV-Tools",
 
-            
+            "SPIRVCross",
 
         }
 

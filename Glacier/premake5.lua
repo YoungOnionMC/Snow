@@ -74,7 +74,7 @@ project "Glacier"
             "SPIRV-Tools-opt",
             "SPIRV-Tools",
 
-            
+            "SPIRVCross",
         }
     end
 

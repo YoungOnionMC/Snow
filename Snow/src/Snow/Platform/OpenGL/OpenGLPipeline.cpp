@@ -5,6 +5,8 @@
 
 #include <glad/glad.h>
 
+#include <spirv_glsl.hpp>
+
 namespace Snow {
     namespace Render {
 
@@ -15,6 +17,8 @@ namespace Snow {
             glBindVertexArray(m_PipelineVertexArrayHandle);
 
             LinkShaders();
+
+            Reflect();
         }
 
         void OpenGLPipeline::Bind() {
@@ -71,6 +75,63 @@ namespace Snow {
 			    	glDeleteShader(glShader->GetShaderID());
 			    	glDetachShader(m_PipelineHandle, glShader->GetShaderID());
 			    }
+            }
+        }
+
+        void OpenGLPipeline::Reflect() {
+            glUseProgram(m_PipelineHandle);
+
+            for(const auto& shader : m_Specification.Shaders){
+                Ref<OpenGLShader> glShader = static_cast<Ref<OpenGLShader>>(shader);
+                spirv_cross::CompilerGLSL compiler(glShader->GetSPIRVBinaryData());
+                spirv_cross::ShaderResources res = compiler.get_shader_resources();
+
+                SNOW_CORE_INFO("==========================");
+                SNOW_CORE_INFO("Shader file {0}", glShader->GetPath());
+                SNOW_CORE_INFO("    {0} Inputs in current stage", res.stage_inputs.size());
+                SNOW_CORE_INFO("    {0} Uniform buffers", res.uniform_buffers.size());
+                SNOW_CORE_INFO("    {0} Resources", res.sampled_images.size());
+
+                uint32_t inputAttribIndex = 0;
+                for(const auto inputAttrib : res.stage_inputs) {
+                    auto attribType = compiler.get_type(inputAttrib.type_id);
+                    
+
+                    SNOW_CORE_TRACE("   Input attrib type {0}", attribType);
+                }
+
+                uint32_t bufferIndex = 0;
+                for(const spirv_cross::Resource& resource : res.uniform_buffers) {
+                    auto& bufferType = compiler.get_type(resource.base_type_id);
+                    int memberCount = bufferType.member_types.size();
+                    uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
+                    auto& name = resource.name;
+                    SNOW_CORE_TRACE("Uniform {0} bound at bindingPoint {1}", name, bindingPoint);
+                    //if(s_UniformBuffers.find(bindingPoint) == s_UniformBuffers.end()) {
+//
+                    //}
+                }
+
+                int32_t sampler = 0;
+                for(const spirv_cross::Resource& resource : res.sampled_images) {
+                    
+                    auto& type = compiler.get_type(resource.type_id);
+                    auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+                    const auto& name = resource.name;
+                    SNOW_CORE_INFO("    Resource Name {0}", name.c_str());
+                    uint32_t dimension = type.image.dim;
+
+                    GLint location = glGetUniformLocation(m_PipelineHandle, name.c_str());
+                    m_Resources[name] = ShaderResource(name, binding, 1);
+                    glUniform1i(location, binding);
+
+                    SNOW_CORE_INFO("   Binding resource {0}, at location {1}", name, location);
+
+                    
+                }
+
+                SNOW_CORE_INFO("=======================");
+                SNOW_CORE_INFO("");
             }
         }
 
