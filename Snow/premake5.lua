@@ -175,6 +175,18 @@ project "Snow"
 
     filter "configurations:Debug"
         defines { "SNOW_DEBUG" }
+        runtime "Debug"
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "SNOW_RELEASE" }
+        runtime "Release"
+        optimize "On"
+
+    filter "configurations:Dist"
+        defines { "SNOW_DIST" }
+        runtime "Release"
+        optimize "On"
 
 
 

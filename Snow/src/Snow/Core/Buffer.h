@@ -45,7 +45,6 @@ namespace Snow {
 
         void Write(void* data, uint32_t size, uint32_t offset = 0) {
             //assert(offset + size <= this->Size);
-            SNOW_CORE_TRACE("Buffer stats, Data mem {0}, data mem {1}, Size {2}, size {3}", (uint8_t*)Data, (uint8_t*)data, Size, size);
             memcpy(Data + offset, data, size);
         }
 

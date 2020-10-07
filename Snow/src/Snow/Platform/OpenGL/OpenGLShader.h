@@ -17,10 +17,12 @@ namespace Snow {
             const std::string& GetPath() const override { return m_Path; }
 
             const std::vector<uint32_t>& GetSPIRVBinaryData() const { return m_SPIRVBinaryData; }
+            const std::vector<uint32_t>& GetGLSLBinaryData() const { return m_GLSLBinaryData; }
 
         private:
 
-            void CompileAsSPIRVBinary();
+            void CreateSPIRVBinaryCache();
+            void CreateGLSLBinaryCache();
 
             GLenum GetShaderType(ShaderType type);
 
@@ -35,6 +37,7 @@ namespace Snow {
             uint32_t m_RendererID;
 
             std::vector<uint32_t> m_SPIRVBinaryData;
+            std::vector<uint32_t> m_GLSLBinaryData;
         };
     }
 }

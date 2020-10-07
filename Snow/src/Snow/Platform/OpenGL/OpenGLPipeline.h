@@ -20,6 +20,8 @@ namespace Snow {
 
             void Reflect();
 
+            GLint GetUniformLocation(const std::string& name);
+
             GLenum OpenGLBufferAttribType(AttribType type) const;
 
             PipelineSpecification m_Specification;

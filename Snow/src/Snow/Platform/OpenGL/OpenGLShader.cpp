@@ -8,6 +8,8 @@
 
 #include <spirv_glsl.hpp>
 
+#include <filesystem>
+
 namespace Snow {
     namespace Render {
         shaderc_shader_kind ShadercKindFromShaderType(ShaderType type) {
@@ -21,7 +23,8 @@ namespace Snow {
             m_Path(path), m_Type(type) {
 
             m_Source = ReadShaderFromFile(m_Path);
-            CompileAsSPIRVBinary();
+            CreateSPIRVBinaryCache();
+            CreateGLSLBinaryCache();
             //Load(m_Source);
 
         }
@@ -46,29 +49,127 @@ namespace Snow {
             }
         }
 
-        void OpenGLShader::CompileAsSPIRVBinary() {
-            shaderc::Compiler compiler;
-            shaderc::CompileOptions options;
-            options.SetTargetEnvironment(shaderc_target_env_opengl, 450);
+        
 
-            const bool optimize = true;
-            if(optimize)
-                options.SetOptimizationLevel(shaderc_optimization_level_performance);
+        void OpenGLShader::CreateSPIRVBinaryCache() {
+            std::filesystem::path directoryPath = m_Path;
+            if (!std::filesystem::is_directory(directoryPath.parent_path() / "cached")) {
+                std::string dirPath = (directoryPath.parent_path() / "cached").string();
+                mkdir(dirPath.c_str());
+            }
+            {
+                std::filesystem::path filePath = m_Path;
+                auto path = filePath.parent_path() / "cached" / (filePath.filename().string() + ".cached_vulkan");
+                std::string cachedFilePath = path.string();
 
-            shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_Source, ShadercKindFromShaderType(m_Type), m_Path.c_str(), options);
-
-            if(module.GetCompilationStatus() != shaderc_compilation_status_success) {
-                SNOW_CORE_ERROR(module.GetErrorMessage());
+                FILE* f = fopen(cachedFilePath.c_str(), "rb");
+                if (f) {
+                    fseek(f, 0, SEEK_END);
+                    uint64_t size = ftell(f);
+                    fseek(f, 0, SEEK_SET);
+                    m_SPIRVBinaryData = std::vector<uint32_t>(size / sizeof(uint32_t));
+                    fread(m_SPIRVBinaryData.data(), sizeof(uint32_t), m_SPIRVBinaryData.size(), f);
+                    fclose(f);
+                }
             }
 
-            m_SPIRVBinaryData = std::vector<uint32_t>(module.cbegin(), module.cend());
-            SNOW_CORE_TRACE("Size of shader {0}", m_SPIRVBinaryData.size());
+            if (m_SPIRVBinaryData.size() == 0) {
+                shaderc::Compiler compiler;
+                shaderc::CompileOptions options;
+                options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
+                const bool optimize = true;
+                if (optimize)
+                    options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+
+
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_Source, ShadercKindFromShaderType(m_Type), m_Path.c_str(), options);
+
+                if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+                    SNOW_CORE_ERROR(module.GetErrorMessage());
+                }
+
+                m_SPIRVBinaryData = std::vector<uint32_t>(module.cbegin(), module.cend());
+                
+                {
+                    std::filesystem::path filePath = m_Path;
+                    auto path = filePath.parent_path() / "cached" / (filePath.filename().string() + ".cached_vulkan");
+                    std::string cachedFilePath = path.string();
+
+                    FILE* f = fopen(cachedFilePath.c_str(), "wb");
+                    fwrite(m_SPIRVBinaryData.data(), sizeof(uint32_t), m_SPIRVBinaryData.size(), f);
+                    fclose(f);
+                }
+
+                //SNOW_CORE_TRACE("Size of shader {0}", m_SPIRVBinaryData.size());
+
+                
+            }
+        }
+
+        void OpenGLShader::CreateGLSLBinaryCache() {
+            {
+                std::filesystem::path filePath = m_Path;
+                auto path = filePath.parent_path() / "cached" / (filePath.filename().string() + ".cached_glsl");
+                std::string cachedFilePath = path.string();
+
+                FILE* f = fopen(cachedFilePath.c_str(), "rb");
+                if (f) {
+                    fseek(f, 0, SEEK_END);
+                    uint64_t size = ftell(f);
+                    fseek(f, 0, SEEK_SET);
+                    m_GLSLBinaryData = std::vector<uint32_t>(size / sizeof(uint32_t));
+                    fread(m_GLSLBinaryData.data(), sizeof(uint32_t), m_GLSLBinaryData.size(), f);
+                    fclose(f);
+                }
+            }
+
+            if (m_GLSLBinaryData.size() == 0) {
+                shaderc::Compiler compiler;
+                shaderc::CompileOptions options;
+                options.SetTargetEnvironment(shaderc_target_env_opengl_compat, shaderc_env_version_opengl_4_5);
+
+                spirv_cross::CompilerGLSL compilerGLSL(m_SPIRVBinaryData);
+
+                std::string source = compilerGLSL.compile();
+                printf("====================\n");
+                printf("Shader:\n%s\n", source.c_str());
+                printf("====================\n");
+
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, ShadercKindFromShaderType(m_Type), m_Path.c_str(), options);
+
+                if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+                    SNOW_CORE_ERROR(module.GetErrorMessage());
+                }
+
+                m_GLSLBinaryData = std::vector<uint32_t>(module.begin(), module.end());
+
+                {
+                    std::filesystem::path filePath = m_Path;
+                    auto path = filePath.parent_path() / "cached" / (filePath.filename().string() + ".cached_glsl");
+                    std::string cachedFilePath = path.string();
+
+                    FILE* f = fopen(cachedFilePath.c_str(), "wb");
+                    fwrite(m_GLSLBinaryData.data(), sizeof(uint32_t), m_GLSLBinaryData.size(), f);
+                    fclose(f);
+                }
+            }
 
             m_RendererID = glCreateShader(GetShaderType(m_Type));
-            glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, m_SPIRVBinaryData.data(), m_SPIRVBinaryData.size() * sizeof(uint32_t));
+            glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, m_GLSLBinaryData.data(), m_GLSLBinaryData.size() * sizeof(uint32_t));
             glSpecializeShader(m_RendererID, "main", 0, nullptr, nullptr);
             SNOW_CORE_TRACE("Shader created {0}", m_RendererID);
 
+
+           
+
+
+           
+
+            
+
+            
         }
 
         std::string OpenGLShader::ReadShaderFromFile(const std::string& path) {
