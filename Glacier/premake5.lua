@@ -22,6 +22,10 @@ project "Glacier"
         --"%{VendorIncludeDir.GLFW}"
     }
 
+    postbuildcommands {
+        '{COPY} "../Glacier/assets" "%{cfg.targetdir}/assets"'
+	}
+
     if os.target() == "windows" then
         links {
             "Snow"
