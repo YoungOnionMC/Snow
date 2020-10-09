@@ -5,14 +5,26 @@
 #include <glad/glad.h>
 
 #include <shaderc.hpp>
-
 #include <spirv_glsl.hpp>
+#include <glslang/Public/ShaderLang.h>
 
 #include <filesystem>
 
 namespace Snow {
     namespace Render {
-        shaderc_shader_kind ShadercKindFromShaderType(ShaderType type) {
+        std::vector<std::string> SplitString(const std::string& string, const char* delimiter) {
+            std::vector<std::string> result;
+            std::string::size_type pos = 0;
+            std::string::size_type prev = 0;
+            while ((pos = string.find('\n', prev)) != std::string::npos) {
+                result.push_back(string.substr(prev, pos - prev));
+                prev = pos + 1;
+            }
+            //result.push_back(string.substr(prev));
+            return result;
+        }
+
+        shaderc_shader_kind OpenGLShader::SnowShaderTypeToShaderC(ShaderType type) {
             switch(type){
                 case ShaderType::Vertex:    return shaderc_shader_kind::shaderc_glsl_vertex_shader;
                 case ShaderType::Pixel:     return shaderc_shader_kind::shaderc_glsl_fragment_shader;
@@ -84,7 +96,7 @@ namespace Snow {
 
 
 
-                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_Source, ShadercKindFromShaderType(m_Type), m_Path.c_str(), options);
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_Source, SnowShaderTypeToShaderC(m_Type), m_Path.c_str(), options);
 
                 if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
                     SNOW_CORE_ERROR(module.GetErrorMessage());
@@ -133,11 +145,13 @@ namespace Snow {
                 spirv_cross::CompilerGLSL compilerGLSL(m_SPIRVBinaryData);
 
                 std::string source = compilerGLSL.compile();
+                m_GLSLSourceData = SplitString(source, "\r\n");
+
                 printf("====================\n");
-                printf("Shader:\n%s\n", source.c_str());
+                printf("Shader:\n%s\n", source.data());
                 printf("====================\n");
 
-                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, ShadercKindFromShaderType(m_Type), m_Path.c_str(), options);
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, SnowShaderTypeToShaderC(m_Type), m_Path.c_str(), options);
 
                 if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
                     SNOW_CORE_ERROR(module.GetErrorMessage());
@@ -160,16 +174,9 @@ namespace Snow {
             glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, m_GLSLBinaryData.data(), m_GLSLBinaryData.size() * sizeof(uint32_t));
             glSpecializeShader(m_RendererID, "main", 0, nullptr, nullptr);
             SNOW_CORE_TRACE("Shader created {0}", m_RendererID);
+        }
 
-
-           
-
-
-           
-
-            
-
-            
+        void OpenGLShader::GLSLReflect() {
         }
 
         std::string OpenGLShader::ReadShaderFromFile(const std::string& path) {

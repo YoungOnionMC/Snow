@@ -75,6 +75,7 @@ namespace Snow {
 
 				vkCmdSetScissor(m_DrawCommandBuffer, 0, 1, &scissor);
 
+
             }
         }
 

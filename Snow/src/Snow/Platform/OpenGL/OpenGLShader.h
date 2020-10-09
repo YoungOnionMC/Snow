@@ -4,6 +4,8 @@
 
 #include <glad/glad.h>
 
+#include <shaderc/shaderc.hpp>
+
 namespace Snow {
     namespace Render {
         class OpenGLShader : public Shader {
@@ -21,8 +23,12 @@ namespace Snow {
 
         private:
 
+            shaderc_shader_kind SnowShaderTypeToShaderC(ShaderType type);
+
             void CreateSPIRVBinaryCache();
             void CreateGLSLBinaryCache();
+
+            void GLSLReflect();
 
             GLenum GetShaderType(ShaderType type);
 
@@ -38,6 +44,7 @@ namespace Snow {
 
             std::vector<uint32_t> m_SPIRVBinaryData;
             std::vector<uint32_t> m_GLSLBinaryData;
+            std::vector<std::string> m_GLSLSourceData;
         };
     }
 }

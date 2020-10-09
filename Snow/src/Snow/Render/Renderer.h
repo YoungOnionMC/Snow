@@ -29,7 +29,7 @@ namespace Snow {
 
             static void SwapBuffers();
 
-
+            static void SetRenderAPI(RenderAPI api) { s_RenderAPI = api; }
             static RenderAPI GetRenderAPI() { return s_RenderAPI; }
 
             static Renderer* Get() { return s_Instance; }

@@ -4,6 +4,7 @@
 #include "Snow/Render/Renderer.h"
 
 #include "Snow/Platform/OpenGL/OpenGLShader.h"
+#include "Snow/Platform/Vulkan/VulkanShader.h"
 
 namespace Snow {
     namespace Render {
@@ -11,6 +12,7 @@ namespace Snow {
             switch(Renderer::GetRenderAPI()) {
             case RenderAPI::None:   return nullptr;
             case RenderAPI::OpenGL: return Ref<OpenGLShader>::Create(type, path);
+            case RenderAPI::Vulkan: return Ref<VulkanShader>::Create(type, path);
             }
 
             return nullptr;

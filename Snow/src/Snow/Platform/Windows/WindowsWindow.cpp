@@ -11,6 +11,8 @@
     #include <GLFW/glfw3.h>
 #endif
 
+#include "Snow/Render/Renderer.h"
+
 namespace Snow {
     namespace Core {
 
@@ -154,7 +156,8 @@ namespace Snow {
                 SNOW_CORE_INFO("GLFW initialized");
             }
 
-            //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            if (Render::Renderer::GetRenderAPI() != Render::RenderAPI::OpenGL)
+                glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             GLFWWindowHandle = glfwCreateWindow(WindowWidth, WindowHeight, "Test Window", nullptr, nullptr);
             SNOW_CORE_INFO("Using GLFW window");
 

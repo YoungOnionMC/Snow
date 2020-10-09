@@ -23,15 +23,11 @@ namespace Snow {
             Event::EventSystem::AddListener(m_AppRenderListener);
             Event::EventSystem::AddListener(m_AppCloseListener);
 
-
+            Render::Renderer::SetRenderAPI(Render::RenderAPI::OpenGL);
             m_Window = new Window();
             Input::Init();
 
             m_LayerStack = LayerStack();
-            
-
-
-            //m_Window->SetEventCallback(SNOW_BIND_EVENT_FN(Application::OnEvent));
 
             Render::Renderer::Init();
             //m_ImGuiLayer = new ImGuiLayer();
