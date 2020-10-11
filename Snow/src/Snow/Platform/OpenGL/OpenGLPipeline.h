@@ -20,9 +20,10 @@ namespace Snow {
         private:
             void LinkShaders();
 
-            void Reflect();
+            void SPIRVReflection();
+            void OpenGLReflection();
 
-            GLint GetUniformLocation(const std::string& name);
+            uint32_t GetUniformLocation(const std::string& name);
 
             GLenum OpenGLBufferAttribType(AttribType type) const;
 

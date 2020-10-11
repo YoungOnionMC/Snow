@@ -1,6 +1,8 @@
 #pragma once
 #include "Snow/Render/API/Buffer.h"
 
+#include "Snow/Core/Buffer.h"
+
 namespace Snow {
     namespace Render {
         class OpenGLVertexBuffer : public API::VertexBuffer {
@@ -14,6 +16,9 @@ namespace Snow {
 
         private:
             uint32_t m_RendererID;
+
+            Buffer m_LocalBuffer;
+            uint32_t m_Size;
         };
 
         class OpenGLIndexBuffer : public API::IndexBuffer {

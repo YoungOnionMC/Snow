@@ -20,6 +20,7 @@ namespace Snow {
 
             const std::vector<uint32_t>& GetSPIRVBinaryData() const { return m_SPIRVBinaryData; }
             const std::vector<uint32_t>& GetGLSLBinaryData() const { return m_GLSLBinaryData; }
+            const std::vector<std::string>& GetGLSLSourceData() const { return m_GLSLSourceData; }
 
         private:
 
@@ -27,6 +28,8 @@ namespace Snow {
 
             void CreateSPIRVBinaryCache();
             void CreateGLSLBinaryCache();
+
+            void CreateOpenGLShaderModule(bool spirvModule);
 
             void GLSLReflect();
 

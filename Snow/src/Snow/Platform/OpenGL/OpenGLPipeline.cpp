@@ -18,7 +18,7 @@ namespace Snow {
 
             LinkShaders();
 
-            Reflect();
+            SPIRVReflection();
         }
 
         void OpenGLPipeline::Bind() {
@@ -99,11 +99,11 @@ namespace Snow {
             }
             for (auto& shader : m_Specification.Shaders) {
                 Ref<OpenGLShader> glShader = shader.As<OpenGLShader>();
-                //glDetachShader(m_PipelineHandle, glShader->GetShaderID());
+                glDetachShader(m_PipelineHandle, glShader->GetShaderID());
             }
         }
 
-        void OpenGLPipeline::Reflect() {
+        void OpenGLPipeline::SPIRVReflection() {
             glUseProgram(m_PipelineHandle);
 
             std::vector<spirv_cross::SPIRType> outputAttributes;
@@ -218,10 +218,10 @@ namespace Snow {
 
                     
                     m_Resources[name] = ShaderResource(name, binding, arrayCount);
-                    if (arrayCount > 1)
-                        UploadUniformIntArray(location, samplers, arrayCount);
-                    else if(arrayCount == 1)
-                        UploadUniformInt(location, binding);
+                    if (arrayCount > 1);
+                        //UploadUniformIntArray(location, samplers, arrayCount);
+                    else if (arrayCount == 1);
+                        //UploadUniformInt(location, binding);
 
                     //SNOW_CORE_INFO("   Binding resource {0}, at location {1}", name, location);
 
@@ -233,14 +233,19 @@ namespace Snow {
             }
         }
 
-        GLint OpenGLPipeline::GetUniformLocation(const std::string& name) {
-            GLint location = glGetUniformLocation(m_PipelineHandle, name.c_str());
+        void OpenGLPipeline::OpenGLReflection() {
+            glUseProgram(m_PipelineHandle);
 
-            if (location == -1) {
+
+        }
+
+        uint32_t OpenGLPipeline::GetUniformLocation(const std::string& name) {
+            GLint GLlocation = glGetUniformLocation(m_PipelineHandle, name.c_str());
+
+            if (GLlocation == -1) {
                 SNOW_CORE_WARN("Uniform {0} could not be found in current pipeline", name);
             }
-
-            return location;
+            return (uint32_t)GLlocation;
         }
 
         void OpenGLPipeline::SetUniform(const std::string& name, int value) {
@@ -267,7 +272,7 @@ namespace Snow {
             glUniform1iv(GetUniformLocation(name), count, values);
         }
 
-        void OpenGLPipeline::UploadUniformInt(uint32_t location, int value) {
+        void OpenGLPipeline::UploadUniformInt(uint32_t location, int32_t value) {
             glUniform1i(location, value);
         }
 

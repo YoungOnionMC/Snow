@@ -12,6 +12,9 @@ namespace Snow {
         Buffer() :
             Data(nullptr), Size(0) {}
 
+        Buffer(void* data, uint32_t size) :
+            Data((byte*)data), Size(size) {}
+
         Buffer(byte* data, uint32_t size) :
             Data(data), Size(size) {}
 
@@ -19,6 +22,17 @@ namespace Snow {
             Buffer buffer;
             buffer.Allocate(size);
             memcpy(buffer.Data, data, size);
+            return buffer;
+        }
+
+        /* Creates a new buffer out of an existing buffer
+           @param[in] Buffer to copy
+           @param[out] Buffer created through copy
+        */
+        static Buffer Copy(Buffer other) {
+            Buffer buffer;
+            buffer.Allocate(other.Size);
+            memcpy(buffer.Data, other.Data, other.Size);
             return buffer;
         }
 

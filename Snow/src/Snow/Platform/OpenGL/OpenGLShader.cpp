@@ -37,6 +37,7 @@ namespace Snow {
             m_Source = ReadShaderFromFile(m_Path);
             CreateSPIRVBinaryCache();
             CreateGLSLBinaryCache();
+            CreateOpenGLShaderModule(false);
             //Load(m_Source);
 
         }
@@ -169,14 +170,54 @@ namespace Snow {
                     fclose(f);
                 }
             }
-
-            m_RendererID = glCreateShader(GetShaderType(m_Type));
-            glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, m_GLSLBinaryData.data(), m_GLSLBinaryData.size() * sizeof(uint32_t));
-            glSpecializeShader(m_RendererID, "main", 0, nullptr, nullptr);
-            SNOW_CORE_TRACE("Shader created {0}", m_RendererID);
         }
 
         void OpenGLShader::GLSLReflect() {
+
+            //glslang::TShader glslShader()
+        }
+
+        void OpenGLShader::CreateOpenGLShaderModule(bool spirvModule) {
+            m_RendererID = glCreateShader(GetShaderType(m_Type));
+
+            if (spirvModule) {
+                glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, m_GLSLBinaryData.data(), m_GLSLBinaryData.size() * sizeof(uint32_t));
+                glSpecializeShader(m_RendererID, "main", 0, nullptr, nullptr);
+
+                glCompileShader(m_RendererID);
+                GLint isCompiled = 0;
+                glGetShaderiv(m_RendererID, GL_COMPILE_STATUS, &isCompiled);
+                if (isCompiled == GL_FALSE) {
+                    GLint maxLength = 0;
+                    glGetShaderiv(m_RendererID, GL_INFO_LOG_LENGTH, &maxLength);
+
+                    std::vector<GLchar> infoLog(maxLength);
+                    glGetShaderInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
+                    SNOW_CORE_ERROR("Shader compilation failed {0}, Shader Path {1}", &infoLog[0], m_Path);
+                    glDeleteShader(m_RendererID);
+                }
+
+                SNOW_CORE_TRACE("Created SPIRV module for OpenGL Shader {0}", m_Path);
+                SNOW_CORE_TRACE("   size in bytes: {0}", m_GLSLBinaryData.size() * sizeof(uint32_t));
+            }
+            else {
+                const GLchar* source = (const GLchar*)m_Source.c_str();
+
+                glShaderSource(m_RendererID, 1, &source, 0);
+
+                glCompileShader(m_RendererID);
+                GLint isCompiled = 0;
+                glGetShaderiv(m_RendererID, GL_COMPILE_STATUS, &isCompiled);
+                if (isCompiled == GL_FALSE) {
+                    GLint maxLength = 0;
+                    glGetShaderiv(m_RendererID, GL_INFO_LOG_LENGTH, &maxLength);
+
+                    std::vector<GLchar> infoLog(maxLength);
+                    glGetShaderInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
+                    SNOW_CORE_ERROR("Shader compilation failed {0}, Shader Path {1}", &infoLog[0], m_Path);
+                    glDeleteShader(m_RendererID);
+                }
+            }
         }
 
         std::string OpenGLShader::ReadShaderFromFile(const std::string& path) {

@@ -22,6 +22,8 @@ namespace Snow {
 
         class Application {
         public:
+            /* @brief
+            */
             Application();
             ~Application();
 
