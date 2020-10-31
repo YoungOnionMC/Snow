@@ -18,3 +18,5 @@
 #include "Snow/Render/Renderer.h"
 #include "Snow/Render/RenderContext.h"
 #include "Snow/Render/Renderer2D.h"
+
+#include "Snow/Scene/Scene.h"

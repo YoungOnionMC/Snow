@@ -1,0 +1,15 @@
+-I/usr/include/c++/9
+-I/usr/include/x86_64-linux-gnu/c++/9
+-I/usr/include/c++/9/backward
+-I/usr/lib/gcc/x86_64-linux-gnu/9/include
+-I/usr/local/include
+-I/usr/include/x86_64-linux-gnu
+-I/usr/include
+-I/media/james/Dev/Snow/Glacier
+-I/media/james/Dev/Snow/Glacier/src
+-I/media/james/Dev/Snow/Snow/src
+-I/media/james/Dev/Snow/Snow/vendor/spdlog/include
+-I/media/james/Dev/Snow/Snow/vendor/imgui
+-I/media/james/Dev/Snow/Snow/vendor/vulkan/Include/Linux
+-I/media/james/Dev/Snow/Snow/vendor/shaderc/Include
+-std=c++17

@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Project Name="Snow" InternalType="Library" Version="11000">
+  <Description/>
+  <VirtualDirectory Name="Snow">
+    <VirtualDirectory Name="src">
+      <VirtualDirectory Name="Snow">
+        <VirtualDirectory Name="Core">
+          <File Name="src/Snow/Core/Application.cpp"/>
+          <File Name="src/Snow/Core/Application.h"/>
+          <File Name="src/Snow/Core/Base.h"/>
+          <File Name="src/Snow/Core/Buffer.h"/>
+          <VirtualDirectory Name="Event">
+            <File Name="src/Snow/Core/Event/Event.cpp"/>
+            <File Name="src/Snow/Core/Event/Event.h"/>
+            <File Name="src/Snow/Core/Event/EventListener.h"/>
+            <File Name="src/Snow/Core/Event/EventSystem.cpp"/>
+            <File Name="src/Snow/Core/Event/EventSystem.h"/>
+          </VirtualDirectory>
+          <File Name="src/Snow/Core/Input.cpp"/>
+          <File Name="src/Snow/Core/Input.h"/>
+          <File Name="src/Snow/Core/InputCodes.h"/>
+          <File Name="src/Snow/Core/Layer.cpp"/>
+          <File Name="src/Snow/Core/Layer.h"/>
+          <File Name="src/Snow/Core/Log.cpp"/>
+          <File Name="src/Snow/Core/Log.h"/>
+          <File Name="src/Snow/Core/Ref.h"/>
+          <File Name="src/Snow/Core/Window.cpp"/>
+          <File Name="src/Snow/Core/Window.h"/>
+        </VirtualDirectory>
+        <File Name="src/Snow/EntryPoint.h"/>
+        <VirtualDirectory Name="ImGui">
+          <File Name="src/Snow/ImGui/ImGuiLayer.cpp"/>
+          <File Name="src/Snow/ImGui/ImGuiLayer.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="Math">
+          <VirtualDirectory Name="Common">
+            <File Name="src/Snow/Math/Common/Common.h"/>
+            <File Name="src/Snow/Math/Common/Common.inl"/>
+          </VirtualDirectory>
+          <VirtualDirectory Name="Complex">
+            <File Name="src/Snow/Math/Complex/Complex.h"/>
+            <File Name="src/Snow/Math/Complex/Complex.inl"/>
+            <File Name="src/Snow/Math/Complex/ComplexFunctions.h"/>
+            <File Name="src/Snow/Math/Complex/ComplexFunctions.inl"/>
+            <File Name="src/Snow/Math/Complex/Quaternion.h"/>
+            <File Name="src/Snow/Math/Complex/Quaternion.inl"/>
+            <File Name="src/Snow/Math/Complex/QuaternionFunctions.h"/>
+            <File Name="src/Snow/Math/Complex/QuaternionFunctions.inl"/>
+          </VirtualDirectory>
+          <File Name="src/Snow/Math/Math.cpp"/>
+          <File Name="src/Snow/Math/Math.h"/>
+          <VirtualDirectory Name="Matrix">
+            <File Name="src/Snow/Math/Matrix/Matrix2x2.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix2x2.inl"/>
+            <File Name="src/Snow/Math/Matrix/Matrix2x3.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix2x3.inl"/>
+            <File Name="src/Snow/Math/Matrix/Matrix2x4.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix2x4.inl"/>
+            <File Name="src/Snow/Math/Matrix/Matrix3x2.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix3x2.inl"/>
+            <File Name="src/Snow/Math/Matrix/Matrix3x3.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix3x3.inl"/>
+            <File Name="src/Snow/Math/Matrix/Matrix3x4.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix3x4.inl"/>
+            <File Name="src/Snow/Math/Matrix/Matrix4x2.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix4x2.inl"/>
+            <File Name="src/Snow/Math/Matrix/Matrix4x3.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix4x3.inl"/>
+            <File Name="src/Snow/Math/Matrix/Matrix4x4.h"/>
+            <File Name="src/Snow/Math/Matrix/Matrix4x4.inl"/>
+            <File Name="src/Snow/Math/Matrix/MatrixCommon.h"/>
+            <File Name="src/Snow/Math/Matrix/MatrixCommon.inl"/>
+            <File Name="src/Snow/Math/Matrix/MatrixFunctions.h"/>
+            <File Name="src/Snow/Math/Matrix/MatrixFunctions.inl"/>
+          </VirtualDirectory>
+          <VirtualDirectory Name="Vector">
+            <File Name="src/Snow/Math/Vector/Common.h"/>
+            <File Name="src/Snow/Math/Vector/Vector1.h"/>
+            <File Name="src/Snow/Math/Vector/Vector1.inl"/>
+            <File Name="src/Snow/Math/Vector/Vector2.h"/>
+            <File Name="src/Snow/Math/Vector/Vector2.inl"/>
+            <File Name="src/Snow/Math/Vector/Vector3.h"/>
+            <File Name="src/Snow/Math/Vector/Vector3.inl"/>
+            <File Name="src/Snow/Math/Vector/Vector4.h"/>
+            <File Name="src/Snow/Math/Vector/Vector4.inl"/>
+            <File Name="src/Snow/Math/Vector/VectorFunctions.h"/>
+            <File Name="src/Snow/Math/Vector/VectorFunctions.inl"/>
+            <File Name="src/Snow/Math/Vector/VectorSwizzle.h"/>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="Platform">
+          <VirtualDirectory Name="Linux">
+            <File Name="src/Snow/Platform/Linux/LinuxInput.cpp"/>
+            <File Name="src/Snow/Platform/Linux/LinuxWindow.cpp"/>
+          </VirtualDirectory>
+          <VirtualDirectory Name="OpenGL">
+            <File Name="src/Snow/Platform/OpenGL/OpenGLBuffer.cpp"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLBuffer.h"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLContext.cpp"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLContext.h"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLImGuiLayer.cpp"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLImGuiLayer.h"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLPipeline.cpp"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLPipeline.h"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLRenderCommand.cpp"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLRenderCommand.h"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLShader.cpp"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLShader.h"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLSwapChain.cpp"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLSwapChain.h"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLTexture.cpp"/>
+            <File Name="src/Snow/Platform/OpenGL/OpenGLTexture.h"/>
+          </VirtualDirectory>
+          <VirtualDirectory Name="Vulkan">
+            <File Name="src/Snow/Platform/Vulkan/VulkanAllocator.cpp"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanAllocator.h"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanCommon.h"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanContext.cpp"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanContext.h"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanDevice.cpp"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanDevice.h"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanImGuiLayer.cpp"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanImGuiLayer.h"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanPipeline.cpp"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanPipeline.h"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanRenderCommand.cpp"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanRenderCommand.h"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanShader.cpp"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanShader.h"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanSwapChain.cpp"/>
+            <File Name="src/Snow/Platform/Vulkan/VulkanSwapChain.h"/>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="Render">
+          <VirtualDirectory Name="API">
+            <File Name="src/Snow/Render/API/Buffer.cpp"/>
+            <File Name="src/Snow/Render/API/Buffer.h"/>
+            <File Name="src/Snow/Render/API/Framebuffer.cpp"/>
+            <File Name="src/Snow/Render/API/Framebuffer.h"/>
+            <File Name="src/Snow/Render/API/Texture.cpp"/>
+            <File Name="src/Snow/Render/API/Texture.h"/>
+          </VirtualDirectory>
+          <File Name="src/Snow/Render/Pipeline.cpp"/>
+          <File Name="src/Snow/Render/Pipeline.h"/>
+          <File Name="src/Snow/Render/RenderCommand.cpp"/>
+          <File Name="src/Snow/Render/RenderCommand.h"/>
+          <File Name="src/Snow/Render/RenderContext.cpp"/>
+          <File Name="src/Snow/Render/RenderContext.h"/>
+          <File Name="src/Snow/Render/RenderPass.cpp"/>
+          <File Name="src/Snow/Render/RenderPass.h"/>
+          <File Name="src/Snow/Render/Renderer.cpp"/>
+          <File Name="src/Snow/Render/Renderer.h"/>
+          <File Name="src/Snow/Render/Renderer2D.cpp"/>
+          <File Name="src/Snow/Render/Renderer2D.h"/>
+          <VirtualDirectory Name="Shader">
+            <File Name="src/Snow/Render/Shader/Shader.cpp"/>
+            <File Name="src/Snow/Render/Shader/Shader.h"/>
+            <File Name="src/Snow/Render/Shader/ShaderUniform.h"/>
+          </VirtualDirectory>
+          <File Name="src/Snow/Render/SwapChain.cpp"/>
+          <File Name="src/Snow/Render/SwapChain.h"/>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <File Name="src/Snow.h"/>
+      <File Name="src/spch.cpp"/>
+      <File Name="src/spch.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="vendor">
+      <VirtualDirectory Name="stb">
+        <File Name="vendor/stb/stb.h"/>
+        <File Name="vendor/stb/stb_image.cpp"/>
+        <File Name="vendor/stb/stb_image.h"/>
+        <File Name="vendor/stb/stb_image_resize.h"/>
+        <File Name="vendor/stb/stb_image_write.h"/>
+        <File Name="vendor/stb/stb_include.h"/>
+        <File Name="vendor/stb/stb_perlin.h"/>
+        <File Name="vendor/stb/stb_rect_pack.h"/>
+        <File Name="vendor/stb/stb_textedit.h"/>
+        <File Name="vendor/stb/stb_tilemap_editor.h"/>
+        <File Name="vendor/stb/stb_truetype.h"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <Dependencies Name="Debug">
+    <Project Name="Glad"/>
+    <Project Name="ImGui"/>
+    <Project Name="GLFW"/>
+    <Project Name="SPIRVCross"/>
+  </Dependencies>
+  <Dependencies Name="Release">
+    <Project Name="Glad"/>
+    <Project Name="ImGui"/>
+    <Project Name="GLFW"/>
+    <Project Name="SPIRVCross"/>
+  </Dependencies>
+  <Dependencies Name="Dist">
+    <Project Name="Glad"/>
+    <Project Name="ImGui"/>
+    <Project Name="GLFW"/>
+    <Project Name="SPIRVCross"/>
+  </Dependencies>
+  <Settings Type="Static Library">
+    <GlobalSettings>
+      <Compiler Options="" C_Options="" Assembler="">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="">
+        <LibraryPath Value="."/>
+      </Linker>
+      <ResourceCompiler Options=""/>
+    </GlobalSettings>
+    <Configuration Name="Debug" CompilerType="clang++" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-m64;-std=c++17" C_Options="-m64" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="src"/>
+        <IncludePath Value="vendor/spdlog/include"/>
+        <IncludePath Value="vendor/GLFW/include"/>
+        <IncludePath Value="vendor/Glad/include"/>
+        <IncludePath Value="vendor/imgui"/>
+        <IncludePath Value="vendor/stb"/>
+        <IncludePath Value="vendor/SPIRV-Cross"/>
+        <IncludePath Value="vendor/vulkan/Include/Linux"/>
+        <IncludePath Value="vendor/shaderc/Include"/>
+        <Preprocessor Value="GLFW_INCLUDE_NONE"/>
+        <Preprocessor Value="SNOW_PLATFORM_LINUX"/>
+        <Preprocessor Value="SNOW_WINDOW_GLFW"/>
+        <Preprocessor Value="SNOW_DEBUG"/>
+      </Compiler>
+      <Linker Options="-m64;vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a;vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a;vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a;vendor/SPIRV-Cross/bin/Debug-linux-x86_64/SPIRVCross/libSPIRVCross.a;-lX11;-lXi;-lxcb;-lpthread;-ldl;-lvulkan;-lshaderc;-lshaderc_util;-lglslang;-lMachineIndependent;-llibSPIRV;-lOGLCompiler;-lOSDependent;-lGenericCodeGen;-lSPIRV-Tools-opt;-lSPIRV-Tools" Required="yes">
+        <LibraryPath Value="vendor/vulkan/Lib/Linux"/>
+        <LibraryPath Value="vendor/shaderc/Lib/Linux"/>
+        <LibraryPath Value="vendor/glslang/Lib/Linux"/>
+        <LibraryPath Value="vendor/SPIRV-Tools/Lib/Linux"/>
+      </Linker>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="../bin/Debug-linux-x86_64/Snow/libSnow.a" IntermediateDirectory="../bin-int/Debug-linux-x86_64/Snow" Command="LD_LIBRARY_PATH=vendor/vulkan/Lib/Linux:vendor/shaderc/Lib/Linux:vendor/glslang/Lib/Linux:vendor/SPIRV-Tools/Lib/Linux " CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="no" IsGUIProgram="no" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName/>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+    <Configuration Name="Dist" CompilerType="clang++" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-m64;-std=c++17" C_Options="-m64" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="src"/>
+        <IncludePath Value="vendor/spdlog/include"/>
+        <IncludePath Value="vendor/GLFW/include"/>
+        <IncludePath Value="vendor/Glad/include"/>
+        <IncludePath Value="vendor/imgui"/>
+        <IncludePath Value="vendor/stb"/>
+        <IncludePath Value="vendor/SPIRV-Cross"/>
+        <IncludePath Value="vendor/vulkan/Include/Linux"/>
+        <IncludePath Value="vendor/shaderc/Include"/>
+        <Preprocessor Value="GLFW_INCLUDE_NONE"/>
+        <Preprocessor Value="SNOW_PLATFORM_LINUX"/>
+        <Preprocessor Value="SNOW_WINDOW_GLFW"/>
+      </Compiler>
+      <Linker Options="-m64;vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a;vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a;vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a;vendor/SPIRV-Cross/bin/Dist-linux-x86_64/SPIRVCross/libSPIRVCross.a;-lX11;-lXi;-lxcb;-lpthread;-ldl;-lvulkan;-lshaderc;-lshaderc_util;-lglslang;-lMachineIndependent;-llibSPIRV;-lOGLCompiler;-lOSDependent;-lGenericCodeGen;-lSPIRV-Tools-opt;-lSPIRV-Tools" Required="yes">
+        <LibraryPath Value="vendor/vulkan/Lib/Linux"/>
+        <LibraryPath Value="vendor/shaderc/Lib/Linux"/>
+        <LibraryPath Value="vendor/glslang/Lib/Linux"/>
+        <LibraryPath Value="vendor/SPIRV-Tools/Lib/Linux"/>
+      </Linker>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="../bin/Dist-linux-x86_64/Snow/libSnow.a" IntermediateDirectory="../bin-int/Dist-linux-x86_64/Snow" Command="LD_LIBRARY_PATH=vendor/vulkan/Lib/Linux:vendor/shaderc/Lib/Linux:vendor/glslang/Lib/Linux:vendor/SPIRV-Tools/Lib/Linux " CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="no" IsGUIProgram="no" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName/>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+    <Configuration Name="Release" CompilerType="clang++" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-m64;-std=c++17" C_Options="-m64" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="src"/>
+        <IncludePath Value="vendor/spdlog/include"/>
+        <IncludePath Value="vendor/GLFW/include"/>
+        <IncludePath Value="vendor/Glad/include"/>
+        <IncludePath Value="vendor/imgui"/>
+        <IncludePath Value="vendor/stb"/>
+        <IncludePath Value="vendor/SPIRV-Cross"/>
+        <IncludePath Value="vendor/vulkan/Include/Linux"/>
+        <IncludePath Value="vendor/shaderc/Include"/>
+        <Preprocessor Value="GLFW_INCLUDE_NONE"/>
+        <Preprocessor Value="SNOW_PLATFORM_LINUX"/>
+        <Preprocessor Value="SNOW_WINDOW_GLFW"/>
+      </Compiler>
+      <Linker Options="-m64;vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a;vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a;vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a;vendor/SPIRV-Cross/bin/Release-linux-x86_64/SPIRVCross/libSPIRVCross.a;-lX11;-lXi;-lxcb;-lpthread;-ldl;-lvulkan;-lshaderc;-lshaderc_util;-lglslang;-lMachineIndependent;-llibSPIRV;-lOGLCompiler;-lOSDependent;-lGenericCodeGen;-lSPIRV-Tools-opt;-lSPIRV-Tools" Required="yes">
+        <LibraryPath Value="vendor/vulkan/Lib/Linux"/>
+        <LibraryPath Value="vendor/shaderc/Lib/Linux"/>
+        <LibraryPath Value="vendor/glslang/Lib/Linux"/>
+        <LibraryPath Value="vendor/SPIRV-Tools/Lib/Linux"/>
+      </Linker>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="../bin/Release-linux-x86_64/Snow/libSnow.a" IntermediateDirectory="../bin-int/Release-linux-x86_64/Snow" Command="LD_LIBRARY_PATH=vendor/vulkan/Lib/Linux:vendor/shaderc/Lib/Linux:vendor/glslang/Lib/Linux:vendor/SPIRV-Tools/Lib/Linux " CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="" PauseExecWhenProcTerminates="no" IsGUIProgram="no" IsEnabled="yes"/>
+      <BuildSystem Name="Default"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName/>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no" EnableCpp14="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+  </Settings>
+</CodeLite_Project>

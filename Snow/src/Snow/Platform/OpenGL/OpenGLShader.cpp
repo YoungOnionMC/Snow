@@ -68,7 +68,7 @@ namespace Snow {
             std::filesystem::path directoryPath = m_Path;
             if (!std::filesystem::is_directory(directoryPath.parent_path() / "cached")) {
                 std::string dirPath = (directoryPath.parent_path() / "cached").string();
-                mkdir(dirPath.c_str());
+                std::filesystem::create_directory(directoryPath.parent_path() / "cached");
             }
             {
                 std::filesystem::path filePath = m_Path;

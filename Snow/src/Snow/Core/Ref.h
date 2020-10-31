@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <utility>
 
+#include "Base.h"
+
 namespace Snow {
 
 	class RefCounted {
@@ -31,7 +33,7 @@ namespace Snow {
 
 		Ref(T* instance) :
 			m_Instance(instance) {
-			static_assert(std::is_base_of<RefCounted, T>::value, "Class is not RefCounted!");
+			//assert(std::is_base_of<RefCounted, T>::value, "Class is not RefCounted!");
 			IncRef();
 		}
 

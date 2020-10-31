@@ -87,13 +87,13 @@ namespace Snow {
         }
 
         void OpenGLTexture2D::ResizeBuffer(uint32_t width, uint32_t height) {
-            assert(m_Locked);
+            SNOW_CORE_ASSERT(m_Locked, "Trying to write to texture without it being locked");
             m_ImageData.Allocate(width * height * API::Texture::GetBPP(m_Format));
             m_ImageData.ZeroInitialize();
         }
 
         Buffer OpenGLTexture2D::GetWriteableBuffer() {
-            assert(m_Locked);
+            SNOW_CORE_ASSERT(m_Locked, "Texture is currently uploaded to gpu");
             return m_ImageData;
         }
 

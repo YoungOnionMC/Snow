@@ -1,4 +1,7 @@
+#pragma once
+
 #include <Snow.h>
+#include "Panels/SceneHierarchyPanel.h"
 
 class EditorLayer : public Snow::Core::Layer {
 public:
@@ -10,5 +13,9 @@ public:
 
 
 private:
+
+    Snow::Ref<Snow::Scene> m_ActiveScene;
+
+    Snow::SceneHierarchyPanel m_SceneHierarchyPanel;
 
 };

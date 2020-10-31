@@ -58,7 +58,7 @@ namespace Snow {
         }
 
         void Write(void* data, uint32_t size, uint32_t offset = 0) {
-            //assert(offset + size <= this->Size);
+            SNOW_ASSERT(offset + size <= this->Size, "Trying to write outside of buffer memory");
             memcpy(Data + offset, data, size);
         }
 

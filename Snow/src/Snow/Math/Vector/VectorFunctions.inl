@@ -1,5 +1,5 @@
 
-#include "Snow/Math/Common/Common.h"
+#include "Snow/Math/Common/CommonFunctions.h"
 #include "Snow/Math/Vector/Common.h"
 
 namespace Snow {

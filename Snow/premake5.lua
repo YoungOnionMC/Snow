@@ -21,6 +21,7 @@ project "Snow"
         "src/Snow/ImGui/**.*",
         "src/Snow/Render/**.*",
         "src/Snow/Math/**.*",
+        "src/Snow/Scene/**.*",
         "src/Snow/Platform/OpenGL/**.*",
         "src/Snow/Platform/Vulkan/**.*",
 
@@ -42,6 +43,7 @@ project "Snow"
     includedirs {
         "src",
         "vendor/spdlog/include",
+        "vendor/ENTT/include",
         "%{VendorIncludeDir.GLFW}",
         "%{VendorIncludeDir.Glad}",
         "%{VendorIncludeDir.ImGui}",

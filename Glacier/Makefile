@@ -15,22 +15,24 @@ ifeq ($(config),debug)
   TARGETDIR = ../bin/Debug-linux-x86_64/Glacier
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Debug-linux-x86_64/Glacier
-  DEFINES +=
+  DEFINES += -DSNOW_DEBUG
   INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Debug-linux-x86_64/SPIRVCross/libSPIRVCross.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
   LDDEPS += ../bin/Debug-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Debug-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Debug-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Debug-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Debug-linux-x86_64/SPIRVCross/libSPIRVCross.a
-  ALL_LDFLAGS += $(LDFLAGS) -L../Snow/vendor/vulkan/Lib/Linux -L../Snow/vendor/shaderc/Lib/Linux -L../Snow/vendor/glslang/Lib/Linux -L../Snow/vendor/SPIRV-Tools/Lib/Linux -L/usr/lib64 -m64 -s
+  ALL_LDFLAGS += $(LDFLAGS) -L../Snow/vendor/vulkan/Lib/Linux -L../Snow/vendor/shaderc/Lib/Linux -L../Snow/vendor/glslang/Lib/Linux -L../Snow/vendor/SPIRV-Tools/Lib/Linux -L/usr/lib64 -m64
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
   endef
   define POSTBUILDCMDS
+	@echo Running postbuild commands
+	cp -rf "../Glacier/assets" "../bin/Debug-linux-x86_64/Glacier/assets"
   endef
 all: prebuild prelink $(TARGET)
 	@:
@@ -42,12 +44,12 @@ ifeq ($(config),release)
   TARGETDIR = ../bin/Release-linux-x86_64/Glacier
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Release-linux-x86_64/Glacier
-  DEFINES +=
+  DEFINES += -DSNOW_RELEASE
   INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Release-linux-x86_64/SPIRVCross/libSPIRVCross.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
   LDDEPS += ../bin/Release-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Release-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Release-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Release-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Release-linux-x86_64/SPIRVCross/libSPIRVCross.a
@@ -58,6 +60,8 @@ ifeq ($(config),release)
   define PRELINKCMDS
   endef
   define POSTBUILDCMDS
+	@echo Running postbuild commands
+	cp -rf "../Glacier/assets" "../bin/Release-linux-x86_64/Glacier/assets"
   endef
 all: prebuild prelink $(TARGET)
 	@:
@@ -69,12 +73,12 @@ ifeq ($(config),dist)
   TARGETDIR = ../bin/Dist-linux-x86_64/Glacier
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Dist-linux-x86_64/Glacier
-  DEFINES +=
+  DEFINES += -DSNOW_DIST
   INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++17
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Dist-linux-x86_64/SPIRVCross/libSPIRVCross.a -lX11 -lXi -lxcb -lpthread -ldl -lvulkan -lshaderc -lshaderc_util -lglslang -lMachineIndependent -lSPIRV -lOGLCompiler -lOSDependent -lGenericCodeGen -lSPIRV-Tools-opt -lSPIRV-Tools
   LDDEPS += ../bin/Dist-linux-x86_64/Snow/libSnow.a ../Snow/vendor/Glad/bin/Dist-linux-x86_64/Glad/libGlad.a ../Snow/vendor/imgui/bin/Dist-linux-x86_64/ImGui/libImGui.a ../Snow/vendor/GLFW/bin/Dist-linux-x86_64/GLFW/libGLFW.a ../Snow/vendor/SPIRV-Cross/bin/Dist-linux-x86_64/SPIRVCross/libSPIRVCross.a
@@ -85,6 +89,8 @@ ifeq ($(config),dist)
   define PRELINKCMDS
   endef
   define POSTBUILDCMDS
+	@echo Running postbuild commands
+	cp -rf "../Glacier/assets" "../bin/Dist-linux-x86_64/Glacier/assets"
   endef
 all: prebuild prelink $(TARGET)
 	@:
@@ -94,6 +100,7 @@ endif
 OBJECTS := \
 	$(OBJDIR)/Application.o \
 	$(OBJDIR)/EditorLayer.o \
+	$(OBJDIR)/SceneHierarchyPanel.o \
 
 RESOURCES := \
 
@@ -156,6 +163,9 @@ $(OBJDIR)/Application.o: src/Application.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/EditorLayer.o: src/EditorLayer.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/SceneHierarchyPanel.o: src/Panels/SceneHierarchyPanel.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

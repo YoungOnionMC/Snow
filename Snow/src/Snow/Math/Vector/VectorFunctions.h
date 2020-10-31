@@ -1,5 +1,5 @@
 #pragma once
-#include "Snow/Math/Vector/Common.h"
+#include "Snow/Math/Common/CommonFunctions.h"
 
 namespace Snow {
     namespace Math {

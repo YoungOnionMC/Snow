@@ -32,5 +32,12 @@ namespace Snow {
         template struct Vector<4, uint16_t>;
         template struct Vector<4, uint32_t>;
         template struct Vector<4, uint64_t>;
+
+        template struct Matrix<4, 4, double>;
+        template struct Matrix<4, 4, float>;
+        template struct Matrix<4, 4, uint8_t>;
+        template struct Matrix<4, 4, uint16_t>;
+        template struct Matrix<4, 4, uint32_t>;
+        template struct Matrix<4, 4, uint64_t>;
     }
 }
