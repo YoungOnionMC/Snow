@@ -2,9 +2,16 @@
 
 namespace Snow {
     namespace Math {
+        /* Absolute value of the number
+        
+
+        */
         template<typename T>
         inline constexpr T abs(T value);
 
+        /* Ceiling of a number
+
+        */
         template<typename T>
         inline constexpr T ceil(T value);
 
@@ -27,6 +34,9 @@ namespace Snow {
         inline constexpr bool isInf(T value);
 
         template<typename T>
+        inline constexpr bool isNan(T value);
+
+        template<typename T>
         inline constexpr T ldexp(T value, int& exp);
 
         template<typename T>
@@ -42,7 +52,10 @@ namespace Snow {
         inline constexpr T mod(T value, T mod);
 
         template<typename T>
-        inline constexpr T modf(T value, int& mod);
+        inline constexpr T modf(T value, T& integerPart);
+
+        template<typename T>
+        inline constexpr T mul(T value1, T value2);
 
         template<typename T>
         inline constexpr T round(T value);
@@ -61,6 +74,14 @@ namespace Snow {
 
         template<typename T>
         inline constexpr T trunc(T value);
+
+        // Exponential Functions
+
+        template<typename T>
+        inline constexpr T sqrt(T value);
+
+        template<typename T>
+        inline constexpr T inversesqrt(T value);
 
         // Trigonomic functions
 
@@ -82,3 +103,5 @@ namespace Snow {
         inline constexpr T degrees(T value);
     }
 }
+
+#include "Snow/Math/Common/CommonFunctions.inl"

@@ -5,6 +5,8 @@
 #include "Snow/Math/Matrix/Matrix.h"
 #include "Snow/Math/Vector/Vector.h"
 
+#include "Snow/Math/Common/CommonFunctions.h"
+
 namespace Snow {
     namespace Math {
         template<typename T>

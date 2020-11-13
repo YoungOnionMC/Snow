@@ -13,7 +13,7 @@ namespace Snow {
             virtual void BeginScene() override;
             virtual void EndScene() override;
 
-            virtual void DrawIndexed(uint32_t indexCount) override {}
+            virtual void DrawIndexed(uint32_t indexCount, PrimitiveType type) override {}
 
             virtual void SetViewport(int width, int height) override;
         private:

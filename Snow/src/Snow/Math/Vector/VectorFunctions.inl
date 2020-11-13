@@ -195,8 +195,62 @@ namespace Snow {
 			return functor3<Vector, L, T>::call(mix, vec1, vec2, Vector<L, T>(a));
 		}
 
+        template<size_t L, typename T>
+        inline constexpr Vector<L ,T> mod(const Vector<L, T>& vec, const T& value) {
+            return functor2<Vector, L, T>::call(mod, vec, Vector<L, T>(value));
+        }
+
+        template<size_t L, typename T>
+        inline constexpr Vector<L ,T> mod(const Vector<L, T>& vec, const Vector<L, T>& value) {
+            return functor2<Vector, L, T>::call(mod, vec, value);
+        }
+
+        template<size_t L, typename T>
+        inline constexpr Vector<L ,T> modf(const Vector<L, T>& vec, const T& value) {
+            return functor2<Vector, L, T>::call(modf, vec, Vector<L, T>(value));
+        }
+
+        template<size_t L, typename T>
+        inline constexpr Vector<L ,T> modf(const Vector<L, T>& vec, const Vector<L, T>& value) {
+            return functor2<Vector, L, T>::call(modf, vec, value);
+        }
 
 
+        template<size_t L, typename T>
+        inline constexpr Vector<L, T> sqrt(const Vector<L, T>& vec) {
+            return functor1<Vector, L, T, T>(sqrt, vec);
+        }
+
+        template<size_t L, typename T>
+        inline constexpr Vector<L, T> inversesqrt(const Vector<L, T>& vec) {
+            return functor1<Vector, L, T, T>(inversesqrt, vec);
+        }
+
+        template<typename T>
+        inline constexpr Vector<3, T> cross(const Vector<3, T>& vec1, const Vector<3, T>& vec2) {
+            return Vector<3, T>(vec1.y * vec2.z - vec2.y * vec1.z, vec1.z * vec2.x - vec2.z * vec1.x, vec1.x * vec2.y - vec2.x * vec1.y);
+        }
+
+        template<size_t L, typename T>
+        inline constexpr T distance(const Vector<L, T>& vec1, const Vector<L, T>& vec2) {
+            return length(vec2 - vec1);
+        }
+
+        template<size_t L, typename T>
+        inline constexpr T dot(const Vector<L, T>& vec1, const Vector<L, T>& vec2) {
+            Vector<L, T> d = functor2<Vector, L, T>::call(mul, vec1, vec2);
+            T result = static_cast<T>(0);
+            for(uint32_t i=0; i< L; i++)
+                result += d[i];
+
+            return result;
+
+        }
+
+        template<size_t L, typename T>
+        inline constexpr Vector<L, T> normalize(const Vector<L, T>& vec) {
+            return vec * inversesqrt(dot(vec, vec));
+        }
 
     }
 }

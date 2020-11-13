@@ -6,13 +6,14 @@
 
 
 #ifdef SNOW_DEBUG
-	#ifdef SNOW_PLATFORM_WINDOWS
+	#if defined(SNOW_PLATFORM_WINDOWS)
 		#define SNOW_DEBUGBREAK() __debugbreak()
 	#elif defined(SNOW_PLATFORM_LINUX)
 		#include <signal.h>
 		#define SNOW_DEBUGBREAK() raise(SIGTRAP)
 	#endif
 	#define SNOW_ENABLE_ASSERTS
+	#define SNOW_DEBUGBREAK()
 #else
 	#define SNOW_DEBUGBREAK()
 #endif

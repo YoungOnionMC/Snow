@@ -98,9 +98,14 @@ namespace Snow {
             uint32_t m_Stride = 0;
         };
 
+        enum class PrimitiveType {
+            None = -1, Line, Triangle
+        };
+
         struct PipelineSpecification {
             std::vector<Ref<Shader>> Shaders;
             VertexBufferLayout Layout;
+            PrimitiveType Type;
             Ref<RenderPass> BindedRenderPass;
         };
 

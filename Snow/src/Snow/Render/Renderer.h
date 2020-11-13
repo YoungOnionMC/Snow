@@ -1,6 +1,7 @@
 #pragma once
 #include "Snow/Render/RenderContext.h"
 #include "Snow/Render/RenderCommand.h"
+#include "Snow/Render/Pipeline.h"
 
 #include "Snow/Core/Event/Event.h"
 #include "Snow/Core/Event/EventListener.h"
@@ -25,7 +26,9 @@ namespace Snow {
             static void EndScene();
             static void SetViewport(int width, int height);
 
-            static void DrawIndexed(uint32_t count = 0);
+            static void ClearMainColorAttachment(const Math::Vector4f& color);
+
+            static void DrawIndexed(uint32_t count = 0, PrimitiveType primitiveType = PrimitiveType::Triangle);
 
             static void SwapBuffers();
 

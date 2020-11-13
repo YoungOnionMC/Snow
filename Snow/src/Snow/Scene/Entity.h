@@ -32,6 +32,7 @@ namespace Snow {
         }
 
         operator bool() const { return m_EntityHandle != entt::null; }
+        operator entt::entity() const { return m_EntityHandle; }
         operator uint32_t() const { return (uint32_t)m_EntityHandle; }
 
         bool operator==(const Entity& other) const {

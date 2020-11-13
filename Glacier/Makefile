@@ -16,7 +16,7 @@ ifeq ($(config),debug)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Debug-linux-x86_64/Glacier
   DEFINES += -DSNOW_DEBUG
-  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include -I../Snow/vendor/ENTT/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
@@ -45,7 +45,7 @@ ifeq ($(config),release)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Release-linux-x86_64/Glacier
   DEFINES += -DSNOW_RELEASE
-  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include -I../Snow/vendor/ENTT/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
@@ -74,7 +74,7 @@ ifeq ($(config),dist)
   TARGET = $(TARGETDIR)/Glacier
   OBJDIR = ../bin-int/Dist-linux-x86_64/Glacier
   DEFINES += -DSNOW_DIST
-  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include
+  INCLUDES += -Isrc -I../Snow/src -I../Snow/vendor/spdlog/include -I../Snow/vendor/imgui -I../Snow/vendor/vulkan/Include/Linux -I../Snow/vendor/shaderc/Include -I../Snow/vendor/ENTT/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2

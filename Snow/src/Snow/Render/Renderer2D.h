@@ -35,6 +35,9 @@ namespace Snow {
             static void DrawQuad(const Math::Matrix4x4f& transform, const Math::Vector4f color);
             static void DrawQuad(const Math::Matrix4x4f& transform, const Ref<API::Texture2D>& texture);
 
+            static void DrawLine(const Math::Vector2f& startPosition, const Math::Vector2f& endPosition, const Math::Vector4f& color);
+            static void DrawLine(const Math::Vector3f& startPosition, const Math::Vector3f& endPosition, const Math::Vector4f& color);
+
         private:
             static void BeginBatch();
             static void EndBatch();

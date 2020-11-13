@@ -34,20 +34,20 @@ namespace Snow {
                 auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
                 if(camera.Primary) {
                     mainCamera = &camera.Camera;
-                    cameraTransform = &transform.GetTransform();
+                    cameraTransform = transform.GetTransform();
                     break;
                 }
             }
         }
 
         if(mainCamera) {
-            Render::Renderer2D::BeginScene();
+            Render::Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
             auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
             for(auto entity : group) {
                 auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
-                Render::Renderer2D::DrawQuad(transform, sprite.Color);
+                Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
             }
 
             Render::Renderer2D::EndScene();

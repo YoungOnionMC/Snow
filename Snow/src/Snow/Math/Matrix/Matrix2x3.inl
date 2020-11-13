@@ -155,9 +155,7 @@ namespace Snow {
 		template<typename T>
 		template<typename U>
 		Matrix<2, 3, T>& Matrix<2, 3, T>::operator*=(const Matrix<2, 3, U>& mat) {
-			this->value[0] *= mat[0];
-			this->value[1] *= mat[1];
-			return *this;
+			return (*this = *this * mat);
 		}
 
 		template<typename T>
@@ -171,9 +169,7 @@ namespace Snow {
 		template<typename T>
 		template<typename U>
 		Matrix<2, 3, T>& Matrix<2, 3, T>::operator/=(const Matrix<2, 3, U>& mat) {
-			this->value[0] /= mat[0];
-			this->value[1] /= mat[1];
-			return *this;
+			return *this *= inverse(mat);
 		}
 
 		template<typename T>

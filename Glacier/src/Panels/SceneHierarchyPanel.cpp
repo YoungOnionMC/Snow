@@ -1,13 +1,13 @@
 #include "SceneHierarchyPanel.h"
 
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 namespace Snow {
-    SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene::Scene>& scene) {
+    SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene) {
         SetScene(scene);
     }
 
-    void SceneHierarchyPanel::SetScene(const Ref<Scene::Scene>& scene) {
+    void SceneHierarchyPanel::SetScene(const Ref<Scene>& scene) {
         m_SceneContext = scene;
     }
 
@@ -24,5 +24,9 @@ namespace Snow {
             DrawComponents(m_SelectionContext);
 
         ImGui::End();
+    }
+
+    void SceneHierarchyPanel::DrawComponents(const Entity& entity) {
+
     }
 }

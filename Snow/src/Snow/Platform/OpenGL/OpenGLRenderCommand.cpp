@@ -18,9 +18,6 @@ namespace Snow {
 
 
         void OpenGLRenderCommand::BeginScene() {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-           
-            glClearColor(0.3, 0.3, 0.3, 1.0);
 
         }
 
@@ -31,8 +28,21 @@ namespace Snow {
             glSwapChain.SwapBuffers();
         }
 
-        void OpenGLRenderCommand::DrawIndexed(uint32_t count = 0) {
-            glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+        static GLenum GetPrimitiveType(PrimitiveType type) {
+            switch(type){
+            case PrimitiveType::None:   return GL_NONE;
+            case PrimitiveType::Triangle:   return GL_TRIANGLES;
+            case PrimitiveType::Line:   return GL_LINES;
+            }
+        }
+
+        void OpenGLRenderCommand::DrawIndexed(uint32_t count, PrimitiveType type) {
+            glDrawElements(GetPrimitiveType(type), count, GL_UNSIGNED_INT, nullptr);
+        }
+
+        void OpenGLRenderCommand::ClearColorAttachment(const Math::Vector4f& color) {
+            glClear(GL_COLOR_BUFFER_BIT);
+            glClearColor(color.r, color.g, color.b, color.a);
         }
 
         void OpenGLRenderCommand::SetViewport(int width, int height) {

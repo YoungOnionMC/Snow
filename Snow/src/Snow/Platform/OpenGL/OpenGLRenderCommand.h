@@ -11,7 +11,9 @@ namespace Snow {
             void BeginScene() override;
             void EndScene() override;
 
-            void DrawIndexed(uint32_t count) override;
+            void DrawIndexed(uint32_t count, PrimitiveType type) override;
+
+            void ClearColorAttachment(const Math::Vector4f& color) override;
 
             void SetViewport(int width, int height) override;
 

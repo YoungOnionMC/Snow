@@ -257,7 +257,7 @@ namespace Snow {
 
 		template<typename T>
 		typename Matrix<2, 2, T>::row_type operator*(const typename Matrix<2, 2, T>::col_type& vec, const Matrix<2, 2, T>& mat) {
-			return Vector<2, T>(vec.x * mat[0][0] + vec.y * mat[0][1], vec.x * mat[1][0] + vec.y * mat[1][1]);
+			return Vector<2, T>(vec.x * mat[0][0] + vec.y * mat[1][0], vec.x * mat[0][1] + vec.y * mat[1][1]);
 		}
 
 		template<typename T>

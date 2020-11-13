@@ -43,6 +43,7 @@ project "Glacier"
         includedirs {
             "%{VendorIncludeDir.Vulkan}/Linux",
             "%{VendorIncludeDir.shaderc}",
+            "%{wks.location}/Snow/vendor/ENTT/include",
         }
 
         libdirs {

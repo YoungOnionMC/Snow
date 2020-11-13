@@ -52,12 +52,16 @@ namespace Snow {
             s_RenderCommand->EndScene();
         }
 
-        void Renderer::DrawIndexed(uint32_t count) {
-            s_RenderCommand->DrawIndexed(count);
+        void Renderer::DrawIndexed(uint32_t count, PrimitiveType type) {
+            s_RenderCommand->DrawIndexed(count, type);
         }
 
         void Renderer::SetViewport(int width, int height) {
             s_RenderCommand->SetViewport(width, height);
+        }
+
+        void Renderer::ClearMainColorAttachment(const Math::Vector4f& color) {
+            s_RenderCommand->ClearColorAttachment(color);
         }
     }
 }

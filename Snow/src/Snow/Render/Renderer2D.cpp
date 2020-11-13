@@ -4,24 +4,34 @@
 namespace Snow {
     namespace Render {
 
-        struct Vertex {
+        struct QuadVertex {
             Math::Vector3f Position;
             Math::Vector2f TexCoord;
             float TexID;
             Math::Vector4f Color;
         };
 
-        struct Renderer2DStaticData {
-            Ref<API::VertexBuffer> VBO;
-            Ref<API::IndexBuffer> IBO;
-            Vertex* VertexData;
-            Vertex* VertexBase;
+        struct LineVertex {
+            Math::Vector3f Position;
+            Math::Vector4f Color;
+        };
 
+        struct Renderer2DStaticData {
             static const uint32_t MaxQuads = 2500;
             static const uint32_t MaxVertices = MaxQuads * 4;
             static const uint32_t MaxIndicies = MaxQuads * 6;
 
-            Ref<Pipeline> MainPipeline;
+            static const uint32_t MaxLines = 10000;
+            static const uint32_t MaxLineVertices = MaxLines * 2;
+            static const uint32_t MaxLineIndices = MaxLines * 6;
+
+            uint32_t QuadIndexCount = 0;
+            QuadVertex* QuadVertexData = nullptr;
+            QuadVertex* QuadVertexBase = nullptr;
+
+            Ref<Pipeline> QuadPipeline;
+            Ref<API::IndexBuffer> QuadIBO;
+            Ref<API::VertexBuffer> QuadVBO;
 
             Ref<API::Texture2D> WhiteTexture;
 
@@ -31,18 +41,26 @@ namespace Snow {
 
             Math::Vector2f TexCoords[4] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
 
-            uint32_t IndexCount = 0;
+
+            Ref<Pipeline> LinePipeline;
+            Ref<API::VertexBuffer> LineVBO;
+            Ref<API::IndexBuffer> LineIBO;
+
+            uint32_t LineIndexCount = 0;
+            LineVertex* LineVertexData = nullptr;
+            LineVertex* LineVertexBase = nullptr;
         };
         static Renderer2DStaticData s_Data;
         
 
 
         void Renderer2D::Init() {
+            
+            // Quad Pipeline
+            s_Data.QuadVertexBase = new QuadVertex[s_Data.MaxVertices];
+            s_Data.QuadVertexData = s_Data.QuadVertexBase;
 
-            s_Data.VertexBase = new Vertex[s_Data.MaxVertices];
-            s_Data.VertexData = s_Data.VertexBase;
-
-            s_Data.VBO = API::VertexBuffer::Create(nullptr, sizeof(Vertex) * s_Data.MaxVertices);
+            s_Data.QuadVBO = API::VertexBuffer::Create(nullptr, sizeof(QuadVertex) * s_Data.MaxVertices);
 
             uint32_t* indicies = new uint32_t[s_Data.MaxIndicies];
             uint32_t offset = 0;
@@ -57,11 +75,8 @@ namespace Snow {
                 offset += 4;
             }
 
-            s_Data.IBO = API::IndexBuffer::Create(indicies, sizeof(uint32_t) * s_Data.MaxIndicies);
+            s_Data.QuadIBO = API::IndexBuffer::Create(indicies, sizeof(uint32_t) * s_Data.MaxIndicies);
             delete[] indicies;
-            
-
-            // Pipeline
 
             PipelineSpecification pipelineSpec;
             pipelineSpec.Layout = {
@@ -71,8 +86,9 @@ namespace Snow {
                 { AttribType::Float4, "Color" },
             };
             pipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/TestVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/TestFrag.glsl") };
+            pipelineSpec.Type = PrimitiveType::Triangle;
 
-            s_Data.MainPipeline = Pipeline::Create(pipelineSpec);
+            s_Data.QuadPipeline = Pipeline::Create(pipelineSpec);
 
             s_Data.WhiteTexture = API::Texture2D::Create(API::TextureFormat::RGBA, 1, 1);
             uint32_t whiteTextureData = 0xffffffff;
@@ -82,49 +98,120 @@ namespace Snow {
 
             s_Data.TextureSlots.resize(32);
             s_Data.TextureSlots[0] = s_Data.WhiteTexture;
+
+            // Line Pipeline
+            {
+                PipelineSpecification linePipelineSpec;
+                linePipelineSpec.Layout = {
+                    { AttribType::Float3, "Position" },
+                    { AttribType::Float4, "Color" }
+                };
+                linePipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/BatchRenderLineVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/BatchRenderLineFrag.glsl") };
+                linePipelineSpec.Type = PrimitiveType::Line;
+
+                s_Data.LinePipeline = Pipeline::Create(linePipelineSpec);
+
+                s_Data.LineVBO = API::VertexBuffer::Create(nullptr, s_Data.MaxLineVertices * sizeof(LineVertex));
+                s_Data.LineVertexBase = new LineVertex[s_Data.MaxLineVertices];
+
+                uint32_t* lineIndices = new  uint32_t[s_Data.MaxLineIndices];
+                for(uint32_t i=0; i<s_Data.MaxLineIndices; i++)
+                    lineIndices[i] = i;
+
+                s_Data.LineIBO = API::IndexBuffer::Create(lineIndices, s_Data.MaxLineIndices);
+                delete[] lineIndices;
+            }
+        }
+
+        void Renderer2D::BeginScene(const Camera& camera, const Math::Matrix4x4f& transform) {
+            Math::Matrix4x4f projMatrix = camera.GetProjection();
+
+            //s_Data.QuadPipeline->SetUniformBuffer("Camera", projMatrix * transform, sizeof(Math::Matrix4x4f));
+        }
+
+        void Renderer2D::EndScene() {
+            
         }
 
         void Renderer2D::BeginBatch() {
-            s_Data.VertexData = s_Data.VertexBase;
-            s_Data.IndexCount = 0;
+            s_Data.QuadVertexData = s_Data.QuadVertexBase;
+            s_Data.QuadIndexCount = 0;
+
+            s_Data.LineVertexData = s_Data.LineVertexBase;
+            s_Data.LineIndexCount = 0;
 
             s_Data.TextureSlotIndex = 1;
         }
 
         void Renderer2D::EndBatch() {
-            ptrdiff_t size = (uint8_t*)s_Data.VertexData - (uint8_t*)s_Data.VertexBase;
-            s_Data.VBO->Bind();
-            s_Data.VBO->SetData(s_Data.VertexBase, size);
+            ptrdiff_t size = (uint8_t*)s_Data.QuadVertexData - (uint8_t*)s_Data.QuadVertexBase;
+            if(size) {
+                s_Data.QuadVBO->SetData(s_Data.QuadVertexBase, size);
 
-            for(uint32_t i=0; i< s_Data.TextureSlotIndex; i++) {
-                s_Data.TextureSlots[i]->Bind(i);
+                for(uint32_t i=0; i< s_Data.TextureSlotIndex; i++)
+                    s_Data.TextureSlots[i]->Bind(i);
+                
+                s_Data.QuadPipeline->Bind();
+                s_Data.QuadIBO->Bind();
+                Renderer::DrawIndexed(s_Data.QuadIndexCount, s_Data.QuadPipeline->GetSpecification().Type);
             }
+
+            size = (uint8_t*)s_Data.LineVertexData - (uint8_t*)s_Data.LineVertexBase;
+            if(size) {
+                s_Data.LineVBO->SetData(s_Data.LineVertexBase, size);
+                s_Data.LinePipeline->Bind();
+                s_Data.LineIBO->Bind();
+                Renderer::DrawIndexed(s_Data.LineIndexCount, s_Data.LinePipeline->GetSpecification().Type);
+            }
+
         }
 
         void Renderer2D::PresentBatch() {
             EndBatch();
 
-            s_Data.MainPipeline->Bind();
-            s_Data.VBO->Bind();
-            s_Data.IBO->Bind();
-            Renderer::DrawIndexed(s_Data.IndexCount);
+            
+            //s_Data.QuadVBO->Bind();
+            //s_Data.QuadIBO->Bind();
+            //Renderer::DrawIndexed(s_Data.IndexCount);
 
             BeginBatch();
         }
 
-        void Renderer2D::SubmitQuad(Math::Vector2f position, Math::Vector2f size, Math::Vector4f tint) {
+        void Renderer2D::DrawQuad(Math::Vector2f position, Math::Vector2f size, Math::Vector4f tint) {
             
             Math::Vector3f scale[] = { {0.0f, 0.0f, 0.0f}, {size.x, 0.0f, 0.0f}, {size.x, size.y, 0.0f}, {0.0f, size.y, 0.0f} };
 
             for(size_t i=0; i<4; i++) {
-                s_Data.VertexData->Position = Math::Vector3f(position, 0.0f) + scale[i];
-                s_Data.VertexData->TexCoord = s_Data.TexCoords[i];
-                s_Data.VertexData->TexID = 0;
-                s_Data.VertexData->Color = tint;
-                s_Data.VertexData++;
+                s_Data.QuadVertexData->Position = Math::Vector3f(position, 0.0f) + scale[i];
+                s_Data.QuadVertexData->TexCoord = s_Data.TexCoords[i];
+                s_Data.QuadVertexData->TexID = 0;
+                s_Data.QuadVertexData->Color = tint;
+                s_Data.QuadVertexData++;
             }
 
-            s_Data.IndexCount += 6;
+            s_Data.QuadIndexCount += 6;
+        }
+
+        void Renderer2D::DrawQuad(const Math::Matrix4x4f& transform, const Math::Vector4f color) {
+            
+        }
+
+
+        void Renderer2D::DrawLine(const Math::Vector2f& startPosition, const Math::Vector2f& endPosition, const Math::Vector4f& color) {
+            DrawLine({startPosition.x, startPosition.y, 0.0f}, {endPosition.x, endPosition.y, 0.0f}, color);
+        }
+
+        void Renderer2D::DrawLine(const Math::Vector3f& startPosition, const Math::Vector3f& endPosition, const Math::Vector4f& color) {
+            s_Data.LineVertexData->Position = startPosition;
+            s_Data.LineVertexData->Color = color;
+            s_Data.LineVertexData++;
+
+            s_Data.LineVertexData->Position = endPosition;
+            s_Data.LineVertexData->Color = color;
+            s_Data.LineVertexData++;
+
+            s_Data.LineIndexCount += 2;
+
         }
     }
 }

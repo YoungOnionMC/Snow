@@ -13,7 +13,7 @@ namespace Snow {
 			typedef Matrix<3, 3, T> transpose_type;
 
 			typedef size_t row_vec;
-			static row_vec GetColumns() { return 2; }
+			static row_vec GetColumns() { return 3; }
 
 			row_type& operator[](row_vec i);
 			constexpr const row_type& operator[](row_vec i) const;
@@ -50,7 +50,7 @@ namespace Snow {
 
 			//matrix conversions
 
-			template<typename U, qualifier P>
+			template<typename U>
 			Matrix(const Matrix<3, 3, U>& m);
 
 			Matrix(const Matrix<2, 2, T>& m);
