@@ -106,7 +106,7 @@ namespace Snow {
             std::vector<Ref<Shader>> Shaders;
             VertexBufferLayout Layout;
             PrimitiveType Type;
-            Ref<RenderPass> BindedRenderPass;
+            //Ref<RenderPass> BindedRenderPass;
         };
 
         class Pipeline : public RefCounted {

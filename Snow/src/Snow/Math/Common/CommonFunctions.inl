@@ -61,7 +61,7 @@ namespace Snow {
 
         template<typename T, typename U>
         inline constexpr T mix(T a , T b, const U& m) {
-            return static_cast<T>(static_cast<U>(a) * (static_cast<U>(1) - m) + static_cast<U>(b) * m);_
+            return static_cast<T>(static_cast<U>(a) * (static_cast<U>(1) - m) + static_cast<U>(b) * m);
         }
 
         template<typename T>
@@ -71,7 +71,7 @@ namespace Snow {
 
         template<typename T>
         inline constexpr T mod(T value, T mod) {
-            return a - b * floor(a / b);
+            return value - mod * floor(value / mod);
         }
 
         template<typename T>
@@ -86,7 +86,7 @@ namespace Snow {
 
         template<typename T>
         inline constexpr T round(T value) {
-            return x < static_cast<T>(0) ? static_cast<T>(int(x - static_cast<T>(0.5))) : static_cast<T>(int(value + static_cast<T>(0.5)));
+            return value < static_cast<T>(0) ? static_cast<T>(int(value - static_cast<T>(0.5))) : static_cast<T>(int(value + static_cast<T>(0.5)));
         }
 
         template<typename T>
@@ -118,12 +118,12 @@ namespace Snow {
 
         template<typename T>
         inline constexpr T step(T edge, T value) {
-            return mix(static_cast<T>(1), static_cast<T>(0), x < edge);
+            return mix(static_cast<T>(1), static_cast<T>(0), value < edge);
         }
 
         template<typename T>
         inline constexpr T trunc(T value) {
-            return value < static_cast<T>(0) ? -std::floor(-x) : std::floor(x);
+            return value < static_cast<T>(0) ? -std::floor(-value) : std::floor(value);
         }
 
         // Exponential Functions

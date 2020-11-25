@@ -11,6 +11,7 @@ namespace Snow {
 	public:
 		void IncRefCount() const {
 			m_RefCount++;
+			SNOW_CORE_INFO("Count: {0}", m_RefCount);
 		}
 
 		void DecRefCount() const {
