@@ -15,6 +15,10 @@ namespace Snow {
 
     private:
 
+        void NewScene();
+        void OpenScene();
+        void SaveSceneAs();
+
         Ref<Snow::Scene> m_ActiveScene;
         Entity m_CameraEntity;
         Entity m_Square1;

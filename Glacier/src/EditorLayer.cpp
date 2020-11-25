@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include "Snow/Utils/FileDialogs.h"
+
 namespace Snow {
 
     void EditorLayer::OnAttach() {
@@ -103,6 +105,24 @@ namespace Snow {
 
         style.WindowMinSize.x = minWinSizeX;
 
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("New", "Ctrl+N"))
+                    NewScene();
+
+                if (ImGui::MenuItem("Open...", "Ctrl+O"))
+                    OpenScene();
+
+                if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+                    SaveSceneAs();
+
+                if (ImGui::MenuItem("Exit")) Core::Application::Get().SetRunning(false);
+
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+
         m_SceneHierarchyPanel.OnImGuiRender();
 
         //ImGui::Begin("Stats");
@@ -131,5 +151,26 @@ namespace Snow {
         ImGui::PopStyleVar();
         ImGui::End();
 
+    }
+
+    void EditorLayer::NewScene() {
+        m_ActiveScene = Ref<Scene>::Create();
+        m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+    }
+
+    void EditorLayer::OpenScene() {
+        std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("Snow Scene (*.snow)\0.snow\0");
+        //if (filepath) {
+        //    m_ActiveScene = Ref<Scene>::Create();
+        //    m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        //    m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+        //}
+    }
+
+    void EditorLayer::SaveSceneAs() {
+        std::optional<std::string> filepath = Utils::FileDialogs::SaveFile("Snow Scene (*.snow)\0.snow\0");
+
+        SNOW_CORE_TRACE("You did it");
     }
 }
