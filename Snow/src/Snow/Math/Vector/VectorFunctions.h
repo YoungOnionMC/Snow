@@ -4,6 +4,12 @@
 namespace Snow {
     namespace Math {
         template<size_t L, typename T>
+        inline T* valuePtr(Vector<L, T>& vec);
+
+        template<size_t L, typename T>
+        inline const T* valuePtr(const Vector<L, T>& vec);
+
+        template<size_t L, typename T>
         inline constexpr Vector<L, T> abs(const Vector<L, T>& vec);
 
         template<size_t L, typename T>

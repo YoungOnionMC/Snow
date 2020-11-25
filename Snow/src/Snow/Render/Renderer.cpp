@@ -16,13 +16,18 @@ namespace Snow {
 
             void RenderResizeListener::HandleEvent(Core::Event::BaseEvent* event) {
                 Core::Event::WindowResizeEvent* e = (Core::Event::WindowResizeEvent*)event;
-                Renderer::SetViewport(e->GetWidth(), e->GetHeight());
             }
         }
 
+        RenderAPIType Renderer::s_RenderAPI = RenderAPIType::None;
+
+        struct RendererData {
+            Ref<RenderPass> m_ActiveRenderPass;
+        };
+
+        static RendererData s_Data;
+
         Renderer* Renderer::s_Instance = nullptr;
-        RenderAPI Renderer::s_RenderAPI = RenderAPI::None;
-        RenderCommand* Renderer::s_RenderCommand = nullptr;
         Context* Renderer::s_Context = nullptr;
 
         Event::RenderResizeListener* m_RenderResizeListener = nullptr;
@@ -30,7 +35,7 @@ namespace Snow {
         void Renderer::Init() {
             SNOW_CORE_INFO("Initializing Renderer");
             ContextSpecification contextSpec;
-            contextSpec.s_RenderAPI = GetRenderAPI();
+            contextSpec.s_RenderAPIType = GetRenderAPI();
             contextSpec.WindowHandle = Core::Application::Get().GetWindow()->GetWindowHandle();
 
             
@@ -39,29 +44,26 @@ namespace Snow {
             m_RenderResizeListener = new Event::RenderResizeListener();
             Core::Event::EventSystem::AddListener(m_RenderResizeListener);
 
-            s_RenderCommand = RenderCommand::Create();
+            RenderCommand::Init();
 
             Renderer2D::Init();
         }
 
-        void Renderer::BeginScene() {
-            s_RenderCommand->BeginScene();
+        void Renderer::BeginRenderPass(Ref<RenderPass> renderPass, bool clear) {
+            s_Data.m_ActiveRenderPass = renderPass;
+
+            renderPass->GetSpecification().TargetFramebuffer->Bind();
+            if (clear) {
+                const Math::Vector4f clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
+                RenderCommand::SetClearColor(clearColor);
+                RenderCommand::Clear();
+            }
         }
 
-        void Renderer::EndScene() {
-            s_RenderCommand->EndScene();
-        }
-
-        void Renderer::DrawIndexed(uint32_t count, PrimitiveType type) {
-            s_RenderCommand->DrawIndexed(count, type);
-        }
-
-        void Renderer::SetViewport(int width, int height) {
-            s_RenderCommand->SetViewport(width, height);
-        }
-
-        void Renderer::ClearMainColorAttachment(const Math::Vector4f& color) {
-            s_RenderCommand->ClearColorAttachment(color);
+        void Renderer::EndRenderPass() {
+            if (!s_Data.m_ActiveRenderPass) SNOW_CORE_ERROR("No active render pass!");
+            s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+            s_Data.m_ActiveRenderPass = nullptr;
         }
     }
 }

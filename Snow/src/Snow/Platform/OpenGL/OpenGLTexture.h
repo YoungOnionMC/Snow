@@ -18,6 +18,8 @@ namespace Snow {
             void Lock() override;
             void Unlock() override;
 
+            void SetData(void* data, uint32_t size) override;
+
             API::TextureFormat GetFormat() const override { return m_Format; }
             uint32_t GetWidth() const override { return m_Width; }
             uint32_t GetHeight() const override { return m_Height; }

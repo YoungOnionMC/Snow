@@ -156,7 +156,7 @@ namespace Snow {
                 SNOW_CORE_INFO("GLFW initialized");
             }
 
-            if (Render::Renderer::GetRenderAPI() != Render::RenderAPI::OpenGL)
+            if (Render::Renderer::GetRenderAPI() != Render::RenderAPIType::OpenGL)
                 glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             GLFWWindowHandle = glfwCreateWindow(WindowWidth, WindowHeight, "Test Window", nullptr, nullptr);
             SNOW_CORE_INFO("Using GLFW window");
@@ -197,6 +197,8 @@ namespace Snow {
 #elif defined(SNOW_WINDOW_GLFW)
             glfwPollEvents();
 #endif
+
+            Render::RenderCommand::SwapBuffers();
         }
 
         void* Window::GetWindowHandle() {

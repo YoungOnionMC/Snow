@@ -23,15 +23,15 @@ namespace Snow {
             Event::EventSystem::AddListener(m_AppRenderListener);
             Event::EventSystem::AddListener(m_AppCloseListener);
 
-            Render::Renderer::SetRenderAPI(Render::RenderAPI::OpenGL);
+            Render::Renderer::SetRenderAPI(Render::RenderAPIType::OpenGL);
             m_Window = new Window();
             Input::Init();
 
             m_LayerStack = LayerStack();
 
             Render::Renderer::Init();
-            //m_ImGuiLayer = new ImGuiLayer();
-            //m_LayerStack.PushOverlay(m_ImGuiLayer);
+            m_ImGuiLayer = ImGuiLayer::Create();
+            m_LayerStack.PushOverlay(m_ImGuiLayer);
         }
 
         Application::~Application() {
@@ -53,13 +53,15 @@ namespace Snow {
 
 
                 
-                Render::Renderer::BeginScene();
+                //Render::Renderer::BeginScene();
                 OnUpdate();
                 
 
                 //Render::Renderer2D::DrawQuad({0.0f, 0.0f},{1.0f , 1.0f});
-                //OnImGuiRender();
-                Render::Renderer::EndScene();
+                OnImGuiRender();
+
+                //Render::Renderer::SwapBuffers();
+                //Render::Renderer::EndScene();
 
             }
         }

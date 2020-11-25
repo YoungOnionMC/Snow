@@ -24,15 +24,13 @@ namespace Snow {
 
         void OpenGLVertexBuffer::SetData(void* data, uint32_t size) {
 
-            if (m_Size != size) {
+            if (m_Size != size)
                 m_Size = size;
-                Buffer buffercopy = Buffer::Copy(m_LocalBuffer);
-                m_LocalBuffer.Allocate(size);
-                m_LocalBuffer.Write(buffercopy.Data, buffercopy.Size, 0);
-                
-            }
-            else
-                m_LocalBuffer.Write(data, size, 0);
+
+            if (!m_LocalBuffer.Data)
+                m_LocalBuffer.Allocate(m_Size);
+            
+            m_LocalBuffer.Write(data, size, 0);
 
             glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
             glBufferData(GL_ARRAY_BUFFER, size, (void*)data, GL_STATIC_DRAW);

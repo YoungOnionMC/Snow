@@ -4,18 +4,16 @@
 #include "Snow/Render/Renderer.h"
 
 #include "Snow/Platform/OpenGL/OpenGLRenderCommand.h"
-#include "Snow/Platform/Vulkan/VulkanRenderCommand.h"
 
 namespace Snow {
     namespace Render {
-        RenderCommand* RenderCommand::Create() {
-            switch(Renderer::GetRenderAPI()){
-                case RenderAPI::None:   return nullptr;
-                case RenderAPI::OpenGL: return new OpenGLRenderCommand();
-                //case RenderAPI::Vulkan: return new VulkanRenderCommand();
+        Core::Scope<RenderAPI> RenderCommand::s_RenderAPI = nullptr;
+
+        Core::Scope<RenderAPI> RenderAPI::Create() {
+            switch (Renderer::GetRenderAPI()) {
+            case RenderAPIType::None:   return nullptr;
+            case RenderAPIType::OpenGL: return Core::CreateScope<OpenGLRenderCommand>();
             }
-            
-            return nullptr;
         }
     }
 }

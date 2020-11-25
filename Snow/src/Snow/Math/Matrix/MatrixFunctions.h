@@ -9,6 +9,9 @@
 
 namespace Snow {
     namespace Math {
+        template<size_t R, size_t C, typename T>
+        inline const T* valuePtr(const Matrix<R, C, T>& mat);
+
         template<typename T>
         inline constexpr T identity();
 
@@ -29,10 +32,10 @@ namespace Snow {
         inline Matrix<4, 4, T> ortho(T left, T right, T bottom, T top);
 
         template<typename T>
-        inline Matrix<4, 4, T> ortho(T left, T right, T bottom, T top, T near, T far);
+        inline Matrix<4, 4, T> ortho(T left, T right, T bottom, T top, T nearP, T farP);
 
         template<typename T>
-        inline Matrix<4, 4, T> perspective(T fovy, T aspect, T near, T far);
+        inline Matrix<4, 4, T> perspective(T fovy, T aspect, T nearP, T farP);
 
 
     }

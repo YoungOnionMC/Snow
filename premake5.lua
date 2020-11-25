@@ -16,6 +16,7 @@ workspace "Snow"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 VendorIncludeDir = {}
+VendorIncludeDir["ENTT"] = "%{wks.location}/Snow/vendor/ENTT/include"
 VendorIncludeDir["Glad"] = "%{wks.location}/Snow/vendor/Glad/include"
 VendorIncludeDir["GLFW"] = "%{wks.location}/Snow/vendor/GLFW/include"
 VendorIncludeDir["ImGui"] = "%{wks.location}/Snow/vendor/imgui"

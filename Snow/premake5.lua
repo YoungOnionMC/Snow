@@ -37,13 +37,15 @@ project "Snow"
         "vendor/stb/stb_textedit.h",
         "vendor/stb/stb_tilemap_editor.h",
         "vendor/stb/stb.h",
+
+        "vendor/ENTT/include/entt.hpp"
         
     }
 
     includedirs {
         "src",
         "vendor/spdlog/include",
-        "vendor/ENTT/include",
+        "%{VendorIncludeDir.ENTT}",
         "%{VendorIncludeDir.GLFW}",
         "%{VendorIncludeDir.Glad}",
         "%{VendorIncludeDir.ImGui}",

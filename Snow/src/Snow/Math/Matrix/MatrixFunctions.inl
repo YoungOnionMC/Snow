@@ -2,6 +2,11 @@
 
 namespace Snow {
     namespace Math {
+        template<size_t R, size_t C, typename T>
+        inline const T* valuePtr(const Matrix<R, C, T>& mat) {
+            return &(mat[0].x);
+        }
+
         template<typename T>
         inline constexpr T identity() {
             return initGenType<T>::identity();
@@ -51,6 +56,45 @@ namespace Snow {
             result.setcolumn(1, mat.column(1) * vec[1]);
             result.setcolumn(2, mat.column(2) * vec[2]);
             result.setcolumn(3, mat.column(3));
+            return result;
+        }
+
+        template<typename T>
+        inline Matrix<4, 4, T> ortho(T left, T right, T bottom, T top) {
+            Matrix<4, 4, T> result(static_cast<T>(1));
+            result[0][0] = static_cast<T>(2) / (right - left);
+            result[1][1] = static_cast<T>(2) / (top - bottom);
+            result[2][2] = -static_cast<T>(1);
+            result[0][3] = -(right + left) / (right - left);
+            result[1][3] = -(top + bottom) / (top - bottom);
+            return result;
+        }
+
+        template<typename T>
+        inline Matrix<4, 4, T> ortho(T left, T right, T bottom, T top, T nearP, T farP) {
+            Matrix<4, 4, T> result(static_cast<T>(1));
+            result[0][0] = static_cast<T>(2) / (right - left);
+            result[1][1] = static_cast<T>(2) / (top - bottom);
+            result[2][2] = -static_cast<T>(1);
+            result[0][3] = -(right + left) / (right - left);
+            result[1][3] = -(top + bottom) / (top - bottom);
+            result[2][3] = -(farP + nearP) / (farP - nearP);
+            return result;
+        }
+
+        template<typename T>
+        inline Matrix<4, 4, T> perspective(T fovy, T aspect, T nearP, T farP) {
+            assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+            const T tanHalfFOV = tan(fovy / static_cast<T>(2));
+
+            Matrix<4, 4, T> result(static_cast<T>(0));
+            result[0][0] = static_cast<T>(1) / (aspect * tanHalfFOV);
+            result[1][1] = static_cast<T>(1) / tanHalfFOV;
+            result[2][2] = -(farP + nearP) / (farP - nearP);
+            result[2][3] = -(static_cast<T>(2) * farP * nearP) / (farP - nearP);
+            result[3][2] = -static_cast<T>(1);
+
             return result;
         }
     }

@@ -7,7 +7,7 @@
 
 namespace Snow {
     namespace Render {
-        RenderAPI ContextSpecification::s_RenderAPI = RenderAPI::None;
+        RenderAPIType ContextSpecification::s_RenderAPIType = RenderAPIType::None;
         bool Context::s_Created = false;
 
         Context* Context::Create(const ContextSpecification& spec) {
@@ -15,10 +15,10 @@ namespace Snow {
                 SNOW_CORE_ERROR("Graphics Context already created");
             }
 
-            switch(spec.s_RenderAPI) {
-            case RenderAPI::None:   return nullptr;
-            case RenderAPI::OpenGL: return new OpenGLContext(spec);
-            case RenderAPI::Vulkan: return new VulkanContext(spec);
+            switch(spec.s_RenderAPIType) {
+            case RenderAPIType::None:   return nullptr;
+            case RenderAPIType::OpenGL: return new OpenGLContext(spec);
+            case RenderAPIType::Vulkan: return new VulkanContext(spec);
             }
             s_Created = true;
             SNOW_CORE_ERROR("Context must not be null");

@@ -11,12 +11,12 @@
 namespace Snow {
     namespace Render {
         SwapChain* SwapChain::Create(const SwapChainSpecification& spec) {
-        switch(Renderer::GetRenderAPI()) {
-        case RenderAPI::None: return nullptr;
-        case RenderAPI::OpenGL: return new OpenGLSwapChain(spec);
-        }
+            switch(Renderer::GetRenderAPI()) {
+            case RenderAPIType::None: return nullptr;
+            case RenderAPIType::OpenGL: return new OpenGLSwapChain(spec);
+            }
 
-        return nullptr;
+            return nullptr;
         }
     }
 }

@@ -46,6 +46,8 @@ namespace Snow {
                 virtual void Lock() = 0;
                 virtual void Unlock() = 0;
 
+                virtual void SetData(void* data, uint32_t size) = 0;
+
 
                 virtual Buffer GetWriteableBuffer() = 0;
 

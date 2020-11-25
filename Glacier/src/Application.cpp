@@ -3,13 +3,15 @@
 
 #include "EditorLayer.h"
 
-class MainApplication : public Snow::Core::Application {
-public:
-    MainApplication() {
-        PushLayer(new EditorLayer());
-    }
-};
+namespace Snow {
+    class MainApplication : public Core::Application {
+    public:
+        MainApplication() {
+            PushLayer(new EditorLayer());
+        }
+    };
 
-Snow::Core::Application* Snow::Core::CreateApplication() {
-    return new MainApplication();
+    Core::Application* Core::CreateApplication() {
+        return new MainApplication();
+    }
 }

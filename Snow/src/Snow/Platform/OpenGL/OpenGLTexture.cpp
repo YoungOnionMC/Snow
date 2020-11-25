@@ -105,5 +105,12 @@ namespace Snow {
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, SnowToOpenGLFormat(m_Format), GL_UNSIGNED_BYTE, m_ImageData.Data);
             m_Locked = false;
         }
+
+        void OpenGLTexture2D::SetData(void* data, uint32_t size) {
+            uint32_t bbp = SnowToOpenGLFormat(m_Format) == GL_RGBA ? 4 : 3;
+            if (!(size == m_Width * m_Height * bbp)) SNOW_CORE_ERROR("Data must be entire texture");
+            glBindTexture(GL_TEXTURE_2D, m_RendererID);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, SnowToOpenGLFormat(m_Format), GL_UNSIGNED_BYTE, data);
+        }
     }
 }

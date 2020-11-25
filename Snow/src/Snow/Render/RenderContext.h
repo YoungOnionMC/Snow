@@ -3,13 +3,13 @@
 namespace Snow {
     namespace Render {
 
-        enum class RenderAPI {
+        enum class RenderAPIType {
             None = 0,
             OpenGL, DirectX, Vulkan
         };
 
         struct ContextSpecification {
-            static RenderAPI s_RenderAPI;
+            static RenderAPIType s_RenderAPIType;
             void* WindowHandle;
         };
 

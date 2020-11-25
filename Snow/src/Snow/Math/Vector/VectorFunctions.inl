@@ -97,7 +97,45 @@ namespace Snow {
             }
         };
 
+        template<typename T>
+        inline T* valuePtr(Vector<1, T>& vec) {
+            return &(vec.x);
+        }
 
+        template<typename T>
+        inline T* valuePtr(Vector<2, T>& vec) {
+            return &(vec.x);
+        }
+
+        template<typename T>
+        inline T* valuePtr(Vector<3, T>& vec) {
+            return &(vec.x);
+        }
+
+        template<typename T>
+        inline T* valuePtr(Vector<4, T>& vec) {
+            return &(vec.x);
+        }
+
+        template<typename T>
+        inline const T* valuePtr(const Vector<1, T>& vec) {
+            return &(vec.x);
+        }
+
+        template<typename T>
+        inline const T* valuePtr(const Vector<2, T>& vec) {
+            return &(vec.x);
+        }
+
+        template<typename T>
+        inline const T* valuePtr(const Vector<3, T>& vec) {
+            return &(vec.x);
+        }
+
+        template<typename T>
+        inline const T* valuePtr(const Vector<4, T>& vec) {
+            return &(vec.x);
+        }
 
         template<size_t L, typename T>
         inline constexpr Vector<L, T> abs(const Vector<L, T>& vec) {
@@ -250,6 +288,16 @@ namespace Snow {
         template<size_t L, typename T>
         inline constexpr Vector<L, T> normalize(const Vector<L, T>& vec) {
             return vec * inversesqrt(dot(vec, vec));
+        }
+
+        template<size_t L, typename T>
+        inline constexpr Vector<L, T> degrees(const Vector<L, T>& vec) {
+            return functor1<Vector, L, T, T>::call(degrees, vec);
+        }
+
+        template<size_t L, typename T>
+        inline constexpr Vector<L, T> radians(const Vector<L, T>& vec) {
+            return functor1<Vector, L, T, T>::call(radians, vec);
         }
 
     }

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Base.h"
+#include "Snow/Core/Assert.h"
+#include "Snow/Core/Base.h"
 #include <memory>
 
 namespace Snow {
@@ -58,7 +59,7 @@ namespace Snow {
         }
 
         void Write(void* data, uint32_t size, uint32_t offset = 0) {
-            SNOW_ASSERT(offset + size <= this->Size, "Trying to write outside of buffer memory");
+            //SNOW_ASSERT(offset + size <= this->Size, "Trying to write outside of buffer memory");
             memcpy(Data + offset, data, size);
         }
 

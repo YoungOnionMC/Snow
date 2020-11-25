@@ -112,7 +112,7 @@ namespace Snow {
 
         template<typename T>
         inline constexpr T smoothstep(T edge0, T edge1, T value) {
-            const T tmp(clamp((value - edge0) / (edge1 - edge0), T(0), T(1));
+            const T tmp(clamp((value - edge0) / (edge1 - edge0), T(0), T(1)));
             return tmp * tmp * (T(3) - T(2) * tmp);
         }
 

@@ -17,8 +17,8 @@ project "Glacier"
         "src",
         "%{wks.location}/Snow/src",
         "%{wks.location}/Snow/vendor/spdlog/include",
+        "%{VendorIncludeDir.ENTT}",
         "%{VendorIncludeDir.ImGui}",
-
         --"%{VendorIncludeDir.GLFW}"
     }
 

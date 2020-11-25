@@ -48,5 +48,5 @@ void main() {
     case 31: texColor = texture(u_Textures[31], psInput.TexCoord); break;
     }
 
-    Color = texColor * psInput.Color;
+    Color = psInput.Color;
 }

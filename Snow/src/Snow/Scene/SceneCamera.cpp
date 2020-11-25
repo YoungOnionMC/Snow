@@ -6,11 +6,11 @@ namespace Snow {
         RecalculateProjection();
     }
 
-    void SceneCamera::SetPerspective(float fov, float near, float far) {
+    void SceneCamera::SetPerspective(float fov, float nearPlane, float farPlane) {
         m_ProjectionType = ProjectionType::Perspective;
         m_PerspectiveFOV = fov;
-        m_PerspectiveNear = near;
-        m_PerspectiveFar = far;
+        m_PerspectiveNear = nearPlane;
+        m_PerspectiveFar = farPlane;
         RecalculateProjection();
     }
 

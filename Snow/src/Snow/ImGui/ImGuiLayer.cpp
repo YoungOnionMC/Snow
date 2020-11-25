@@ -4,13 +4,13 @@
 #include "Snow/Render/Renderer.h"
 
 #include "Snow/Platform/OpenGL/OpenGLImGuiLayer.h"
-#include "Snow/Platform/Vulkan/VulkanImGuiLayer.h"
+//#include "Snow/Platform/Vulkan/VulkanImGuiLayer.h"
 
 namespace Snow {
     ImGuiLayer* ImGuiLayer::Create() {
         switch(Render::Renderer::GetRenderAPI()) {
-        case Render::RenderAPI::OpenGL: return new OpenGLImGuiLayer();
-        case Render::RenderAPI::Vulkan: return new VulkanImGuiLayer();
+        case Render::RenderAPIType::OpenGL: return new OpenGLImGuiLayer();
+        //case Render::RenderAPIType::Vulkan: return new VulkanImGuiLayer();
         }
     }
 }

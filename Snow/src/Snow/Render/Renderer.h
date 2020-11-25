@@ -22,18 +22,13 @@ namespace Snow {
         public:
             static void Init();
 
-            static void BeginScene();
-            static void EndScene();
-            static void SetViewport(int width, int height);
+            static void BeginRenderPass(Ref<RenderPass> renderPass, bool clear = true);
+            static void EndRenderPass();
 
-            static void ClearMainColorAttachment(const Math::Vector4f& color);
+            //static void SwapBuffers();
 
-            static void DrawIndexed(uint32_t count = 0, PrimitiveType primitiveType = PrimitiveType::Triangle);
-
-            static void SwapBuffers();
-
-            static void SetRenderAPI(RenderAPI api) { s_RenderAPI = api; }
-            static RenderAPI GetRenderAPI() { return s_RenderAPI; }
+            static void SetRenderAPI(RenderAPIType api) { s_RenderAPI = api; }
+            static RenderAPIType GetRenderAPI() { return s_RenderAPI; }
 
             static Renderer* Get() { return s_Instance; }
             static Context* GetContext() {return s_Context; }
@@ -41,10 +36,8 @@ namespace Snow {
         private:
             static Renderer* s_Instance;
 
-            static RenderAPI s_RenderAPI;
+            static RenderAPIType s_RenderAPI;
             static Context* s_Context;
-
-            static RenderCommand* s_RenderCommand;
         };
     }
 }

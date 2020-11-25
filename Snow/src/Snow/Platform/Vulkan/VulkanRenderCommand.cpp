@@ -79,7 +79,7 @@ namespace Snow {
             }
         }
 
-        void VulkanRenderCommand::EndScene() {
+        void VulkanRenderCommand::EndRenderPass() {
             {
                 vkCmdEndRenderPass(m_DrawCommandBuffer);
                 VKCheckError(vkEndCommandBuffer(m_DrawCommandBuffer));
@@ -91,7 +91,7 @@ namespace Snow {
             }
         }
 
-        void VulkanRenderCommand::SetViewport(int width, int height) {
+        void VulkanRenderCommand::SetViewport(uint32_t width, uint32_t height) {
             
         }
     }

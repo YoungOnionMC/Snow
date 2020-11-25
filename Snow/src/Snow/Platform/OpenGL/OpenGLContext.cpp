@@ -13,21 +13,6 @@
 
 namespace Snow {
     namespace Render {
-        static void GLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
-            if (severity == GL_DEBUG_SEVERITY_HIGH) {
-                SNOW_CORE_ERROR("[OpenGL Error] - {0}", message);
-            }
-            else if (severity == GL_DEBUG_SEVERITY_MEDIUM) {
-                SNOW_CORE_WARN("[OpenGL Error] - {0}", message);
-            }
-            else if (severity == GL_DEBUG_SEVERITY_LOW) {
-                SNOW_CORE_INFO("[OpenGL Error] - {0}", message);
-            }
-            else {
-                SNOW_CORE_TRACE("[OpenGL Error] - {0}", message);
-            }
-        }
-
         OpenGLContext::OpenGLContext(const ContextSpecification& spec) {
             m_Specification = spec;
             SNOW_CORE_TRACE("=============================");
@@ -92,10 +77,6 @@ namespace Snow {
             SNOW_CORE_INFO("    Renderer: {0}", glGetString(GL_RENDERER));
             SNOW_CORE_INFO("    Version: {0}", glGetString(GL_VERSION));
             SNOW_CORE_TRACE("=============================");
-
-            glDebugMessageCallback(GLLogMessage, nullptr);
-            glEnable(GL_DEBUG_OUTPUT);
-            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
             GLenum error = glGetError();
 
