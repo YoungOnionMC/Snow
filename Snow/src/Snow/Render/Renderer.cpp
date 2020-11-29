@@ -54,7 +54,7 @@ namespace Snow {
 
             renderPass->GetSpecification().TargetFramebuffer->Bind();
             if (clear) {
-                const Math::Vector4f clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
+                const glm::vec4 clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
                 RenderCommand::SetClearColor(clearColor);
                 RenderCommand::Clear();
             }

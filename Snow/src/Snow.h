@@ -12,7 +12,6 @@
 
 
 #include "Snow/ImGui/ImGuiLayer.h"
-#include "Snow/Math/Math.h"
 
 #include "Snow/Render/API/Framebuffer.h"
 #include "Snow/Render/RenderCommand.h"

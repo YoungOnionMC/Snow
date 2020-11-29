@@ -8,8 +8,8 @@ namespace Snow {
         bool Input::m_KeyState[1024] = {};
         bool Input::m_MouseState[32] = {};
 
-        Math::Vector2i Input::m_MousePosition = {};
-        Math::Vector2f Input::m_MouseScroll = {};
+        glm::vec2 Input::m_MousePosition = {};
+        glm::vec2 Input::m_MouseScroll = {};
 
 
         void Input::Init() {

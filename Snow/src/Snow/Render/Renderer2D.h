@@ -8,7 +8,7 @@
 
 #include "Snow/Render/Pipeline.h"
 
-#include "Snow/Math/Math.h"
+#include <glm/glm.hpp>
 
 
 namespace Snow {
@@ -18,7 +18,7 @@ namespace Snow {
             static void Init();
             static void Shutdown();
 
-            static void BeginScene(const Camera& camera, const Math::Matrix4x4f& transform);
+            static void BeginScene(const Camera& camera, const glm::mat4& transform);
             static void EndScene();
             static void Flush();
 
@@ -27,16 +27,16 @@ namespace Snow {
             static void PresentBatch();
 
 
-            static void DrawQuad(Math::Vector2f position, Math::Vector2f size, Math::Vector4f color);
-            static void DrawQuad(Math::Vector3f position, Math::Vector2f size, Math::Vector4f color);
-            static void DrawQuad(Math::Vector2f position, Math::Vector2f size, const Ref<API::Texture2D>& texture);
-            static void DrawQuad(Math::Vector3f position, Math::Vector2f size, const Ref<API::Texture2D>& texture);
+            static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+            static void DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
+            static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<API::Texture2D>& texture);
+            static void DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<API::Texture2D>& texture);
 
-            static void DrawQuad(const Math::Matrix4x4f& transform, const Math::Vector4f color);
-            static void DrawQuad(const Math::Matrix4x4f& transform, const Ref<API::Texture2D>& texture);
+            static void DrawQuad(const glm::mat4& transform, const glm::vec4& color);
+            static void DrawQuad(const glm::mat4& transform, const Ref<API::Texture2D>& texture);
 
-            static void DrawLine(const Math::Vector2f& startPosition, const Math::Vector2f& endPosition, const Math::Vector4f& color);
-            static void DrawLine(const Math::Vector3f& startPosition, const Math::Vector3f& endPosition, const Math::Vector4f& color);
+            static void DrawLine(const glm::vec2& startPosition, const glm::vec2& endPosition, const glm::vec4& color);
+            static void DrawLine(const glm::vec3& startPosition, const glm::vec3& endPosition, const glm::vec4& color);
 
         private:
             static void BeginBatch();

@@ -1,21 +1,21 @@
 #pragma once
 
-#include "Snow/Math/Math.h"
+#include <glm/glm.hpp>
 
 namespace Snow {
     namespace Render {
         class Camera {
         public:
             Camera() = default;
-            Camera(const Math::Matrix4x4f& projection) :
+            Camera(const glm::mat4& projection) :
                 m_Projection(projection) {}
 
             virtual ~Camera() = default;
 
-            const Math::Matrix4x4f& GetProjection() const { return m_Projection; }
+            const glm::mat4& GetProjection() const { return m_Projection; }
 
         protected:
-            Math::Matrix4x4f m_Projection = Math::Matrix4x4f(1.0f); 
+            glm::mat4 m_Projection = glm::mat4(1.0f); 
         };
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Snow/Math/Math.h"
+#include <glm/glm.hpp>
 
 #include "Snow/Core/Ref.h"
 
@@ -38,7 +38,7 @@ namespace Snow {
 
 		struct FramebufferSpecification {
 			uint32_t Width = 0, Height = 0;
-			Math::Vector4f ClearColor;
+			glm::vec4 ClearColor;
 			FramebufferAttachmentSpecification Attachments;
 			uint32_t Samples = 1;
 

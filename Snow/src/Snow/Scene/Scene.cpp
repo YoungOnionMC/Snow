@@ -6,10 +6,11 @@
 #include "Snow/Scene/Components.h"
 #include "Snow/Scene/Entity.h"
 
-#include "Snow/Math/Math.h"
+#include <glm/glm.hpp>
 
 namespace Snow {
-    Scene::Scene() {}
+    Scene::Scene(const std::string& name) :
+        m_Name(name) {}
 
     Scene::~Scene() {}
 
@@ -27,7 +28,7 @@ namespace Snow {
 
     void Scene::OnUpdate() {
         Render::Camera* mainCamera = nullptr;
-        Math::Matrix4x4f cameraTransform = Math::Matrix4x4f(1.0f);
+        glm::mat4 cameraTransform = glm::mat4(1.0f);
         {
             auto view = m_Registry.view<TransformComponent, CameraComponent>();
             for(auto entity : view) {

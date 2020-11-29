@@ -19,11 +19,13 @@ VendorIncludeDir = {}
 VendorIncludeDir["ENTT"] = "%{wks.location}/Snow/vendor/ENTT/include"
 VendorIncludeDir["Glad"] = "%{wks.location}/Snow/vendor/Glad/include"
 VendorIncludeDir["GLFW"] = "%{wks.location}/Snow/vendor/GLFW/include"
+VendorIncludeDir["glm"] = "%{wks.location}/Snow/vendor/glm"
 VendorIncludeDir["ImGui"] = "%{wks.location}/Snow/vendor/imgui"
 VendorIncludeDir["stb"] = "%{wks.location}/Snow/vendor/stb"
 VendorIncludeDir["Vulkan"] = "%{wks.location}/Snow/vendor/vulkan/Include"
 VendorIncludeDir["shaderc"] = "%{wks.location}/Snow/vendor/shaderc/Include"
 VendorIncludeDir["SPIRVCross"] = "%{wks.location}/Snow/vendor/SPIRV-Cross"
+VendorIncludeDir["yaml_cpp"] = "%{wks.location}/Snow/vendor/yaml-cpp/include"
 
 
 VendorLibraryDir = {}
@@ -41,6 +43,7 @@ group "Vendor"
     include "Snow/vendor/GLFW"
     include "Snow/vendor/imgui"
     include "Snow/vendor/SPIRV-Cross"
+    include "Snow/vendor/yaml-cpp"
 group ""
 
 include "Snow"

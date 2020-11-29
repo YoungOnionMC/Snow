@@ -4,7 +4,7 @@
 
 #include "Snow/Core/Event/Event.h"
 
-#include "Snow/Math/Math.h"
+#include <glm/glm.hpp>
 
 namespace Snow {
     namespace Core {
@@ -30,8 +30,8 @@ namespace Snow {
             static bool m_KeyState[1024];
             static bool m_MouseState[32];
 
-            static Math::Vector2i m_MousePosition;
-            static Math::Vector2f m_MouseScroll;
+            static glm::vec2 m_MousePosition;
+            static glm::vec2 m_MouseScroll;
 
 
         };

@@ -5,7 +5,7 @@
 
 #include "Snow/Render/Pipeline.h"
 
-#include "Snow/Math/Vector/Vector4.h"
+#include <glm/glm.hpp>
 
 namespace Snow {
     namespace Render {
@@ -14,7 +14,7 @@ namespace Snow {
 
             virtual void Init() = 0;
             virtual void SetViewport(uint32_t width, uint32_t height) = 0;
-            virtual void SetClearColor(const Math::Vector4f& color) = 0;
+            virtual void SetClearColor(const glm::vec4& color) = 0;
             virtual void Clear() = 0;
 
             virtual void DrawIndexed(uint32_t count, PrimitiveType type) = 0;
@@ -32,7 +32,7 @@ namespace Snow {
                 s_RenderAPI->Init();
             }
 
-            static void SetClearColor(const Math::Vector4f& color) {
+            static void SetClearColor(const glm::vec4& color) {
                 s_RenderAPI->SetClearColor(color);
             }
 

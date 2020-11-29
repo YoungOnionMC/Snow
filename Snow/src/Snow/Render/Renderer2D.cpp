@@ -1,19 +1,21 @@
 #include <spch.h>
 #include "Snow/Render/Renderer2D.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 namespace Snow {
     namespace Render {
 
         struct QuadVertex {
-            Math::Vector3f Position;
-            Math::Vector2f TexCoord;
+            glm::vec3 Position;
+            glm::vec2 TexCoord;
             float TexID;
-            Math::Vector4f Color;
+            glm::vec4 Color;
         };
 
         struct LineVertex {
-            Math::Vector3f Position;
-            Math::Vector4f Color;
+            glm::vec3 Position;
+            glm::vec4 Color;
         };
 
         struct Renderer2DStaticData {
@@ -33,7 +35,7 @@ namespace Snow {
             Ref<API::IndexBuffer> QuadIBO;
             Ref<API::VertexBuffer> QuadVBO;
 
-            Math::Vector4f QuadVertexPositions[4];
+            glm::vec4 QuadVertexPositions[4];
 
             Ref<API::Texture2D> WhiteTexture;
 
@@ -41,7 +43,7 @@ namespace Snow {
             uint32_t TextureSlotIndex = 1;
 
 
-            Math::Vector2f TexCoords[4] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
+            glm::vec2 TexCoords[4] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
 
 
             Ref<Pipeline> LinePipeline;
@@ -67,7 +69,7 @@ namespace Snow {
                     { AttribType::Float, "TexID" },
                     { AttribType::Float4, "Color" },
                 };
-                pipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/TestVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/TestFrag.glsl") };
+                pipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/QuadBatchRenderVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/QuadBatchRenderFrag.glsl") };
                 pipelineSpec.Type = PrimitiveType::Triangle;
 
                 s_Data.QuadPipeline = Pipeline::Create(pipelineSpec);
@@ -115,7 +117,7 @@ namespace Snow {
                     { AttribType::Float3, "Position" },
                     { AttribType::Float4, "Color" }
                 };
-                linePipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/BatchRenderLineVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/BatchRenderLineFrag.glsl") };
+                linePipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/LineBatchRenderVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/LineBatchRenderFrag.glsl") };
                 linePipelineSpec.Type = PrimitiveType::Line;
 
                 s_Data.LinePipeline = Pipeline::Create(linePipelineSpec);
@@ -134,10 +136,14 @@ namespace Snow {
             }
         }
 
-        void Renderer2D::BeginScene(const Camera& camera, const Math::Matrix4x4f& transform) {
-            Math::Matrix4x4f projMatrix = camera.GetProjection();
+        void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform) {
+            glm::mat4 projMatrix = camera.GetProjection();
 
-            //s_Data.QuadPipeline->SetUniformBuffer("Camera", projMatrix * transform, sizeof(Math::Matrix4x4f));
+            glm::mat4 viewProjMatrix = projMatrix * glm::inverse(transform);
+            s_Data.QuadPipeline->SetUniformBufferData(0, &viewProjMatrix, sizeof(glm::mat4));
+
+            glm::vec3 color = { 0.5, 0.8, 0.8 };
+            s_Data.QuadPipeline->SetUniformBufferData(1, &color, sizeof(glm::vec3));
         }
 
         void Renderer2D::EndScene() {
@@ -163,6 +169,10 @@ namespace Snow {
                     s_Data.TextureSlots[i]->Bind(i);
                 
                 s_Data.QuadPipeline->Bind();
+
+                for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+                    s_Data.TextureSlots[i]->Bind(i);
+
                 s_Data.QuadIBO->Bind();
                 RenderCommand::DrawIndexed(s_Data.QuadIndexCount, s_Data.QuadPipeline->GetSpecification().Type);
             }
@@ -189,20 +199,20 @@ namespace Snow {
             BeginBatch();
         }
 
-        void Renderer2D::DrawQuad(Math::Vector2f position, Math::Vector2f size, Math::Vector4f color) {
+        void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color) {
             DrawQuad({ position.x, position.y, 0.0f }, size, color);
         }
 
-        void Renderer2D::DrawQuad(Math::Vector3f position, Math::Vector2f size, Math::Vector4f color) {
-            Math::Matrix4x4b transform = Math::translate(Math::Matrix4x4f(1.0f), position) * Math::scale(Math::Matrix4x4f(1.0f), { size.x, size.y, 0.0f });
+        void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color) {
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 0.0f });
 
             DrawQuad(transform, color);
         }
 
-        void Renderer2D::DrawQuad(const Math::Matrix4x4f& transform, const Math::Vector4f color) {
+        void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color) {
             constexpr size_t quadVertexCount = 4;
             const float textureIndex = 0.0f;
-            constexpr Math::Vector2f textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f} };
+            constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f} };
             const float tilingFactor = 1.0f;
 
             for (size_t i = 0; i < quadVertexCount; i++) {
@@ -217,11 +227,11 @@ namespace Snow {
         }
 
 
-        void Renderer2D::DrawLine(const Math::Vector2f& startPosition, const Math::Vector2f& endPosition, const Math::Vector4f& color) {
+        void Renderer2D::DrawLine(const glm::vec2& startPosition, const glm::vec2& endPosition, const glm::vec4& color) {
             DrawLine({startPosition.x, startPosition.y, 0.0f}, {endPosition.x, endPosition.y, 0.0f}, color);
         }
 
-        void Renderer2D::DrawLine(const Math::Vector3f& startPosition, const Math::Vector3f& endPosition, const Math::Vector4f& color) {
+        void Renderer2D::DrawLine(const glm::vec3& startPosition, const glm::vec3& endPosition, const glm::vec4& color) {
             s_Data.LineVertexData->Position = startPosition;
             s_Data.LineVertexData->Color = color;
             s_Data.LineVertexData++;

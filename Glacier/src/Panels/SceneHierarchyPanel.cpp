@@ -5,6 +5,8 @@
 
 #include "Snow/Scene/Components.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 namespace Snow {
     SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene) {
         SetScene(scene);
@@ -58,7 +60,7 @@ namespace Snow {
         }
     }
 
-    static void DrawVec3Control(const std::string& label, Math::Vector3f& values, float resetValue = 0.0f, float columnWidth = 100.0f) {
+    static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f) {
         ImGuiIO& io = ImGui::GetIO();
         auto boldFont = io.Fonts->Fonts[0];
 
@@ -194,15 +196,15 @@ namespace Snow {
 
         DrawComponent<TransformComponent>("Transform", entity, [](auto& component) {
             DrawVec3Control("Translation", component.Translation);
-            Math::Vector3f rotation = Math::degrees(component.Rotation);
+            glm::vec3 rotation = glm::degrees(component.Rotation);
             DrawVec3Control("Rotation", rotation);
-            component.Rotation = Math::radians(rotation);
+            component.Rotation = glm::radians(rotation);
             DrawVec3Control("Scale", component.Scale);
 
         });
 
         DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component) {
-            ImGui::ColorEdit4("Color", Math::valuePtr(component.Color));
+            ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
         });
     }
 }

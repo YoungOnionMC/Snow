@@ -13,12 +13,12 @@ namespace Snow {
             //void BeginScene() override;
             //void EndScene() override;
 
-            void SetClearColor(const Math::Vector4f& color) override;
+            void SetClearColor(const glm::vec4& color) override;
             void Clear() override;
 
             void DrawIndexed(uint32_t count, PrimitiveType type) override;
 
-            //void ClearColorAttachment(const Math::Vector4f& color) override;
+            //void ClearColorAttachment(const glm::vec4& color) override;
 
             void SetViewport(uint32_t width, uint32_t height) override;
 

@@ -3,6 +3,8 @@
 #include <Snow.h>
 #include "Panels/SceneHierarchyPanel.h"
 
+#include <glm/glm.hpp>
+
 namespace Snow {
     class EditorLayer : public Core::Layer {
     public:
@@ -27,7 +29,7 @@ namespace Snow {
         Ref<Render::RenderPass> m_CompRenderPass;
 
         bool m_ViewportFocused = false, m_ViewportHovered = false;
-        Math::Vector2f m_ViewportSize = { 0.0f, 0.0f };
+        glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
 

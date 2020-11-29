@@ -2,9 +2,10 @@
 
 #include <string>
 
-#include "Snow/Math/Math.h"
-
 #include "Snow/Scene/SceneCamera.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Snow {
     struct TagComponent {
@@ -17,32 +18,32 @@ namespace Snow {
     };
 
     struct TransformComponent {
-        Math::Vector3f Translation = {0.0f ,0.0f, 0.0f};
-        Math::Vector3f Rotation = {0.0f, 0.0f, 0.0f};
-        Math::Vector3f Scale = {1.0f, 1.0f, 1.0f};
+        glm::vec3 Translation = {0.0f ,0.0f, 0.0f};
+        glm::vec3 Rotation = {0.0f, 0.0f, 0.0f};
+        glm::vec3 Scale = {1.0f, 1.0f, 1.0f};
 
         TransformComponent() = default;
         TransformComponent(const TransformComponent&) = default;
-        TransformComponent(const Math::Vector3f& translation) :
+        TransformComponent(const glm::vec3& translation) :
             Translation(translation) {}
 
-        Math::Matrix4x4f GetTransform() const {
-            Math::Matrix4x4f rotation = Math::rotate(Math::Matrix4x4f(1.0f), Rotation.x, {1, 0, 0}) *
-                                    Math::rotate(Math::Matrix4x4f(1.0f), Rotation.y, {0, 1, 0}) *
-                                    Math::rotate(Math::Matrix4x4f(1.0f), Rotation.z, {0, 0, 1});
+        glm::mat4 GetTransform() const {
+            glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 })
+				* glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
+				* glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
 
-            return Math::translate(Math::Matrix4x4f(1.0f), Translation) *
-                    rotation * Math::scale(Math::Matrix4x4f(1.0f), Scale);
+            return glm::translate(glm::mat4(1.0f), Translation) *
+                    rotation * glm::scale(glm::mat4(1.0f), Scale);
 
         }
     };
 
     struct SpriteRendererComponent {
-        Math::Vector4f Color = {1.0f, 1.0f, 1.0f, 1.0f};
+        glm::vec4 Color = {1.0f, 1.0f, 1.0f, 1.0f};
 
         SpriteRendererComponent() = default;
         SpriteRendererComponent(const SpriteRendererComponent&) = default;
-        SpriteRendererComponent(const Math::Vector4f& color) :
+        SpriteRendererComponent(const glm::vec4& color) :
             Color(color) {}
     };
 
@@ -51,7 +52,11 @@ namespace Snow {
         bool Primary = true;
         bool FixedAspectRatio = false;
 
-        CameraComponent() = default;
+        CameraComponent() {
+            Camera.SetViewportSize(1280, 720);
+            //Camera.SetPerspective(45.0f, 0.1f, 1000.0f);
+            Camera.SetOrthographic(20, -1.0f, 1.0f);
+        }
         CameraComponent(const CameraComponent&) = default;
 
     };

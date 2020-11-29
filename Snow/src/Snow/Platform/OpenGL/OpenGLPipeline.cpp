@@ -32,6 +32,40 @@ namespace Snow {
             }
         }
 
+        void OpenGLPipeline::SetUniformBufferData(const std::string& uniformBufferName, void* data, uint32_t size) {
+            uint8_t* buffer = new uint8_t[size];
+            memcpy(buffer, data, size);
+            
+            ShaderUniformBuffer* uniformBuffer = nullptr;
+            for(auto& [bindingPoint, ub] : m_UniformBuffers) {
+                if (ub.Name == uniformBufferName) {
+                    uniformBuffer = &ub;
+                    break;
+                }
+            }
+
+            glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer->RendererID);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, size, buffer);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+            delete[] buffer;
+        }
+
+        void OpenGLPipeline::SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) {
+            uint8_t* buffer = new uint8_t[size];
+            memcpy(buffer, data, size);
+
+
+            ShaderUniformBuffer* uniformBuffer = &m_UniformBuffers[bindingPoint];
+
+            glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer->RendererID);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+            delete[] buffer;
+            //glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        }
+
         GLenum OpenGLPipeline::OpenGLBufferAttribType(AttribType type) const {
             switch(type) {
             case AttribType::Float: return GL_FLOAT;
@@ -256,15 +290,15 @@ namespace Snow {
             glUniform1f(GetUniformLocation(name), value);
         }
 
-        void OpenGLPipeline::SetUniform(const std::string& name, const Math::Vector2f& value) {
+        void OpenGLPipeline::SetUniform(const std::string& name, const glm::vec2& value) {
             glUniform2f(GetUniformLocation(name), value.x, value.y);
         }
 
-        void OpenGLPipeline::SetUniform(const std::string& name, const Math::Vector3f& value) {
+        void OpenGLPipeline::SetUniform(const std::string& name, const glm::vec3& value) {
             glUniform3f(GetUniformLocation(name), value.x, value.y, value.z);
         }
 
-        void OpenGLPipeline::SetUniform(const std::string& name, const Math::Vector4f& value) {
+        void OpenGLPipeline::SetUniform(const std::string& name, const glm::vec4& value) {
             glUniform4f(GetUniformLocation(name), value.x, value.y, value.z, value.w);
         }
 
@@ -280,15 +314,15 @@ namespace Snow {
             glUniform1f(location, value);
         }
 
-        void OpenGLPipeline::UploadUniformFloat2(uint32_t location, const Math::Vector2f& value) {
+        void OpenGLPipeline::UploadUniformFloat2(uint32_t location, const glm::vec2& value) {
             glUniform2f(location, value.x, value.y);
         }
 
-        void OpenGLPipeline::UploadUniformFloat3(uint32_t location, const Math::Vector3f& value) {
+        void OpenGLPipeline::UploadUniformFloat3(uint32_t location, const glm::vec3& value) {
             glUniform3f(location, value.x, value.y, value.z);
         }
 
-        void OpenGLPipeline::UploadUniformFloat4(uint32_t location, const Math::Vector4f& value) {
+        void OpenGLPipeline::UploadUniformFloat4(uint32_t location, const glm::vec4& value) {
             glUniform4f(location, value.x, value.y, value.z, value.w);
         }
 

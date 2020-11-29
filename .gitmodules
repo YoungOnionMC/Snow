@@ -13,3 +13,9 @@
 [submodule "Snow/vendor/SPIRV-Cross"]
 	path = Snow/vendor/SPIRV-Cross
 	url = https://github.com/JamesStroebe/SPIRV-Cross
+[submodule "Snow/vendor/yaml-cpp"]
+	path = Snow/vendor/yaml-cpp
+	url = https://github.com/JamesStroebe/yaml-cpp
+[submodule "Snow/vendor/glm"]
+	path = Snow/vendor/glm
+	url = https://github.com/g-truc/glm

@@ -48,7 +48,7 @@ namespace Snow {
             glDrawElements(GetPrimitiveType(type), count, GL_UNSIGNED_INT, nullptr);
         }
 
-        void OpenGLRenderCommand::SetClearColor(const Math::Vector4f& color) {
+        void OpenGLRenderCommand::SetClearColor(const glm::vec4& color) {
             glClearColor(color.r, color.g, color.b, color.a);
         }
 

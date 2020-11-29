@@ -46,16 +46,19 @@ project "Snow"
         "src",
         "vendor/spdlog/include",
         "%{VendorIncludeDir.ENTT}",
-        "%{VendorIncludeDir.GLFW}",
         "%{VendorIncludeDir.Glad}",
+        "%{VendorIncludeDir.GLFW}",
+        "%{VendorIncludeDir.glm}",
         "%{VendorIncludeDir.ImGui}",
         "%{VendorIncludeDir.stb}",
         "%{VendorIncludeDir.SPIRVCross}",
+        "%{VendorIncludeDir.yaml_cpp}",
         
     }
     
     links {
         "Glad",
+        "YAML",
     }
 
     defines {

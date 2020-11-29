@@ -16,6 +16,9 @@ namespace Snow {
 
 			void Bind() override;
 
+			void SetUniformBufferData(const std::string& name, void* data, uint32_t size) override {}
+			void SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) override {}
+
 			const PipelineSpecification& GetSpecification() const override { return m_Specification; }
 		private:
 			void Invalidate();

@@ -10,7 +10,7 @@ namespace Snow {
 
     class Scene : public RefCounted {
     public:
-        Scene();
+        Scene(const std::string& name = "Unnamed Scene");
         ~Scene();
 
         Entity CreateEntity(const std::string& name = std::string());
@@ -24,9 +24,10 @@ namespace Snow {
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
         friend class Entity;
+        friend class SceneSerializer;
         friend class SceneHierarchyPanel;
 
-        
+        std::string m_Name;
 
 
     };

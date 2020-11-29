@@ -26,7 +26,7 @@ namespace Snow {
         m_CameraEntity.AddComponent<CameraComponent>();
 
         m_Square1 = m_ActiveScene->CreateEntity("Square");
-        m_Square1.AddComponent<SpriteRendererComponent>(Math::Vector4f{0.0f, 1.0f, 0.5f, 1.0f});
+        m_Square1.AddComponent<SpriteRendererComponent>(glm::vec4{0.0f, 1.0f, 0.5f, 1.0f});
 
         m_SceneHierarchyPanel.SetScene(m_ActiveScene);
     }
@@ -161,16 +161,22 @@ namespace Snow {
 
     void EditorLayer::OpenScene() {
         std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("Snow Scene (*.snow)\0.snow\0");
-        //if (filepath) {
-        //    m_ActiveScene = Ref<Scene>::Create();
-        //    m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-        //    m_SceneHierarchyPanel.SetScene(m_ActiveScene);
-        //}
+        if (filepath) {
+            m_ActiveScene = Ref<Scene>::Create();
+            m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+        }
     }
 
     void EditorLayer::SaveSceneAs() {
         std::optional<std::string> filepath = Utils::FileDialogs::SaveFile("Snow Scene (*.snow)\0.snow\0");
+        if (filepath) {
+            m_ActiveScene = Ref<Scene>::Create();
+            m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_SceneHierarchyPanel.SetScene(m_ActiveScene);
 
+
+        }
         SNOW_CORE_TRACE("You did it");
     }
 }
