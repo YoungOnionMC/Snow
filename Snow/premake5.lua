@@ -45,6 +45,7 @@ project "Snow"
     includedirs {
         "src",
         "vendor/spdlog/include",
+        "%{VendorIncludeDir.Assimp}",
         "%{VendorIncludeDir.ENTT}",
         "%{VendorIncludeDir.Glad}",
         "%{VendorIncludeDir.GLFW}",
@@ -82,6 +83,7 @@ project "Snow"
         }
         
         libdirs {
+            "%{VendorLibraryDir.Assimp}/Windows",
             "%{VendorLibraryDir.Vulkan}/Windows",
             "%{VendorLibraryDir.shaderc}/Windows",
             "%{VendorLibraryDir.glslang}/Windows",
@@ -108,6 +110,8 @@ project "Snow"
 
             "SPIRV-Tools.lib",
             "SPIRV-Tools-opt.lib",
+
+            "assimp-vc142-mtd.lib",
             
 
             "GLFW",

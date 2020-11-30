@@ -113,7 +113,7 @@ namespace Snow {
         public:
             ~Pipeline() = default;
 
-            virtual void Bind() = 0; 
+            virtual void Bind() const = 0; 
 
             virtual void SetUniformBufferData(const std::string& uniformBufferName, void* data = nullptr, uint32_t size = 0) = 0;
             virtual void SetUniformBufferData(uint32_t bindingPoint, void* data = nullptr, uint32_t size = 0) = 0;

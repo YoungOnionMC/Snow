@@ -13,7 +13,7 @@ namespace Snow {
         public:
             OpenGLPipeline(const PipelineSpecification& spec);
 
-            void Bind() override;
+            void Bind() const override;
 
             void SetUniformBufferData(const std::string& uniformBufferName, void* data, uint32_t size) override;
             void SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) override;

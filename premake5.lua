@@ -16,6 +16,7 @@ workspace "Snow"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 VendorIncludeDir = {}
+VendorIncludeDir["Assimp"] = "%{wks.location}/Snow/vendor/assimp/include"
 VendorIncludeDir["ENTT"] = "%{wks.location}/Snow/vendor/ENTT/include"
 VendorIncludeDir["Glad"] = "%{wks.location}/Snow/vendor/Glad/include"
 VendorIncludeDir["GLFW"] = "%{wks.location}/Snow/vendor/GLFW/include"
@@ -29,6 +30,7 @@ VendorIncludeDir["yaml_cpp"] = "%{wks.location}/Snow/vendor/yaml-cpp/include"
 
 
 VendorLibraryDir = {}
+VendorLibraryDir["Assimp"] = "%{wks.location}/Snow/vendor/assimp/Lib"
 VendorLibraryDir["Vulkan"] = "%{wks.location}/Snow/vendor/vulkan/Lib"
 VendorLibraryDir["shaderc"] = "%{wks.location}/Snow/vendor/shaderc/Lib"
 VendorLibraryDir["glslang"] = "%{wks.location}/Snow/vendor/glslang/Lib"

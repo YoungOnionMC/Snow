@@ -28,8 +28,13 @@ project "Glacier"
 	}
 
     if os.target() == "windows" then
+        libdirs {
+            "%{VendorLibraryDir.Assimp}/Windows"
+        }
+
         links {
-            "Snow"
+            "Snow",
+            "assimp-vc142-mtd.lib",
         }
     end
 

@@ -14,7 +14,7 @@ namespace Snow {
 		public:
 			VulkanPipeline(const PipelineSpecification& spec);
 
-			void Bind() override;
+			void Bind() const override;
 
 			void SetUniformBufferData(const std::string& name, void* data, uint32_t size) override {}
 			void SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) override {}

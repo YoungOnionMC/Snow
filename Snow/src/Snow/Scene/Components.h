@@ -9,6 +9,10 @@
 
 #include "Snow/Render/API/Texture.h"
 
+#include "Snow/Render/Mesh.h"
+
+#include <string>
+
 namespace Snow {
     struct TagComponent {
         std::string Tag;
@@ -63,5 +67,14 @@ namespace Snow {
         }
         CameraComponent(const CameraComponent&) = default;
 
+    };
+
+    struct MeshComponent {
+        Ref<Render::Mesh> Mesh;
+
+        MeshComponent() = default;
+        MeshComponent(const std::string& filePath) {
+            Mesh = Ref<Render::Mesh>::Create(filePath);
+        }
     };
 }

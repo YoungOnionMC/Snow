@@ -142,11 +142,11 @@ namespace Snow {
         void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform) {
             s_Data.QuadPipeline->Bind();
 
-            glm::mat4 viewProjMatrix = camera.GetProjection() * glm::inverse(transform);
+            glm::mat4 viewProjMatrix = camera.GetProjection() * transform;
             s_Data.QuadPipeline->SetUniformBufferData(0, glm::value_ptr(viewProjMatrix), sizeof(glm::mat4));
 
-            glm::vec3 color = { 0.5, 0.0, 0.8 };
-            s_Data.QuadPipeline->SetUniformBufferData(1, glm::value_ptr(color), sizeof(glm::vec3));
+            //glm::vec3 color = { 0.5, 0.0, 0.8 };
+            //s_Data.QuadPipeline->SetUniformBufferData(1, glm::value_ptr(color), sizeof(glm::vec3));
 
             BeginBatch();
         }

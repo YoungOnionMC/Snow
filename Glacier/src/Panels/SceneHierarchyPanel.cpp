@@ -45,6 +45,10 @@ namespace Snow {
             DrawComponents(m_SelectionContext);
 
         ImGui::End();
+
+        ImGui::Begin("Environment");
+        DrawEnvironment();
+        ImGui::End();
     }
 
     void SceneHierarchyPanel::DrawEntityNode(Entity entity) {
@@ -193,6 +197,11 @@ namespace Snow {
                 ImGui::CloseCurrentPopup();
             }
 
+            if (ImGui::MenuItem("Mesh")) {
+                m_SelectionContext.AddComponent<MeshComponent>();
+                ImGui::CloseCurrentPopup();
+            }
+
             ImGui::EndPopup();
         }
 
@@ -272,5 +281,23 @@ namespace Snow {
             }
             
         });
+
+        DrawComponent<MeshComponent>("Mesh", entity, [](auto& component) {
+            Ref<Render::Mesh> m = component.Mesh;
+            auto p = m.Raw() == nullptr ? "assets/models/Cube.obj" : m->GetPath();
+            ImGui::Text(p.c_str());
+            if (ImGui::IsItemClicked()) {
+                std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("");
+                if (filepath.has_value()) {
+                    component.Mesh = Ref<Render::Mesh>::Create(filepath.value());
+                }
+            }
+        });
+    }
+
+    void SceneHierarchyPanel::DrawEnvironment() {
+
+        ImGui::ColorEdit3("Light Color", glm::value_ptr(m_SceneContext->GetLight().Radiance));
+
     }
 }

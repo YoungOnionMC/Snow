@@ -20,10 +20,13 @@ namespace Snow {
         void DrawEntityNode(Entity entity);
         void DrawComponents(Entity entity);
 
+        void DrawEnvironment();
+
         Ref<Scene> m_SceneContext;
         Entity m_SelectionContext = {};
 
         Ref<Render::API::Texture2D> m_CheckerboardTexture;
 
+        
     };
 }

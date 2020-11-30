@@ -98,7 +98,7 @@ namespace Snow {
 			
 		}
 
-		void VulkanPipeline::Bind() {
+		void VulkanPipeline::Bind() const {
 			VulkanContext* vkContext = VulkanContext::Get();
 			VulkanSwapChain vkSwapChain = vkContext->GetSwapChain();
 			vkCmdBindPipeline(vkSwapChain.GetCurrentDrawCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);

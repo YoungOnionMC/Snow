@@ -8,14 +8,6 @@ layout (location = 0) in VertexOutput {
     vec4 Color;
 } psInput;
 
-struct Light {
-    vec3 Albedo;
-};
-
-layout (std140, binding = 1) uniform Environment {
-    Light lights;
-} mainLight;
-
 layout (binding = 0) uniform sampler2D u_Textures[32];
 
 void main() {

@@ -21,7 +21,7 @@ namespace Snow {
             SPIRVReflection();
         }
 
-        void OpenGLPipeline::Bind() {
+        void OpenGLPipeline::Bind() const {
             glUseProgram(m_PipelineHandle);
             
             uint32_t layoutIndex = 0;
@@ -30,6 +30,8 @@ namespace Snow {
                 glVertexAttribPointer(layoutIndex, element.GetComponentCount(), OpenGLBufferAttribType(element.Type), element.Normalized? GL_TRUE: GL_FALSE, m_Specification.Layout.GetStride(), (const void*)(intptr_t)element.Offset);
                 layoutIndex++;
             }
+
+            SNOW_CORE_ERROR("UNIFORM BUFFER SIZE : {0}", m_UniformBuffers.size());
         }
 
         void OpenGLPipeline::SetUniformBufferData(const std::string& uniformBufferName, void* data, uint32_t size) {
