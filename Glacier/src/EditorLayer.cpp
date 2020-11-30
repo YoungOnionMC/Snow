@@ -4,6 +4,8 @@
 
 #include "Snow/Utils/FileDialogs.h"
 
+#include "Snow/Scene/SceneSerializer.h"
+
 namespace Snow {
 
     void EditorLayer::OnAttach() {
@@ -172,9 +174,8 @@ namespace Snow {
     void EditorLayer::SaveSceneAs() {
         std::optional<std::string> filepath = Utils::FileDialogs::SaveFile("Snow Scene (*.snow)\0.snow\0");
         if (filepath) {
-            m_ActiveScene = Ref<Scene>::Create();
-            m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+            SceneSerializer serializer(m_ActiveScene);
+            serializer.SerializeText(*filepath);
 
 
         }
