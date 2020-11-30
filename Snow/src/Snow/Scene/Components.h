@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Snow/Render/API/Texture.h"
+
 namespace Snow {
     struct TagComponent {
         std::string Tag;
@@ -40,6 +42,8 @@ namespace Snow {
 
     struct SpriteRendererComponent {
         glm::vec4 Color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+        Ref<Render::API::Texture2D> Texture;
 
         SpriteRendererComponent() = default;
         SpriteRendererComponent(const SpriteRendererComponent&) = default;

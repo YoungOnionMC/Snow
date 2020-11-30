@@ -69,6 +69,6 @@ namespace Snow {
             uint32_t m_Count = 0;
         };
 
-        typedef std::vector<ShaderResource*> ShaderResourceList; 
+        typedef std::vector<ShaderResource*> ShaderResourceList;
     }
 }

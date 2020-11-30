@@ -8,9 +8,13 @@ layout (location = 0) in VertexOutput {
     vec4 Color;
 } psInput;
 
-layout (location = 1) in LightOutput {
-    vec3 LightColor;
-} lightInput;
+struct Light {
+    vec3 Albedo;
+};
+
+layout (std140, binding = 1) uniform Environment {
+    Light lights;
+} mainLight;
 
 layout (binding = 0) uniform sampler2D u_Textures[32];
 
@@ -51,7 +55,5 @@ void main() {
     case 31: texColor *= texture(u_Textures[31], psInput.TexCoord); break;
     }
 
-    vec4 c = vec4(lightInput.LightColor, 1.0);
-    Color = c;
-    //Color = texColor;
+    Color = texColor;
 }

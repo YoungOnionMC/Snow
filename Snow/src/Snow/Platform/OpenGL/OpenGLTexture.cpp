@@ -48,8 +48,10 @@ namespace Snow {
         OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb) :
             m_Path(path), m_Locked(false) {
             int width, height, channels;
+            stbi_set_flip_vertically_on_load(true);
+
             m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
-            m_Format = API::TextureFormat::RGBA;
+            m_Format = channels == 4 ? API::TextureFormat::RGBA : API::TextureFormat::RGB;
 
             if(!m_ImageData.Data)
                 return;
@@ -110,7 +112,8 @@ namespace Snow {
             uint32_t bbp = SnowToOpenGLFormat(m_Format) == GL_RGBA ? 4 : 3;
             if (!(size == m_Width * m_Height * bbp)) SNOW_CORE_ERROR("Data must be entire texture");
             glBindTexture(GL_TEXTURE_2D, m_RendererID);
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, SnowToOpenGLFormat(m_Format), GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, SnowToOpenGLFormat(m_Format), m_Width, m_Height, 0, SnowToOpenGLFormat(m_Format), GL_UNSIGNED_BYTE, data);
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
     }
 }

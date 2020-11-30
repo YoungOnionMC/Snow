@@ -4,6 +4,8 @@
 #include <Snow/Scene/Scene.h>
 #include <Snow/Scene/Entity.h>
 
+#include <Snow/Render/API/Texture.h>
+
 namespace Snow {
     class SceneHierarchyPanel {
     public:
@@ -20,6 +22,8 @@ namespace Snow {
 
         Ref<Scene> m_SceneContext;
         Entity m_SelectionContext = {};
+
+        Ref<Render::API::Texture2D> m_CheckerboardTexture;
 
     };
 }

@@ -48,6 +48,8 @@ namespace Snow {
 
                 virtual void SetData(void* data, uint32_t size) = 0;
 
+                virtual uint32_t GetRendererID() const = 0;
+
 
                 virtual Buffer GetWriteableBuffer() = 0;
 

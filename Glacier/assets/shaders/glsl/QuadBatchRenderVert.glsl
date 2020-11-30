@@ -13,22 +13,13 @@ layout (location = 0) out VertexOutput {
 
 layout (std140, binding = 0) uniform Camera {
     mat4 ViewProjection;
-} camera;
-
-layout (location = 1) out LightOutput {
-    vec3 LightColor;
-} lightOutput;
-
-layout (std140, binding = 1) uniform Light {
-    vec3 Albedo;
-} light;
+} mainCamera;
 
 
 
 void main() {
-    gl_Position = camera.ViewProjection * vec4(a_Position, 1.0);
+    gl_Position = mainCamera.ViewProjection * vec4(a_Position, 1.0);
     vsOutput.TexCoord = a_TexCoord;
     vsOutput.TexID = a_TexID;
     vsOutput.Color = a_Color;
-    lightOutput.LightColor = light.Albedo;
 }

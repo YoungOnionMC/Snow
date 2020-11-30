@@ -8,6 +8,7 @@
 
 #include "Snow/Core/Input.h"
 
+
 namespace Snow {
     namespace Core {
 
@@ -66,6 +67,7 @@ namespace Snow {
 
                 virtual void HandleEvent(BaseEvent* event) override {
                    WindowResizeEvent* e = (WindowResizeEvent*)event;
+
                    SNOW_CORE_TRACE("Window width {0}, height {1}", e->GetWidth(), e->GetHeight());
                 }
             };

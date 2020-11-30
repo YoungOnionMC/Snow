@@ -7,8 +7,12 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Snow/Utils/FileDialogs.h"
+
 namespace Snow {
     SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene) {
+        m_CheckerboardTexture = Render::API::Texture2D::Create("assets/textures/Checkerboard.png");
+
         SetScene(scene);
     }
 
@@ -199,12 +203,74 @@ namespace Snow {
             glm::vec3 rotation = glm::degrees(component.Rotation);
             DrawVec3Control("Rotation", rotation);
             component.Rotation = glm::radians(rotation);
-            DrawVec3Control("Scale", component.Scale);
-
+            DrawVec3Control("Scale", component.Scale, 1.0f);
         });
 
-        DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component) {
+        DrawComponent<CameraComponent>("Camera", entity, [](auto& component) {
+            auto& camera = component.Camera;
+
+            ImGui::Checkbox("Primary Camera", &component.Primary);
+
+            const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
+            const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
+            
+            if (ImGui::BeginCombo("Projection", currentProjectionTypeString)) {
+                for (int i = 0; i < 2; i++) {
+                    bool isSelected = currentProjectionTypeString == projectionTypeStrings[i];
+                    if (ImGui::Selectable(projectionTypeStrings[i], isSelected)) {
+                        currentProjectionTypeString = projectionTypeStrings[i];
+                        camera.SetProjectionType((SceneCamera::ProjectionType)i);
+                    }
+
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective) {
+                float fov = glm::degrees(camera.GetPerspectiveVerticalFOV());
+                if (ImGui::DragFloat("FOV", &fov))
+                    camera.SetPerspectiveVerticalFOV(glm::radians(fov));
+
+                float nearClip = camera.GetPerspectiveNearClip();
+                if (ImGui::DragFloat("Near Clip", &nearClip))
+                    camera.SetPerspectiveNearClip(nearClip);
+
+                float farClip = camera.GetPerspectiveFarClip();
+                if (ImGui::DragFloat("Far Clip", &farClip))
+                    camera.SetPerspectiveFarClip(farClip);
+            }
+
+            if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic) {
+                float orthoSize = camera.GetOrthographicSize();
+                if (ImGui::DragFloat("Size", &orthoSize))
+                    camera.SetOrthographicSize(orthoSize);
+
+                float nearClip = camera.GetOrthographicNearClip();
+                if (ImGui::DragFloat("Near Clip", &nearClip))
+                    camera.SetOrthographicNearClip(nearClip);
+
+                float farClip = camera.GetOrthographicFarClip();
+                if (ImGui::DragFloat("Far Clip", &farClip))
+                    camera.SetOrthographicFarClip(farClip);
+            }
+        });
+
+        DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [this](auto& component) {
             ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+            Ref<Render::API::Texture2D> sprite = component.Texture;
+            void* textureID = sprite.Raw() == nullptr ? (void*)m_CheckerboardTexture->GetRendererID() : (void*)sprite->GetRendererID();
+
+            ImGui::Image(textureID, ImVec2(64, 64), ImVec2(0.0, 1.0), ImVec2(1.0, 0.0));
+            if (ImGui::IsItemClicked()) {
+                std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("");
+                if (filepath.has_value()) {
+                    component.Texture = Render::API::Texture2D::Create(filepath.value());
+                }
+            }
+            
         });
     }
 }

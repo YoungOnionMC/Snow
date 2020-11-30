@@ -48,11 +48,14 @@ namespace Snow {
             for(auto entity : group) {
                 auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
-                Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
+                if (!sprite.Texture)
+                    Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
+                else
+                    Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Color);
             }
 
             Render::Renderer2D::EndScene();
-            Render::Renderer2D::PresentBatch();
+            
 
         }
     }

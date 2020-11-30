@@ -52,7 +52,7 @@ namespace Snow {
             uint32_t m_PipelineVertexArrayHandle;
             uint32_t m_PipelineHandle;
 
-            std::unordered_map<uint32_t, ShaderUniformBuffer> m_UniformBuffers;
+            inline static std::unordered_map<uint32_t, ShaderUniformBuffer> m_UniformBuffers;
             std::unordered_map<std::string, ShaderBuffer> m_Buffers;
             std::unordered_map<std::string, ShaderResource> m_Resources;
             std::unordered_map<std::string, GLint> m_UniformLocations;

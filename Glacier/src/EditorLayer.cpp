@@ -28,7 +28,8 @@ namespace Snow {
         m_Square1 = m_ActiveScene->CreateEntity("Square");
         m_Square1.AddComponent<SpriteRendererComponent>(glm::vec4{0.0f, 1.0f, 0.5f, 1.0f});
 
-        m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+        m_SceneHierarchyPanel = SceneHierarchyPanel(m_ActiveScene);
+        //m_SceneHierarchyPanel.SetScene(m_ActiveScene);
     }
 
     void EditorLayer::OnDetach() {

@@ -2,6 +2,7 @@
 #include "Snow/Render/Renderer2D.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Snow {
     namespace Render {
@@ -19,6 +20,8 @@ namespace Snow {
         };
 
         struct Renderer2DStaticData {
+            static const uint32_t MaxTextureSlots = 32;
+
             static const uint32_t MaxQuads = 2500;
             static const uint32_t MaxQuadVertices = MaxQuads * 4;
             static const uint32_t MaxQuadIndicies = MaxQuads * 6;
@@ -137,17 +140,19 @@ namespace Snow {
         }
 
         void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform) {
-            glm::mat4 projMatrix = camera.GetProjection();
+            s_Data.QuadPipeline->Bind();
 
-            glm::mat4 viewProjMatrix = projMatrix * glm::inverse(transform);
-            s_Data.QuadPipeline->SetUniformBufferData(0, &viewProjMatrix, sizeof(glm::mat4));
+            glm::mat4 viewProjMatrix = camera.GetProjection() * glm::inverse(transform);
+            s_Data.QuadPipeline->SetUniformBufferData(0, glm::value_ptr(viewProjMatrix), sizeof(glm::mat4));
 
-            glm::vec3 color = { 0.5, 0.8, 0.8 };
-            s_Data.QuadPipeline->SetUniformBufferData(1, &color, sizeof(glm::vec3));
+            glm::vec3 color = { 0.5, 0.0, 0.8 };
+            s_Data.QuadPipeline->SetUniformBufferData(1, glm::value_ptr(color), sizeof(glm::vec3));
+
+            BeginBatch();
         }
 
         void Renderer2D::EndScene() {
-            
+            EndBatch();
         }
 
         void Renderer2D::BeginBatch() {
@@ -184,17 +189,10 @@ namespace Snow {
                 s_Data.LineIBO->Bind();
                 RenderCommand::DrawIndexed(s_Data.LineIndexCount, s_Data.LinePipeline->GetSpecification().Type);
             }
-
         }
 
-        void Renderer2D::PresentBatch() {
-            //EndBatch();
+        void Renderer2D::NextBatch() {
             EndBatch();
-
-            
-            //s_Data.QuadVBO->Bind();
-            //s_Data.QuadIBO->Bind();
-            //Renderer::DrawIndexed(s_Data.IndexCount);
 
             BeginBatch();
         }
@@ -209,17 +207,63 @@ namespace Snow {
             DrawQuad(transform, color);
         }
 
+        void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<API::Texture2D>& texture, const glm::vec4& tint) {
+            DrawQuad({ position.x, position.y, 0.0f }, size, texture, tint);
+        }
+
+        void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<API::Texture2D>& texture, const glm::vec4& tint) {
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 0.0f });
+
+            DrawQuad(transform, texture, tint);
+        }
+
         void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color) {
             constexpr size_t quadVertexCount = 4;
             const float textureIndex = 0.0f;
             constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f} };
             const float tilingFactor = 1.0f;
 
+            if (s_Data.QuadIndexCount >= Renderer2DStaticData::MaxQuadIndicies)
+                NextBatch();
+
             for (size_t i = 0; i < quadVertexCount; i++) {
                 s_Data.QuadVertexData->Position = transform * s_Data.QuadVertexPositions[i];
                 s_Data.QuadVertexData->TexCoord = textureCoords[i];
                 s_Data.QuadVertexData->TexID = textureIndex;
                 s_Data.QuadVertexData->Color = color;
+                s_Data.QuadVertexData++;
+            }
+
+            s_Data.QuadIndexCount += 6;
+        }
+
+        void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<API::Texture2D>& texture, const glm::vec4& tint) {
+            constexpr size_t quadVertexCount = 4;
+            constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f} };
+            const float tilingFactor = 1.0f;
+
+            float textureIndex = 0.0f;
+            for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++) {
+                if (s_Data.TextureSlots[i].Raw() == texture.Raw()) {
+                    textureIndex = (float)i;
+                    break;
+                }
+            }
+
+            if (textureIndex == 0.0f) {
+                if (s_Data.TextureSlotIndex >= Renderer2DStaticData::MaxTextureSlots)
+                    NextBatch();
+
+                textureIndex = (float)s_Data.TextureSlotIndex;
+                s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+                s_Data.TextureSlotIndex++;
+            }
+
+            for (size_t i = 0; i < quadVertexCount; i++) {
+                s_Data.QuadVertexData->Position = transform * s_Data.QuadVertexPositions[i];
+                s_Data.QuadVertexData->TexCoord = textureCoords[i];
+                s_Data.QuadVertexData->TexID = textureIndex;
+                s_Data.QuadVertexData->Color = tint;
                 s_Data.QuadVertexData++;
             }
 

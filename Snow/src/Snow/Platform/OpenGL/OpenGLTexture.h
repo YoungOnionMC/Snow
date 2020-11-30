@@ -26,7 +26,7 @@ namespace Snow {
 
             const std::string& GetPath() const override { return m_Path; }
 
-            uint32_t GetRendererID() const { return m_RendererID; }
+            uint32_t GetRendererID() const override { return m_RendererID; }
 
         private:
             uint32_t m_RendererID;

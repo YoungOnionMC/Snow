@@ -43,9 +43,11 @@ namespace Snow {
                     break;
                 }
             }
+            if (uniformBuffer == nullptr)
+                return;
 
             glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer->RendererID);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, size, buffer);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, size, &buffer);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
             delete[] buffer;
@@ -59,7 +61,7 @@ namespace Snow {
             ShaderUniformBuffer* uniformBuffer = &m_UniformBuffers[bindingPoint];
 
             glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer->RendererID);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, size, buffer);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
             delete[] buffer;
@@ -177,8 +179,9 @@ namespace Snow {
                 for (const auto& outputAttrib : res.stage_outputs) {
                     auto attribType = compiler.get_type(outputAttrib.type_id);
                     auto binding = compiler.get_decoration(outputAttrib.id, spv::DecorationBinding);
+                    auto location = compiler.get_decoration(outputAttrib.id, spv::DecorationLocation);
 
-                    SNOW_CORE_TRACE("Found An Output {0}", binding);
+                    SNOW_CORE_TRACE("Found An Output binding: {0}, location: {1}", binding, location);
                 }
 
                 for (const spirv_cross::Resource& resource : res.push_constant_buffers) {
@@ -214,8 +217,8 @@ namespace Snow {
                         buffer.BindingPoint = bindingPoint;
                         buffer.Size = compiler.get_declared_struct_size(bufferType);
 
-                        // move uniform buffers to thier own class
-                        glCreateBuffers(1, &buffer.RendererID);
+                        // move uniform buffers to their own class
+                        glGenBuffers(1, &buffer.RendererID);
                         glBindBuffer(GL_UNIFORM_BUFFER, buffer.RendererID);
                         glBufferData(GL_UNIFORM_BUFFER, buffer.Size, nullptr, GL_DYNAMIC_DRAW);
                         glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
@@ -252,10 +255,10 @@ namespace Snow {
 
                     
                     m_Resources[name] = ShaderResource(name, binding, arrayCount);
-                    if (arrayCount > 1);
-                        //UploadUniformIntArray(location, samplers, arrayCount);
-                    else if (arrayCount == 1);
-                        //UploadUniformInt(location, binding);
+                    if (arrayCount > 1)
+                        UploadUniformIntArray(location, samplers, arrayCount);
+                    else if (arrayCount == 1)
+                        UploadUniformInt(location, binding);
 
                     //SNOW_CORE_INFO("   Binding resource {0}, at location {1}", name, location);
 
