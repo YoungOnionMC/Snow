@@ -13,6 +13,9 @@
 
 #include <string>
 
+#include <yaml-cpp/yaml.h>
+
+
 namespace Snow {
     struct TagComponent {
         std::string Tag;
@@ -21,6 +24,9 @@ namespace Snow {
         TagComponent(const TagComponent&) = default;
         TagComponent(const std::string& tag) :
             Tag(tag) {}
+
+        void Serialize(YAML::Emitter& out);
+        bool Deserialize(YAML::Node node);
     };
 
     struct TransformComponent {
@@ -42,6 +48,9 @@ namespace Snow {
                     rotation * glm::scale(glm::mat4(1.0f), Scale);
 
         }
+
+        void Serialize(YAML::Emitter& out);
+        static bool Deserialize(YAML::Node node, TransformComponent& outTC);
     };
 
     struct SpriteRendererComponent {
@@ -53,6 +62,9 @@ namespace Snow {
         SpriteRendererComponent(const SpriteRendererComponent&) = default;
         SpriteRendererComponent(const glm::vec4& color) :
             Color(color) {}
+
+        void Serialize(YAML::Emitter& out);
+        static bool Deserialize(YAML::Node node, SpriteRendererComponent& outSRC);
     };
 
     struct CameraComponent {

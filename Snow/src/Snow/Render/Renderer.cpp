@@ -9,15 +9,7 @@
 namespace Snow {
     namespace Render {
 
-        namespace Event {
-            RenderResizeListener::RenderResizeListener() {
-                SetEventType(Core::Event::WindowResizeEvent::ID);
-            }
-
-            void RenderResizeListener::HandleEvent(Core::Event::BaseEvent* event) {
-                Core::Event::WindowResizeEvent* e = (Core::Event::WindowResizeEvent*)event;
-            }
-        }
+        
 
         RenderAPIType Renderer::s_RenderAPI = RenderAPIType::None;
 
@@ -30,8 +22,6 @@ namespace Snow {
         Renderer* Renderer::s_Instance = nullptr;
         Context* Renderer::s_Context = nullptr;
 
-        Event::RenderResizeListener* m_RenderResizeListener = nullptr;
-
         void Renderer::Init() {
             SNOW_CORE_INFO("Initializing Renderer");
             ContextSpecification contextSpec;
@@ -40,9 +30,6 @@ namespace Snow {
 
             
             s_Context = Context::Create(contextSpec);
-
-            m_RenderResizeListener = new Event::RenderResizeListener();
-            Core::Event::EventSystem::AddListener(m_RenderResizeListener);
 
             RenderCommand::Init();
 

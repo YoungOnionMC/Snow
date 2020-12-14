@@ -3,17 +3,21 @@
 #include <string>
 #include <vector>
 
+#include "Snow/Core/Event/Event.h"
+
 namespace Snow {
     namespace Core {
         class Layer {
         public:
             Layer(const std::string& name = "Layer");
 
-            virtual void OnAttach() {};
-            virtual void OnDetach() {};
-            virtual void OnUpdate() {};
+            virtual void OnAttach() {}
+            virtual void OnDetach() {}
+            virtual void OnUpdate() {}
 
-            virtual void OnImGuiRender() {};
+            virtual void OnImGuiRender() {}
+
+            virtual void OnEvent(Event::Event& event) {}
             
             inline const std::string& GetName() const { return m_Name; }
 

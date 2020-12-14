@@ -20,6 +20,7 @@ namespace Snow {
 		std::optional<std::string> FileDialogs::OpenFile(const char* filter) {
 			OPENFILENAMEA ofn;
 			CHAR szFile[260] = { 0 };
+			CHAR currentDir[256] = { 0 };
 			ZeroMemory(&ofn, sizeof(OPENFILENAME));
 			ofn.lStructSize = sizeof(OPENFILENAME);
 #if defined(SNOW_WINDOW_GLFW)
@@ -29,6 +30,8 @@ namespace Snow {
 #endif
 			ofn.lpstrFile = szFile;
 			ofn.nMaxFile = sizeof(szFile);
+			if (GetCurrentDirectoryA(256, currentDir))
+				ofn.lpstrInitialDir = currentDir;
 			ofn.lpstrFilter = filter;
 			ofn.nFilterIndex = 1;
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
@@ -41,6 +44,7 @@ namespace Snow {
 		std::optional<std::string> FileDialogs::SaveFile(const char* filter) {
 			OPENFILENAMEA ofn;
 			CHAR szFile[260] = { 0 };
+			CHAR currentDir[256] = { 0 };
 			ZeroMemory(&ofn, sizeof(OPENFILENAME));
 			ofn.lStructSize = sizeof(OPENFILENAME);
 #if defined(SNOW_WINDOW_GLFW)
@@ -50,9 +54,11 @@ namespace Snow {
 #endif
 			ofn.lpstrFile = szFile;
 			ofn.nMaxFile = sizeof(szFile);
+			if (GetCurrentDirectoryA(256, currentDir))
+				ofn.lpstrInitialDir = currentDir;
 			ofn.lpstrFilter = filter;
 			ofn.nFilterIndex = 1;
-			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 
 			// Sets the default extension by extracting it from the filter
 			ofn.lpstrDefExt = strchr(filter, '\0') + 1;

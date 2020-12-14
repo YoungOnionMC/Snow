@@ -5,23 +5,32 @@
 
 #include <glm/glm.hpp>
 
+#include <Snow/Core/Input.h>
+
+#include "Snow/Core/Event/KeyEvent.h"
+
 namespace Snow {
+
     class EditorLayer : public Core::Layer {
     public:
-        void OnAttach();
-        void OnDetach();
-        void OnUpdate();
+        void OnAttach() override;
+        void OnDetach() override;
+        void OnUpdate() override;
 
         void OnImGuiRender();
 
+        void OnEvent(Core::Event::Event& e) override;
 
     private:
+        bool OnKeyPressed(Core::Event::KeyPressedEvent& e);
 
         void NewScene();
         void OpenScene();
         void SaveSceneAs();
 
         Ref<Snow::Scene> m_ActiveScene;
+
+        Render::EditorCamera m_EditorCamera;
         Entity m_CameraEntity;
         Entity m_Square1;
 
@@ -33,5 +42,6 @@ namespace Snow {
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
 
+        static int m_ImGuizmoSelection;
     };
 }

@@ -1,70 +1,69 @@
 #pragma once
 
-#include <vector>
-#include <tuple>
-
-using EventID = uint32_t;
+#include "Snow/Core/Base.h"
+#include <functional>
 
 namespace Snow {
-    namespace Core {
-        namespace Event {
+	namespace Core {
+		namespace Event {
+			enum class EventType {
+				None = 0,
+				WindowClose, WindowResize, WindowFullscreen, WindowFocus, WindowMoved, WindowMinimized,
+				AppTick, AppUpdate, AppRender,
+				KeyPressed, KeyReleased, KeyTyped,
+				MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
+			};
 
-            struct BaseEvent;
-            typedef uint32_t (*EventCreateFunction)(std::vector<uint8_t>& memory, BaseEvent* e);
-            typedef void (*EventFreeFunction)(BaseEvent* e);
+			enum EventCategory {
+				None = 0,
+				EventCategoryApplication = BIT(0),
+				EventCategoryInput = BIT(1),
+				EventCategoryKeyboard = BIT(2),
+				EventCategoryMouse = BIT(3),
+				EventCategoryMouseButton = BIT(4)
+			};
 
-            struct BaseEvent {
-            public:
-                static uint32_t RegisterEventID(EventCreateFunction createFn, EventFreeFunction freeFn, size_t size);
+#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
+								virtual EventType GetEventType() const override { return GetStaticType(); }\
+								virtual const char* GetName() const override { return SNOW_STRINGIFY_MACRO(type); }
 
-                inline static EventCreateFunction GetTypeCreateFunction(uint32_t ID) { return std::get<0>((*s_RegisteredEventTypes)[ID]); }
-                inline static EventFreeFunction GetTypeFreeFunction(uint32_t ID) { return std::get<1>((*s_RegisteredEventTypes)[ID]); }
-                inline static size_t GetTypeSize(uint32_t ID) { return std::get<2>((*s_RegisteredEventTypes)[ID]); }
+#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 
-                inline static bool IsTypeValid(EventID ID) { return ID < s_RegisteredEventTypes->size(); }
+			class Event {
+			public:
+				virtual ~Event() = default;
 
-            private:
-                static std::vector<std::tuple<EventCreateFunction, EventFreeFunction, size_t>>* s_RegisteredEventTypes;
-            };
-            
-            template<typename T>
-            struct Event : public BaseEvent {
-            protected:
-                static const EventCreateFunction CreateFunction;
-                static const EventFreeFunction FreeFunction;
+				bool Handled = false;
 
-            public:
-                static const EventID ID;
-                static const size_t Size;
-            };
+				virtual EventType GetEventType() const = 0;
+				virtual const char* GetName() const = 0;
+				virtual int GetCategoryFlags() const = 0;
+				virtual std::string ToString() const { return GetName(); }
 
-            template<typename E>
-            uint32_t EventCreate(std::vector<uint8_t>& memory, BaseEvent* e) {
-                size_t index = memory.size();
-                memory.resize(index + E::Size);
-                E* event = new(&memory[index])E(*(E*)e);
-                
-                return index;
-            }
+				bool IsInCategory(EventCategory category) { return GetCategoryFlags() & category; }
+			};
 
-            template<typename E>
-            void EventFree(BaseEvent* e) {
-                E* event = (E*)e;
-                event->~E();
-            }
+			class EventDispatcher {
+			public:
+				EventDispatcher(Event& event) : m_Event(event) {}
 
-            template<typename T>
-            const EventID Event<T>::ID(BaseEvent::RegisterEventID(EventCreate<T>, EventFree<T>, sizeof(T)));
+				template<typename T, typename F>
+				bool Dispatch(const F& func) {
+					static_assert(std::is_base_of<Event, T>::value);
+					if (m_Event.GetEventType() == T::GetStaticType()) {
+						m_Event.Handled |= func(static_cast<T&>(m_Event));
+						return true;
+					}
+					return false;
+				}
 
-            template<typename T>
-            const size_t Event<T>::Size(sizeof(T));
+			private:
+				Event& m_Event;
+			};
 
-            template<typename T>
-            const EventCreateFunction Event<T>::CreateFunction(EventCreate<T>);
-
-            template<typename T>
-            const EventFreeFunction Event<T>::FreeFunction(EventFree<T>);
-            
-        }
-    }
+			inline std::ostream& operator<<(std::ostream& os, const Event& e) {
+				return os << e.ToString();
+			}
+		}
+	}
 }

@@ -19,3 +19,6 @@
 [submodule "Snow/vendor/glm"]
 	path = Snow/vendor/glm
 	url = https://github.com/g-truc/glm
+[submodule "Snow/vendor/ImGuizmo"]
+	path = Snow/vendor/ImGuizmo
+	url = https://github.com/JamesStroebe/ImGuizmo

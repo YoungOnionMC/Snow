@@ -13,8 +13,12 @@
 
 #include "Snow/Render/Renderer.h"
 
+#include "Snow/Core/Event/ApplicationEvent.h"
+
 namespace Snow {
     namespace Core {
+
+        std::function<void(Event::Event&)> WindowEventCallback;
 
 #if defined(SNOW_WINDOW_WIN32)
         HWND Win32WindowHandle;
@@ -77,12 +81,12 @@ namespace Snow {
 
         void WindowCloseCallback(GLFWwindow* window) {
             Event::WindowCloseEvent event;
-            Event::EventSystem::AddEvent(event);
+            WindowEventCallback(event);
         }
 
         void WindowMinimizeCallback(GLFWwindow* window, int restored) {
             Event::WindowMinimizedEvent event;
-            Event::EventSystem::AddEvent(event);
+            WindowEventCallback(event);
 
         }
 
@@ -92,12 +96,12 @@ namespace Snow {
 
         void WindowMovedCallback(GLFWwindow* window, int xPos, int yPos) {
             Event::WindowMovedEvent event(xPos, yPos);
-            Event::EventSystem::AddEvent(event);
+            WindowEventCallback(event);
         }
 
         void WindowResizeCallback(GLFWwindow* window, int width, int height) {
             Event::WindowResizeEvent event(width, height);
-            Event::EventSystem::AddEvent(event);
+            WindowEventCallback(event);
         }
 
         void WindowFocusCallback(GLFWwindow* window, int focus) {
@@ -207,6 +211,11 @@ namespace Snow {
 #elif defined(SNOW_WINDOW_GLFW)
             return GLFWWindowHandle;
 #endif
+        }
+
+        void Window::SetEventCallback(const std::function<void(Event::Event&)>& callback) {
+            WindowEventCallback = callback;
+            
         }
 
         uint32_t Window::GetWidth() {

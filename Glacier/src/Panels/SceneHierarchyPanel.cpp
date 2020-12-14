@@ -18,6 +18,7 @@ namespace Snow {
 
     void SceneHierarchyPanel::SetScene(const Ref<Scene>& scene) {
         m_SceneContext = scene;
+        m_SelectionContext = {};
     }
 
     void SceneHierarchyPanel::OnImGuiRender() {
@@ -183,6 +184,10 @@ namespace Snow {
         ImGui::SameLine();
         ImGui::PushItemWidth(-1);
 
+        bool removeEntity = false;
+        if (ImGui::Button("Delete Entity"))
+            removeEntity = true;
+
         if (ImGui::Button("Add Component"))
             ImGui::OpenPopup("AddComponent");
 
@@ -203,6 +208,7 @@ namespace Snow {
             }
 
             ImGui::EndPopup();
+
         }
 
         ImGui::PopItemWidth();
@@ -293,6 +299,11 @@ namespace Snow {
                 }
             }
         });
+
+        if (removeEntity) {
+            m_SceneContext->DestroyEntity(m_SelectionContext);
+            m_SelectionContext = {};
+        }
     }
 
     void SceneHierarchyPanel::DrawEnvironment() {

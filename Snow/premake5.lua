@@ -38,6 +38,9 @@ project "Snow"
         "vendor/stb/stb_tilemap_editor.h",
         "vendor/stb/stb.h",
 
+        "vendor/ImGuizmo/ImGuizmo.cpp",
+        "vendor/ImGuizmo/ImGuizmo.h",
+
         "vendor/ENTT/include/entt.hpp"
         
     }
@@ -51,6 +54,7 @@ project "Snow"
         "%{VendorIncludeDir.GLFW}",
         "%{VendorIncludeDir.glm}",
         "%{VendorIncludeDir.ImGui}",
+        "%{VendorIncludeDir.ImGuizmo}",
         "%{VendorIncludeDir.stb}",
         "%{VendorIncludeDir.SPIRVCross}",
         "%{VendorIncludeDir.yaml_cpp}",

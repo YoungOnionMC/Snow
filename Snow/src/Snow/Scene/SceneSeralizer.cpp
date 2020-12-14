@@ -2,6 +2,7 @@
 #include "Snow/Scene/SceneSerializer.h"
 
 #include "Snow/Scene/Entity.h"
+#include "Snow/Scene/Components.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -13,7 +14,20 @@ namespace Snow {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << "2345652456367"; // should be uuid
 
+		if (entity.HasComponent<TagComponent>()) {
+			auto& tc = entity.GetComponent<TagComponent>();
+			tc.Serialize(out);
+		}
 
+		if (entity.HasComponent<TransformComponent>()) {
+			auto& tc = entity.GetComponent<TransformComponent>();
+			tc.Serialize(out);
+		}
+
+		if (entity.HasComponent<SpriteRendererComponent>()) {
+			auto& src = entity.GetComponent<SpriteRendererComponent>();
+			src.Serialize(out);
+		}
 
 		out << YAML::EndMap;
 	}
@@ -42,7 +56,39 @@ namespace Snow {
 	}
 
 	bool SceneSerializer::DeserializeText(const std::string& filepath) {
-		return false;
+		YAML::Node data = YAML::LoadFile(filepath);
+		if (!data["Scene"])
+			return false;
+
+		std::string sceneName = data["Scene"].as<std::string>();
+		SNOW_CORE_TRACE("Deserializing Scene '{0}'", sceneName);
+
+		auto entities = data["Entities"];
+		if (entities) {
+			for (auto entity : entities) {
+				auto tagComp = TagComponent();
+				if (!tagComp.Deserialize(entity)) {
+					SNOW_CORE_ERROR("Entity does not have a tag component");
+				}
+				Entity deserializedEntity = m_Scene->CreateEntity(tagComp.Tag);
+
+				TransformComponent transformComp;
+				if (TransformComponent::Deserialize(entity, transformComp)) {
+					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
+					tc.Translation = transformComp.Translation;
+					tc.Rotation = transformComp.Rotation;
+					tc.Scale = transformComp.Scale;
+				}
+				
+				SpriteRendererComponent spriteRendererComp;
+				if (SpriteRendererComponent::Deserialize(entity, spriteRendererComp)) {
+					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
+					src.Color = spriteRendererComp.Color;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	bool SceneSerializer::DeserializeBinary(const std::string& filepath) {

@@ -6,28 +6,24 @@
 #include "Snow/Core/Input.h"
 
 #include "Snow/Core/Base.h"
-#include "Snow/Core/Event/EventSystem.h"
+#include "Snow/Core/Event/Event.h"
+#include "Snow/Core/Event/ApplicationEvent.h"
 
 #include "Snow/Core/Layer.h"
 #include "Snow/ImGui/ImGuiLayer.h"
 
+
 namespace Snow {
     namespace Core {
 
-        
-        namespace Event {
-        class ApplicationRenderListener;
-        class ApplicationCloseListener;
-        };
-
         class Application {
         public:
-            /* @brief
-            */
             Application();
             ~Application();
 
             void Run();
+
+            void OnEvent(Event::Event& event);
 
 
             static Application& Get() { return *s_Instance; }
@@ -40,8 +36,12 @@ namespace Snow {
 
             void OnImGuiRender();
 
-            inline void SetRunning(bool running) { m_Running = running; }
+            void Close() { m_Running = false; }
         private:
+
+            bool OnApplicationUpdate(Event::AppUpdateEvent& e);
+            bool OnApplicationResize(Event::WindowResizeEvent& e);
+            bool OnApplicationClose(Event::WindowCloseEvent& e);
 
             static Application* s_Instance;
 
@@ -51,47 +51,8 @@ namespace Snow {
             ImGuiLayer* m_ImGuiLayer;
 
             bool m_Running = true;
-
-            Event::ApplicationRenderListener* m_AppRenderListener;
-            Event::ApplicationCloseListener* m_AppCloseListener;
         };
 
         Application* CreateApplication();
-
-
-        namespace Event {
-            struct AppUpdateEvent : public Event<AppUpdateEvent> {
-            public:
-                AppUpdateEvent() = default;
-            };
-
-            class AppRenderEvent : public Event<AppRenderEvent> {
-            public:
-                AppRenderEvent() = default;
-            };
-
-
-            class ApplicationRenderListener : public BaseListener {
-            public:
-                ApplicationRenderListener() {
-                    SetEventType(AppRenderEvent::ID);
-                }
-
-                virtual void HandleEvent(BaseEvent* event) override {
-                    SNOW_CORE_TRACE("AppRenderEvent");
-                }
-            };
-
-            class ApplicationCloseListener : public BaseListener {
-            public:
-                ApplicationCloseListener() {
-                    SetEventType(WindowCloseEvent::ID);
-                }
-
-                virtual void HandleEvent(BaseEvent* event) override {
-                    Application::Get().SetRunning(false);
-                }
-            };
-        }
     }
 }

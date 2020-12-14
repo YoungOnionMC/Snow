@@ -29,7 +29,7 @@ namespace Snow {
         m_Registry.destroy(entity);
     }
 
-    void Scene::OnUpdate() {
+    void Scene::OnUpdateRuntime() {
         Entity cameraEntity = GetMainCamera();
         if (!cameraEntity)
             return;
@@ -69,6 +69,34 @@ namespace Snow {
         Render::SceneRenderer::EndScene();
             
         
+    }
+
+    void Scene::OnUpdateEditor(Render::EditorCamera& editorCamera) {
+        Render::Renderer2D::BeginScene(editorCamera);
+        auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+        for (auto entity : group) {
+            auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+
+            if (!sprite.Texture)
+                Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
+            else
+                Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Color);
+        }
+
+        Render::Renderer2D::EndScene();
+        /*
+        Render::SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
+        {
+            auto group = m_Registry.view<TransformComponent, MeshComponent>();
+            for (auto entity : group) {
+                auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
+
+                if (mesh.Mesh.Raw() != nullptr)
+                    Render::SceneRenderer::SubmitMesh(mesh.Mesh, transform.GetTransform());
+            }
+        }
+        Render::SceneRenderer::EndScene();
+        */
     }
 
     void Scene::OnViewportResize(uint32_t width, uint32_t height) {

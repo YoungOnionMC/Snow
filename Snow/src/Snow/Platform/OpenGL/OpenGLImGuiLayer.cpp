@@ -17,6 +17,8 @@
     #include <examples/imgui_impl_win32.cpp>
 #endif
 
+#include <ImGuizmo.h>
+
 namespace Snow {
     OpenGLImGuiLayer::OpenGLImGuiLayer() {
         m_Name = "OpenGLImGuiLayer";
@@ -64,6 +66,8 @@ namespace Snow {
         ImGui_ImplGlfw_NewFrame();
 #endif
         ImGui::NewFrame();
+
+        ImGuizmo::BeginFrame();
     }
 
     void OpenGLImGuiLayer::EndImGuiFrame() {

@@ -1,0 +1,38 @@
+Scene: Unnamed Scene
+Entities:
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Red Poig
+    TransformComponent:
+      Translation: [0, 1.89999998, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.975490212, 0.00956365839, 0.00956365839, 1]
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Blue square
+    TransformComponent:
+      Translation: [1.10714364, 0.804017544, 0.574952245]
+      Rotation: [1.8397243, 0.481595874, -1.07372665]
+      Scale: [1.69998157, 0.999991059, 0.999984264]
+    SpriteRendererComponent:
+      Color: [0.0674259961, 0.0674950778, 0.59803921, 1]
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Tester
+    TransformComponent:
+      Translation: [0.355374217, -0.734303355, 3.72662258]
+      Rotation: [-1.01391625, -1.15296721, 2.97763443]
+      Scale: [1, 6.69999981, 0.999900281]
+    SpriteRendererComponent:
+      Color: [0.999997914, 1, 0.999989986, 1]
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Square
+    TransformComponent:
+      Translation: [0.253663152, -1.00882769, 1.76969254]
+      Rotation: [0, 0, -0.286234021]
+      Scale: [3.54892278, 2.66488814, 1]
+    SpriteRendererComponent:
+      Color: [0, 1, 0.5, 1]

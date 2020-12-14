@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Snow/Core/Ref.h"
+#include "Snow/Render/EditorCamera.h"
 
 #include <entt.hpp>
 
@@ -26,14 +27,16 @@ namespace Snow {
         Entity CreateEntity(const std::string& name = std::string());
         void DestroyEntity(Entity entity);
 
-        void OnUpdate();
+        void OnUpdateRuntime();
+        void OnUpdateEditor(Render::EditorCamera& editorCamera);
         void OnViewportResize(uint32_t width, uint32_t height);
 
         Light& GetLight() { return m_Light; }
         const Light& GetLight() const { return m_Light; }
+        
+        Entity GetMainCamera();
     private:
 
-        Entity GetMainCamera();
 
         entt::registry m_Registry;
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;

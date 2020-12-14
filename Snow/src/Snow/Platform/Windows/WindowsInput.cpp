@@ -1,7 +1,9 @@
 #include <spch.h>
 #include "Snow/Core/Input.h"
 
-#include "Snow/Core/Event/EventSystem.h"
+#include "Snow/Core/Event/Event.h"
+#include "Snow/Core/Event/KeyEvent.h"
+#include "Snow/Core/Event/MouseEvent.h"
 
 #include "Snow/Core/Application.h"
 
@@ -11,6 +13,8 @@
 
 namespace Snow {
 	namespace Core {
+
+		std::function<void(Event::Event&)> InputEventCallback;
 
 #if defined(SNOW_WINDOW_WIN32)
 		void KeyCallback(KeyCode key, int flags, UINT message) {
@@ -51,19 +55,30 @@ namespace Snow {
 #elif defined(SNOW_WINDOW_GLFW)
 		void KeyCallback(GLFWwindow* window, int keycode, int scan, int action, int mods) {
 
-			bool pressed = (action == GLFW_PRESS);
+			
 			bool repeat = (scan >> 30) & 1;
 
 			int mod = 0;
 
-			Core::Input::SetKeyState((KeyCode)keycode, pressed);
-			if (pressed) {
-				Core::Event::KeyPressedEvent event((KeyCode)keycode, repeat, mod);
-				Core::Event::EventSystem::AddEvent(event);
+			switch (action) {
+			case GLFW_PRESS: {
+				Core::Input::SetKeyState((KeyCode)keycode, true);
+				Core::Event::KeyPressedEvent event((KeyCode)keycode, 0, mod);
+				InputEventCallback(event);
+				break;
 			}
-			else {
+			case GLFW_RELEASE: {
+				Core::Input::SetKeyState((KeyCode)keycode, false);
 				Core::Event::KeyReleasedEvent event((KeyCode)keycode);
-				Core::Event::EventSystem::AddEvent(event);
+				InputEventCallback(event);
+				break;
+			}
+			case GLFW_REPEAT: {
+				Core::Input::SetKeyState((KeyCode)keycode, true);
+				Core::Event::KeyPressedEvent event((KeyCode)keycode, repeat, mod);
+				InputEventCallback(event);
+				break;
+			}
 			}
 		}
 
@@ -75,24 +90,24 @@ namespace Snow {
 			Core::Input::SetMouseState((MouseCode)button, pressed);
 			if (pressed) {
 				Core::Event::MouseButtonPressedEvent event((MouseCode)button);
-				Core::Event::EventSystem::AddEvent(event);
+				InputEventCallback(event);
 			}
 			else {
 				Core::Event::MouseButtonReleasedEvent event((MouseCode)button);
-				Core::Event::EventSystem::AddEvent(event);
+				InputEventCallback(event);
 			}
 		}
 
 		void MouseMoveCallback(GLFWwindow* window, double xPos, double yPos) {
-			Core::Input::SetMousePos((int)xPos, (int)yPos);
-			Core::Event::MouseMovedEvent event((int)xPos, (int)yPos);
-			Core::Event::EventSystem::AddEvent(event);
+			Core::Input::SetMousePos(xPos, yPos);
+			Core::Event::MouseMovedEvent event(xPos, yPos);
+			InputEventCallback(event);
 		}
 
 		void MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
-			Core::Input::SetMouseScrollOffset((float)xOffset, (float)yOffset);
-			Core::Event::MouseScrollEvent event((float)xOffset, (float)xOffset);
-			Core::Event::EventSystem::AddEvent(event);
+			Core::Input::SetMouseScrollOffset(xOffset, yOffset);
+			Core::Event::MouseScrolledEvent event(xOffset, xOffset);
+			InputEventCallback(event);
 		}
 #endif
 
@@ -110,6 +125,10 @@ namespace Snow {
 			glfwSetScrollCallback(win, MouseScrollCallback);
 #endif
 			return true;
+		}
+
+		void Input::SetEventCallback(const std::function<void(Event::Event&)>& callback) {
+			InputEventCallback = callback;
 		}
 	}
 }

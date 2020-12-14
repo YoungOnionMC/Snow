@@ -19,7 +19,9 @@ project "Glacier"
         "%{wks.location}/Snow/vendor/spdlog/include",
         "%{VendorIncludeDir.ENTT}",
         "%{VendorIncludeDir.ImGui}",
+        "%{VendorIncludeDir.ImGuizmo}",
         "%{VendorIncludeDir.glm}",
+        "%{VendorIncludeDir.yaml_cpp}",
         --"%{VendorIncludeDir.GLFW}"
     }
 

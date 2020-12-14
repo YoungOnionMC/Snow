@@ -31,7 +31,7 @@ namespace Snow {
                 layoutIndex++;
             }
 
-            SNOW_CORE_ERROR("UNIFORM BUFFER SIZE : {0}", m_UniformBuffers.size());
+            //SNOW_CORE_ERROR("UNIFORM BUFFER SIZE : {0}", m_UniformBuffers.size());
         }
 
         void OpenGLPipeline::SetUniformBufferData(const std::string& uniformBufferName, void* data, uint32_t size) {

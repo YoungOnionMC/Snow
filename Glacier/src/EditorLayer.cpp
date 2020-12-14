@@ -1,12 +1,19 @@
 #include "EditorLayer.h"
 
-#include <imgui.h>
 
 #include "Snow/Utils/FileDialogs.h"
-
 #include "Snow/Scene/SceneSerializer.h"
 
+#include "Snow/Math/Mat4.h"
+
+#include <glm/gtc/type_ptr.hpp>
+
+#include <imgui.h>
+#include <ImGuizmo.h>
+
 namespace Snow {
+
+    int EditorLayer::m_ImGuizmoSelection = -1;
 
     void EditorLayer::OnAttach() {
 
@@ -23,15 +30,19 @@ namespace Snow {
 
         m_ActiveScene = Snow::Ref<Snow::Scene>::Create();
 
+        m_EditorCamera = Render::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
 
-        m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
-        m_CameraEntity.AddComponent<CameraComponent>();
+
+        //m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
+        //m_CameraEntity.AddComponent<CameraComponent>();
 
         m_Square1 = m_ActiveScene->CreateEntity("Square");
         m_Square1.AddComponent<SpriteRendererComponent>(glm::vec4{0.0f, 1.0f, 0.5f, 1.0f});
 
         m_SceneHierarchyPanel = SceneHierarchyPanel(m_ActiveScene);
         //m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+
+        ImGuizmo::SetOrthographic(false);
     }
 
     void EditorLayer::OnDetach() {
@@ -43,12 +54,14 @@ namespace Snow {
         if (Render::FramebufferSpecification spec = m_Framebuffer->GetSpecification();
             m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0 && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y)) {
             m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
+            m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
             m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         }
 
         Render::Renderer::BeginRenderPass(m_CompRenderPass);
-        m_ActiveScene->OnUpdate();
+        m_ActiveScene->OnUpdateEditor(m_EditorCamera);
+        if(m_ViewportFocused)
+            m_EditorCamera.OnUpdate();
         Render::Renderer::EndRenderPass();
 
 
@@ -119,7 +132,7 @@ namespace Snow {
                 if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
                     SaveSceneAs();
 
-                if (ImGui::MenuItem("Exit")) Core::Application::Get().SetRunning(false);
+                if (ImGui::MenuItem("Exit")) Core::Application::Get().Close();
 
                 ImGui::EndMenu();
             }
@@ -150,6 +163,46 @@ namespace Snow {
 
         uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
         ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+
+        // Gizmos
+        Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        if (selectedEntity && m_ImGuizmoSelection != -1) {
+            ImGuizmo::SetDrawlist();
+
+            float windowWidth = (float)ImGui::GetWindowWidth();
+            float windowHeight = (float)ImGui::GetWindowHeight();
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+            const glm::mat4& cameraProj = m_EditorCamera.GetProjection();
+            glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+            auto& transformComp = selectedEntity.GetComponent<TransformComponent>();
+            glm::mat4 transform = transformComp.GetTransform();
+
+            bool snap = Core::Input::IsKeyPressed(Key::LeftAlt);
+            float snapValue = 0.5f;
+            if (m_ImGuizmoSelection == ImGuizmo::OPERATION::ROTATE)
+                snapValue = 22.5f;
+
+            float snapValues[3] = { snapValue, snapValue, snapValue };
+
+            ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProj), 
+                (ImGuizmo::OPERATION)m_ImGuizmoSelection, ImGuizmo::LOCAL, 
+                glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
+            
+            if (ImGuizmo::IsUsing()) {
+                glm::vec3 translation, rotation, scale;
+                Math::DecomposeTransform(transform, translation, rotation, scale);
+
+                glm::vec3 deltaRot = rotation - transformComp.Rotation;
+                transformComp.Translation = translation;
+                transformComp.Rotation += deltaRot;
+                transformComp.Scale = scale;
+            }
+
+        }
+
         ImGui::End();
         ImGui::PopStyleVar();
         ImGui::End();
@@ -159,26 +212,68 @@ namespace Snow {
     void EditorLayer::NewScene() {
         m_ActiveScene = Ref<Scene>::Create();
         m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        
         m_SceneHierarchyPanel.SetScene(m_ActiveScene);
     }
 
     void EditorLayer::OpenScene() {
-        std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("Snow Scene (*.snow)\0.snow\0");
+        std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("Snow Scene (*.snow)\0*.snow\0");
         if (filepath) {
             m_ActiveScene = Ref<Scene>::Create();
             m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+
+            SceneSerializer serializer(m_ActiveScene);
+            serializer.DeserializeText(*filepath);
         }
     }
 
     void EditorLayer::SaveSceneAs() {
-        std::optional<std::string> filepath = Utils::FileDialogs::SaveFile("Snow Scene (*.snow)\0.snow\0");
+        std::optional<std::string> filepath = Utils::FileDialogs::SaveFile("Snow Scene (*.snow)\0*.snow\0");
         if (filepath) {
             SceneSerializer serializer(m_ActiveScene);
             serializer.SerializeText(*filepath);
-
-
         }
-        SNOW_CORE_TRACE("You did it");
+    }
+
+    void EditorLayer::OnEvent(Core::Event::Event& e) {
+
+        Core::Event::EventDispatcher dispatcher(e);
+        dispatcher.Dispatch<Core::Event::KeyPressedEvent>(SNOW_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+    }
+
+    bool EditorLayer::OnKeyPressed(Core::Event::KeyPressedEvent& e) {
+        switch (e.GetKeyCode()) {
+        case KeyCode::N: {
+            if(Core::Input::IsKeyPressed(KeyCode::LeftControl))
+                NewScene();
+            break;
+        }
+        case KeyCode::S: {
+            if (Core::Input::IsKeyPressed(KeyCode::LeftControl))
+                SaveSceneAs();
+            break;
+        }
+        case KeyCode::O: {
+            if (Core::Input::IsKeyPressed(KeyCode::LeftControl))
+                OpenScene();
+            break;
+        }
+
+        case KeyCode::W: {
+            m_ImGuizmoSelection = ImGuizmo::OPERATION::TRANSLATE;
+            break;
+        }
+        case KeyCode::E: {
+            m_ImGuizmoSelection = ImGuizmo::OPERATION::ROTATE;
+            break;
+        }
+        case KeyCode::R: {
+            m_ImGuizmoSelection = ImGuizmo::OPERATION::SCALE;
+            break;
+        }
+        }
+
+        return false;
     }
 }

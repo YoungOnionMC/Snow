@@ -22,10 +22,11 @@ VendorIncludeDir["Glad"] = "%{wks.location}/Snow/vendor/Glad/include"
 VendorIncludeDir["GLFW"] = "%{wks.location}/Snow/vendor/GLFW/include"
 VendorIncludeDir["glm"] = "%{wks.location}/Snow/vendor/glm"
 VendorIncludeDir["ImGui"] = "%{wks.location}/Snow/vendor/imgui"
+VendorIncludeDir["ImGuizmo"] = "%{wks.location}/Snow/vendor/ImGuizmo"
 VendorIncludeDir["stb"] = "%{wks.location}/Snow/vendor/stb"
-VendorIncludeDir["Vulkan"] = "%{wks.location}/Snow/vendor/vulkan/Include"
 VendorIncludeDir["shaderc"] = "%{wks.location}/Snow/vendor/shaderc/Include"
 VendorIncludeDir["SPIRVCross"] = "%{wks.location}/Snow/vendor/SPIRV-Cross"
+VendorIncludeDir["Vulkan"] = "%{wks.location}/Snow/vendor/vulkan/Include"
 VendorIncludeDir["yaml_cpp"] = "%{wks.location}/Snow/vendor/yaml-cpp/include"
 
 

@@ -4,19 +4,11 @@
 #include "Snow/Render/Pipeline.h"
 
 #include "Snow/Core/Event/Event.h"
-#include "Snow/Core/Event/EventListener.h"
 #include "Snow/Core/Window.h"
 
 namespace Snow {
     namespace Render {
-        namespace Event {
-            class RenderResizeListener : public Core::Event::BaseListener {
-            public:
-                RenderResizeListener();
-
-                virtual void HandleEvent(Core::Event::BaseEvent* event);
-            };
-        }
+        
 
         class Renderer {
         public:

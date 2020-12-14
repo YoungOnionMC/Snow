@@ -5,8 +5,10 @@
 #include "Snow/Render/API/Texture.h"
 
 #include "Snow/Render/Camera.h"
+#include "Snow/Render/EditorCamera.h"
 
 #include "Snow/Render/Pipeline.h"
+
 
 #include <glm/glm.hpp>
 
@@ -18,7 +20,8 @@ namespace Snow {
             static void Init();
             static void Shutdown();
 
-            static void BeginScene(const Camera& camera, const glm::mat4& transform);
+            static void BeginScene(const EditorCamera& camera);
+            static void BeginScene(const Camera& camera, const glm::mat4& viewMatrix);
             static void EndScene();
 
 
