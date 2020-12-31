@@ -171,7 +171,7 @@ namespace Snow {
 		VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification& spec) :
 			m_Specification(spec) {
 
-			for (auto format : m_Specification.Attachments.Attachments) {
+			for (auto format : m_Specification.AttachmentList.Attachments) {
 				if (!Utils::IsDepthFormat(format.TextureFormat)) 
 					m_ColorAttachmentFormats.emplace_back(format.TextureFormat);
 				else

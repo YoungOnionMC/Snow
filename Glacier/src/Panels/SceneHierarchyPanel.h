@@ -24,6 +24,8 @@ namespace Snow {
 
         void DrawEnvironment();
 
+        void DrawIconedImage(const std::string& label, Ref<Render::API::Texture2D>& texture);
+
         Ref<Scene> m_SceneContext;
         Entity m_SelectionContext = {};
 

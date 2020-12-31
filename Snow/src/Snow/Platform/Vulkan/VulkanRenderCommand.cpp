@@ -14,12 +14,12 @@ namespace Snow {
 
         static float r = 0.0f;
 
-        void VulkanRenderCommand::BeginScene() {
+        void VulkanRenderCommand::BeginCommandBuffer() {
+           
+
             VulkanContext* vkContext = VulkanContext::Get();
 
             VulkanSwapChain vkSwapChain = vkContext->GetSwapChain();
-
-            
 
             vkSwapChain.BeginFrame();
 
@@ -27,46 +27,12 @@ namespace Snow {
             commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             commandBufferInfo.pNext = nullptr;
 
-            r += 1.0f/8192.0f;
-            if (r > 1.0)
-                r = 0.0f;
 
-            VkClearValue clearValues[2];
-            clearValues[0].color = { { r, 0.3f, 0.8f, 1.0f } };
-            clearValues[1].depthStencil = {1.0f, 0};
-
-            uint32_t width = vkSwapChain.GetWidth();
-            uint32_t height = vkSwapChain.GetHeight();
-
-            VkRenderPassBeginInfo renderpassBeginInfo = {};
-            renderpassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderpassBeginInfo.pNext = nullptr;
-            renderpassBeginInfo.renderPass = vkSwapChain.GetRenderPass();
-            renderpassBeginInfo.renderArea.offset.x = 0;
-            renderpassBeginInfo.renderArea.offset.y = 0;
-            renderpassBeginInfo.renderArea.extent.width = width;
-            renderpassBeginInfo.renderArea.extent.height = height;
-            renderpassBeginInfo.clearValueCount = 2;
-            renderpassBeginInfo.pClearValues = clearValues;
-
-            renderpassBeginInfo.framebuffer = vkSwapChain.GetCurrentFramebuffer();
             {
                 m_DrawCommandBuffer = vkSwapChain.GetCurrentDrawCommandBuffer();
                 VKCheckError(vkBeginCommandBuffer(m_DrawCommandBuffer, &commandBufferInfo));
-                //SNOW_CORE_TRACE("Swapchain Image index {0}", vkSwapChain.GetCurrentBufferIndex());
-                vkCmdBeginRenderPass(m_DrawCommandBuffer, &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-                //SNOW_CORE_TRACE("HMHMMHMHMH");
-
-                VkViewport viewport = {};
-				viewport.x = 0.0f;
-				viewport.y = (float)height;
-				viewport.height = -(float)height;
-				viewport.width = (float)width;
-				viewport.minDepth = 0.0f;
-				viewport.maxDepth = 1.0f;
-
-				vkCmdSetViewport(m_DrawCommandBuffer, 0, 1, &viewport);
-                
+            }
+                /*
                 VkRect2D scissor = {};
 				scissor.extent.width = width;
 				scissor.extent.height = height;
@@ -74,25 +40,38 @@ namespace Snow {
 				scissor.offset.y = 0;
 
 				vkCmdSetScissor(m_DrawCommandBuffer, 0, 1, &scissor);
+                */
 
-
-            }
+            
         }
 
-        void VulkanRenderCommand::EndRenderPass() {
-            {
-                vkCmdEndRenderPass(m_DrawCommandBuffer);
-                VKCheckError(vkEndCommandBuffer(m_DrawCommandBuffer));
-
-                VulkanContext* vkContext = VulkanContext::Get();
-
-                VulkanSwapChain vkSwapChain = vkContext->GetSwapChain();
-                vkSwapChain.SwapBuffers();
-            }
+        void VulkanRenderCommand::EndCommandBuffer() {
+            vkCmdEndRenderPass(m_DrawCommandBuffer);
+            VKCheckError(vkEndCommandBuffer(m_DrawCommandBuffer));
         }
 
         void VulkanRenderCommand::SetViewport(uint32_t width, uint32_t height) {
-            
+            VulkanContext* vkContext = VulkanContext::Get();
+
+            VulkanSwapChain vkSwapChain = vkContext->GetSwapChain();
+            m_DrawCommandBuffer = vkSwapChain.GetCurrentDrawCommandBuffer();
+
+            VkViewport viewport = {};
+            viewport.x = 0.0f;
+            viewport.y = (float)height;
+            viewport.height = -(float)height;
+            viewport.width = (float)width;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+
+            vkCmdSetViewport(m_DrawCommandBuffer, 0, 1, &viewport);
+        }
+
+        void VulkanRenderCommand::SwapBuffers() {
+            VulkanContext* vkContext = VulkanContext::Get();
+
+            VulkanSwapChain vkSwapChain = vkContext->GetSwapChain();
+            vkSwapChain.SwapBuffers();
         }
     }
 }

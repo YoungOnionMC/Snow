@@ -5,6 +5,10 @@
 #include "Snow/Platform/OpenGL/OpenGLContext.h"
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 
+#if defined SNOW_PLATFORM_WINDOWS
+    #include "Snow/Platform/DirectX11/DirectXContext.h"
+#endif
+
 namespace Snow {
     namespace Render {
         RenderAPIType ContextSpecification::s_RenderAPIType = RenderAPIType::None;
@@ -19,6 +23,9 @@ namespace Snow {
             case RenderAPIType::None:   return nullptr;
             case RenderAPIType::OpenGL: return new OpenGLContext(spec);
             case RenderAPIType::Vulkan: return new VulkanContext(spec);
+#ifdef SNOW_PLATFORM_WINDOWS
+            case RenderAPIType::DirectX:    return new DirectX11RenderContext(spec);
+#endif
             }
             s_Created = true;
             SNOW_CORE_ERROR("Context must not be null");

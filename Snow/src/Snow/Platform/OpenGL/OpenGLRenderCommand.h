@@ -10,13 +10,16 @@ namespace Snow {
 
             virtual void Init() override;
 
-            //void BeginScene() override;
-            //void EndScene() override;
+            void BeginCommandBuffer() override {}
+            void EndCommandBuffer() override {}
 
             void SetClearColor(const glm::vec4& color) override;
             void Clear() override;
 
             void DrawIndexed(uint32_t count, PrimitiveType type) override;
+
+            void SetBlending(bool blend) override;
+            void SetDepthTesting(bool depthTest) override;
 
             //void ClearColorAttachment(const glm::vec4& color) override;
 

@@ -8,7 +8,7 @@
 
 namespace Snow {
 	namespace Render {
-		void Renderer3D::DrawMesh(Ref<Render::Mesh> mesh, const glm::mat4& transform) {
+		void Renderer3D::DrawMesh(Ref<Render::Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance>& materialInstance) {
 			Ref<MaterialInstance> matInstance = mesh->GetMaterialInstance();
 			Ref<Material> material = matInstance->GetMaterial();
 			
@@ -17,7 +17,11 @@ namespace Snow {
 
 			auto tf = transform;
 
-			material->GetPipeline()->SetUniformBufferData(1, &tf, sizeof(glm::mat4));
+			material->GetPipeline()->SetUniformBufferData("ObjectTransform", &tf, sizeof(glm::mat4));
+
+			if(materialInstance)
+				materialInstance->Bind();
+			
 			mesh->GetIndexBuffer()->Bind();
 
 			RenderCommand::DrawIndexed(mesh->GetIndexBuffer()->GetCount(), material->GetPipeline()->GetSpecification().Type);

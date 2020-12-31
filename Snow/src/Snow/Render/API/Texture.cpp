@@ -3,6 +3,10 @@
 
 #include "Snow/Platform/OpenGL/OpenGLTexture.h"
 
+#if defined(SNOW_PLATFORM_WINDOWS)
+#include "Snow/Platform/DirectX11/DirectXTexture.h"
+#endif
+
 #include "Snow/Render/Renderer.h"
 
 namespace Snow {
@@ -12,6 +16,9 @@ namespace Snow {
                 switch(Render::Renderer::GetRenderAPI()) {
                 case RenderAPIType::None:   return nullptr;
                 case RenderAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, wrap);
+#if defined(SNOW_PLATFORM_WINDOWS)
+                case RenderAPIType::DirectX:    return Ref<DirectX11Texture2D>::Create(format, width, height, wrap);
+#endif
                 }
             }
 
@@ -19,6 +26,9 @@ namespace Snow {
                 switch(Render::Renderer::GetRenderAPI()) {
                 case RenderAPIType::None:   return nullptr;
                 case RenderAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(path, srgb);
+#if defined(SNOW_PLATFORM_WINDOWS)
+                case RenderAPIType::DirectX:    return Ref<DirectX11Texture2D>::Create(path, srgb);
+#endif
                 }
             }
 

@@ -75,7 +75,7 @@ namespace Snow {
 	OpenGLFramebuffer::OpenGLFramebuffer(const Render::FramebufferSpecification& spec) :
 		m_Specification(spec), m_Width(spec.Width), m_Height(spec.Height) {
 
-		for (auto format : m_Specification.Attachments.Attachments) {
+		for (auto format : m_Specification.AttachmentList.Attachments) {
 			if (!Utils::IsDepthFormat(format.TextureFormat))
 				m_ColorAttachmentFormats.emplace_back(format.TextureFormat);
 			else
@@ -159,8 +159,14 @@ namespace Snow {
 	}
 
 	void OpenGLFramebuffer::Bind() const {
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		glViewport(0, 0, m_Width, m_Height);
+		if (m_Specification.SwapChainTarget) {
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glViewport(0, 0, m_Width, m_Height);
+		}
+		else {
+			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+			glViewport(0, 0, m_Width, m_Height);
+		}
 	}
 
 	void OpenGLFramebuffer::Unbind() const {

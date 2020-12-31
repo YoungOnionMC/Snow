@@ -50,7 +50,7 @@ namespace Snow {
             int width, height, channels;
             stbi_set_flip_vertically_on_load(true);
 
-            m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
+            m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
             m_Format = channels == 4 ? API::TextureFormat::RGBA : API::TextureFormat::RGB;
 
             if(!m_ImageData.Data)

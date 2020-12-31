@@ -11,7 +11,7 @@
 
 namespace Snow {
     SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene) {
-        m_CheckerboardTexture = Render::API::Texture2D::Create("assets/textures/Checkerboard.png");
+//        m_CheckerboardTexture = Render::API::Texture2D::Create("assets/textures/Checkerboard.png");
 
         SetScene(scene);
     }
@@ -134,6 +134,25 @@ namespace Snow {
         ImGui::PopID();
     }
 
+    void SceneHierarchyPanel::DrawIconedImage(const std::string& label, Ref<Render::API::Texture2D>& texture) {
+        ImGui::PushID(label.c_str());
+
+        void* textureID = texture.Raw() == nullptr ? (void*)m_CheckerboardTexture->GetRendererID() : (void*)texture->GetRendererID();
+
+        ImGui::Image(textureID, ImVec2(64, 64), ImVec2(0.0, 1.0), ImVec2(1.0, 0.0));
+        if (ImGui::IsItemClicked()) {
+            std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("");
+            if (filepath.has_value()) {
+                texture = Render::API::Texture2D::Create(filepath.value());
+            }
+        }
+
+        ImGui::SameLine();
+        ImGui::Text(label.c_str());
+
+        ImGui::PopID();
+    }
+
     template<typename T, typename UIFunction>
     static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction) {
         const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
@@ -204,6 +223,23 @@ namespace Snow {
 
             if (ImGui::MenuItem("Mesh")) {
                 m_SelectionContext.AddComponent<MeshComponent>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            if (ImGui::MenuItem("BRDF Material")) {
+                Render::PipelineSpecification pipelineSpec;
+                pipelineSpec.Layout = {
+                    { Render::AttribType::Float3, "a_Position" },
+                    { Render::AttribType::Float3, "a_Normal" },
+                    { Render::AttribType::Float3, "a_Tangent" },
+                    { Render::AttribType::Float3, "a_Bitangent" },
+                    { Render::AttribType::Float2, "a_TexCoord" }
+                };
+                pipelineSpec.Shaders = { Render::Shader::Create(Render::ShaderType::Vertex, "assets/shaders/glsl/PBRVert.glsl"), Render::Shader::Create(Render::ShaderType::Pixel, "assets/shaders/glsl/PBRFrag.glsl") };
+                pipelineSpec.Type = Render::PrimitiveType::Triangle;
+                Ref<Render::Pipeline> pipeline = Render::Pipeline::Create(pipelineSpec);
+                Ref<Render::MaterialInstance> m_MaterialInstance = Ref<Render::MaterialInstance>::Create(Ref<Render::Material>::Create(pipeline));
+                m_SelectionContext.AddComponent<BRDFMaterialComponent>(m_MaterialInstance);
                 ImGui::CloseCurrentPopup();
             }
 
@@ -300,6 +336,50 @@ namespace Snow {
             }
         });
 
+        DrawComponent<BRDFMaterialComponent>("Material", entity, [this](auto& component) {
+            Ref<Render::MaterialInstance> mat = component.MaterialInstance;
+
+            if (ImGui::CollapsingHeader("Albedo", nullptr, ImGuiTreeNodeFlags_DefaultOpen)) {
+                bool albedoMap = component.AlbedoInput.UseTexture;
+                DrawIconedImage("Albedo Tex", component.AlbedoInput.AlbedoTexture);
+                ImGui::SameLine();
+                ImGui::BeginGroup();
+                if (ImGui::Checkbox("Use##AlbedoTexture", &albedoMap))
+                    component.AlbedoInput.UseTexture = albedoMap;
+                ImGui::EndGroup();
+                ImGui::SameLine();
+                ImGui::ColorEdit3("Albedo Color", glm::value_ptr(component.AlbedoInput.AlbedoColor));
+            }
+
+            if (ImGui::CollapsingHeader("Normal", nullptr, ImGuiTreeNodeFlags_DefaultOpen)) {
+                bool normalMap = component.NormalInput.UseTexture;
+                DrawIconedImage("Normal Tex", component.NormalInput.NormalTexture);
+                ImGui::SameLine();
+                if (ImGui::Checkbox("Use Normal Texture", &normalMap))
+                    component.NormalInput.UseTexture = normalMap;
+            }
+
+            if (ImGui::CollapsingHeader("Metalness", nullptr, ImGuiTreeNodeFlags_DefaultOpen)) {
+                float& value = component.MetalnessInput.Value;
+                bool metalMap = component.MetalnessInput.UseTexture;
+                DrawIconedImage("Metalness", component.MetalnessInput.MetalnessTexture);
+                ImGui::SameLine();
+                if(ImGui::Checkbox("Use Texture", &metalMap))
+                    component.MetalnessInput.UseTexture = metalMap;
+                ImGui::SliderFloat("Value##MetalnessValue", &value, 0.0f, 1.0f);
+            }
+
+            if (ImGui::CollapsingHeader("Roughness", nullptr, ImGuiTreeNodeFlags_DefaultOpen)) {
+                float& value = component.RoughnessInput.Value;
+                bool roughMap = component.RoughnessInput.UseTexture;
+                DrawIconedImage("Roughness", component.RoughnessInput.RoughnessTexture);
+                ImGui::SameLine();
+                if (ImGui::Checkbox("Use Texture", &roughMap))
+                    component.RoughnessInput.UseTexture = roughMap;
+                ImGui::SliderFloat("Value##RoughnessValue", &value, 0.0f, 1.0f);
+            }
+        });
+
         if (removeEntity) {
             m_SceneContext->DestroyEntity(m_SelectionContext);
             m_SelectionContext = {};
@@ -307,8 +387,9 @@ namespace Snow {
     }
 
     void SceneHierarchyPanel::DrawEnvironment() {
-
+        ImGui::DragFloat3("Light Direction", glm::value_ptr(m_SceneContext->GetLight().Direction), 0.01, -10.0f, 10.0f);
         ImGui::ColorEdit3("Light Color", glm::value_ptr(m_SceneContext->GetLight().Radiance));
-
+        float& lightMulti = m_SceneContext->GetLight().Multiplier;
+        ImGui::SliderFloat("Light Multiplier", &lightMulti, 0.0, 2.0);
     }
 }

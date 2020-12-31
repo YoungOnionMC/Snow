@@ -2,6 +2,7 @@
 #include "Snow/Render/RenderContext.h"
 #include "Snow/Render/RenderCommand.h"
 #include "Snow/Render/Pipeline.h"
+#include "Snow/Render/Shader/ShaderLibrary.h"
 
 #include "Snow/Core/Event/Event.h"
 #include "Snow/Core/Window.h"
@@ -9,7 +10,6 @@
 namespace Snow {
     namespace Render {
         
-
         class Renderer {
         public:
             static void Init();
@@ -24,6 +24,8 @@ namespace Snow {
 
             static Renderer* Get() { return s_Instance; }
             static Context* GetContext() {return s_Context; }
+
+            static Ref<ShaderLibrary> GetShaderLibrary();
 
         private:
             static Renderer* s_Instance;

@@ -76,5 +76,31 @@ namespace Snow {
 
 			return true;
 		}
+
+		bool FlipMatrix(const glm::mat4& matrix, glm::mat4& outMatrix) {
+			
+
+			outMatrix[0][0] = matrix[0][0];
+			outMatrix[0][1] = matrix[1][0];
+			outMatrix[0][2] = matrix[2][0];
+			outMatrix[0][3] = matrix[3][0];
+
+			outMatrix[1][0] = matrix[0][1];
+			outMatrix[1][1] = matrix[1][1];
+			outMatrix[1][2] = matrix[2][1];
+			outMatrix[1][3] = matrix[3][1];
+
+			outMatrix[2][0] = matrix[0][2];
+			outMatrix[2][1] = matrix[1][2];
+			outMatrix[2][2] = matrix[2][2];
+			outMatrix[2][3] = matrix[3][2];
+
+			outMatrix[3][0] = matrix[0][3];
+			outMatrix[3][1] = matrix[1][3];
+			outMatrix[3][2] = matrix[2][3];
+			outMatrix[3][3] = matrix[3][3];
+
+			return true;
+		}
 	}
 }

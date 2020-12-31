@@ -18,8 +18,8 @@ namespace Snow {
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
-		virtual uint32_t GetColorAttachmentRendererID(int index) const override { return m_ColorAttachments[index]; }
-		virtual uint32_t GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
+		virtual void* GetColorAttachmentTexture(int index) const override { return reinterpret_cast<void*>(m_ColorAttachments[index]); }
+		virtual void* GetDepthAttachmentTexture() const override { return reinterpret_cast<void*>(m_DepthAttachment); }
 
 		virtual const Render::FramebufferSpecification& GetSpecification() const override { return m_Specification; }
 

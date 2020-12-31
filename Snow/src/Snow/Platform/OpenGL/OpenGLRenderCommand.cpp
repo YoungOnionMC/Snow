@@ -42,6 +42,9 @@ namespace Snow {
             glDebugMessageCallback(GLLogMessage, nullptr);
 
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
+
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
         }
 
         void OpenGLRenderCommand::DrawIndexed(uint32_t count, PrimitiveType type) {
@@ -59,6 +62,22 @@ namespace Snow {
 
         void OpenGLRenderCommand::SetViewport(uint32_t width, uint32_t height) {
             glViewport(0, 0, width, height);
+        }
+
+        void OpenGLRenderCommand::SetBlending(bool blend) {
+            if (blend) {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else
+                glDisable(GL_BLEND);
+        }
+        void OpenGLRenderCommand::SetDepthTesting(bool depthTest) {
+            if (depthTest)
+                glEnable(GL_DEPTH_TEST);
+            else
+                glDisable(GL_DEPTH_TEST);
+
         }
 
         void OpenGLRenderCommand::SwapBuffers() {

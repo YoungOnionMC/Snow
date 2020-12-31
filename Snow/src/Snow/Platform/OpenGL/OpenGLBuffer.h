@@ -28,11 +28,14 @@ namespace Snow {
             void Bind() const override;
             void Unbind() const override;
 
+            void SetData(void* data, uint32_t size) override;
+
             virtual uint32_t GetCount() const override { return m_Count; }
 
         private:
             uint32_t m_RendererID;
 
+            Buffer m_LocalBuffer;
             uint32_t m_Count;
         };
     }

@@ -34,10 +34,17 @@ namespace Snow {
         OpenGLShader::OpenGLShader(ShaderType type, const std::string& path) :
             m_Path(path), m_Type(type) {
 
+            size_t found = path.find_last_of("/\\");
+            m_Name = found != std::string::npos ? path.substr(found + 1) : path;
+            found = m_Name.find_last_of(".");
+            m_Name = found != std::string::npos ? m_Name.substr(0, found) : m_Name;
+
+
             m_Source = ReadShaderFromFile(m_Path);
             CreateSPIRVBinaryCache();
             CreateGLSLBinaryCache();
             CreateOpenGLShaderModule(false);
+            GLSLReflect();
             //Load(m_Source);
 
         }
@@ -90,8 +97,9 @@ namespace Snow {
                 shaderc::Compiler compiler;
                 shaderc::CompileOptions options;
                 options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+                options.SetOptimizationLevel(shaderc_optimization_level_zero);
 
-                const bool optimize = true;
+                const bool optimize = false;
                 if (optimize)
                     options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
@@ -152,6 +160,8 @@ namespace Snow {
                 printf("Shader:\n%s\n", source.data());
                 printf("====================\n");
 
+                
+
                 shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, SnowShaderTypeToShaderC(m_Type), m_Path.c_str(), options);
 
                 if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
@@ -173,6 +183,19 @@ namespace Snow {
         }
 
         void OpenGLShader::GLSLReflect() {
+            shaderc::Compiler compiler;
+            shaderc::CompileOptions options;
+            options.SetTargetEnvironment(shaderc_target_env_opengl_compat, shaderc_env_version_opengl_4_5);
+
+            spirv_cross::CompilerGLSL compilerGLSL(m_SPIRVBinaryData);
+
+            std::string source = compilerGLSL.compile();
+            m_GLSLSourceData = SplitString(source, "\r\n");
+
+            shaderc::PreprocessedSourceCompilationResult reult = compiler.PreprocessGlsl(source, SnowShaderTypeToShaderC(m_Type), m_Path.c_str(), options);
+            m_GLSLBinaryData = std::vector<uint32_t>(reult.begin(), reult.end());
+
+            
 
             //glslang::TShader glslShader()
         }
@@ -181,7 +204,7 @@ namespace Snow {
             m_RendererID = glCreateShader(GetShaderType(m_Type));
 
             if (spirvModule) {
-                glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, m_GLSLBinaryData.data(), m_GLSLBinaryData.size() * sizeof(uint32_t));
+                glShaderBinary(1, &m_RendererID, GL_SHADER_BINARY_FORMAT_SPIR_V, m_GLSLSourceData.data(), m_GLSLSourceData.size() * sizeof(uint32_t));
                 glSpecializeShader(m_RendererID, "main", 0, nullptr, nullptr);
 
                 glCompileShader(m_RendererID);

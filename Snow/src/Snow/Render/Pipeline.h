@@ -3,6 +3,7 @@
 #include "Snow/Core/Ref.h"
 
 #include "Snow/Render/Shader/Shader.h"
+#include "Snow/Render/Shader/ShaderUniform.h"
 #include "Snow/Render/RenderPass.h"
 
 #include <string>
@@ -114,6 +115,9 @@ namespace Snow {
             ~Pipeline() = default;
 
             virtual void Bind() const = 0; 
+
+            virtual const ShaderUniformBuffer& GetUniformBuffer(const std::string& name) const = 0;
+            virtual const std::unordered_map<std::string, ShaderResource>& GetResources() const = 0;
 
             virtual void SetUniformBufferData(const std::string& uniformBufferName, void* data = nullptr, uint32_t size = 0) = 0;
             virtual void SetUniformBufferData(uint32_t bindingPoint, void* data = nullptr, uint32_t size = 0) = 0;

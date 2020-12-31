@@ -8,6 +8,8 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
+#include "Snow/Render/Renderer.h"
+
 namespace Snow {
 	namespace Render {
 		struct LogStream : public Assimp::LogStream {
@@ -88,10 +90,13 @@ namespace Snow {
 				{ AttribType::Float3, "a_Bitangent" },
 				{ AttribType::Float2, "a_TexCoord" }
 			};
-			pipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/PBRVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/PBRFrag.glsl") };
+			pipelineSpec.Shaders = { Renderer::GetShaderLibrary()->Get("PBRVert"), Renderer::GetShaderLibrary()->Get("PBRFrag") };
 			pipelineSpec.Type = PrimitiveType::Triangle;
 			Ref<Pipeline> pipeline = Pipeline::Create(pipelineSpec);
 			m_MaterialInstance = Ref<MaterialInstance>::Create(Ref<Material>::Create(pipeline));
+
+			
+
 		}
 
 	}

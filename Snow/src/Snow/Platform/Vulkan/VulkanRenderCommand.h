@@ -10,15 +10,14 @@ namespace Snow {
         public:
             VulkanRenderCommand();
 
-            //virtual void BeginScene() override;
-            //virtual void EndScene() override;
-
-            //virtual void BeginRenderPass() override;
-            //virtual void EndRenderPass() override;
-
             virtual void DrawIndexed(uint32_t indexCount, PrimitiveType type) override {}
 
             virtual void SetViewport(uint32_t width, uint32_t height) override;
+
+            virtual void BeginCommandBuffer() override;
+            virtual void EndCommandBuffer() override;
+
+            virtual void SwapBuffers() override;
         private:
             VkCommandBuffer m_DrawCommandBuffer;
         };

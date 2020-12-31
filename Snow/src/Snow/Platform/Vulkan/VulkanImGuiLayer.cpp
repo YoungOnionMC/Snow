@@ -49,7 +49,7 @@ namespace Snow {
         }
         Ref<Core::Window> window = Core::Application::Get().GetWindow();
 
-        auto vkContext = Render::VulkanContext::Get();
+        auto vkContext = VulkanContext::Get();
         auto vkDevice = vkContext->GetCurrentDevice();
         auto vkSwapChain = vkContext->GetSwapChain();
 
@@ -82,7 +82,7 @@ namespace Snow {
         ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->GetWindowHandle(), true);
 #endif
         ImGui_ImplVulkan_InitInfo info = {};
-        info.Instance = Render::VulkanContext::GetVulkanInstance();
+        info.Instance = VulkanContext::GetVulkanInstance();
         info.PhysicalDevice = vkDevice->GetPhysicalDevice();
         info.Device = vkDevice->GetVulkanDevice();
         info.QueueFamily = vkDevice->GetQueueFamilyIndices().Graphics;
@@ -97,7 +97,7 @@ namespace Snow {
     }
 
     void VulkanImGuiLayer::OnDetach() {
-        auto vkContext = Render::VulkanContext::Get();
+        auto vkContext = VulkanContext::Get();
         auto vkDevice = vkContext->GetDevice();
 
         VkResult error = vkDeviceWaitIdle(vkDevice->GetVulkanDevice());

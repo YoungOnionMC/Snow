@@ -7,6 +7,8 @@
 
 #include <spirv_glsl.hpp>
 
+#include <shaderc/shaderc.hpp>
+
 namespace Snow {
     namespace Render {
 
@@ -34,6 +36,25 @@ namespace Snow {
             //SNOW_CORE_ERROR("UNIFORM BUFFER SIZE : {0}", m_UniformBuffers.size());
         }
 
+        const ShaderUniformBuffer& OpenGLPipeline::GetUniformBuffer(const std::string& name) const {
+            for (auto& [bindingPoint, ub] : m_UniformBuffers) {
+                if (ub.Name == name) {
+                    return ub;
+                }
+            }
+            SNOW_CORE_WARN("Could not find uniform buffer, returning UBO 0");
+            return m_UniformBuffers[0];
+        }
+        /*
+        const ShaderResource OpenGLPipeline::GetResource(const std::string& name) const {
+            for (auto& [name, resource] : m_Resources) {
+                if (resource.GetName() == name)
+                    return resource;
+            }
+            SNOW_CORE_ERROR("Could not find resource");
+            return {};
+        }*/
+
         void OpenGLPipeline::SetUniformBufferData(const std::string& uniformBufferName, void* data, uint32_t size) {
             uint8_t* buffer = new uint8_t[size];
             memcpy(buffer, data, size);
@@ -49,7 +70,7 @@ namespace Snow {
                 return;
 
             glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer->RendererID);
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, size, &buffer);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, size, buffer);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
             delete[] buffer;
@@ -86,25 +107,37 @@ namespace Snow {
         }
 
         static UniformType SPIRVTypeToShaderUniformType(spirv_cross::SPIRType type) {
+            UniformType retType = UniformType::None;
             switch (type.basetype) {
-            case spirv_cross::SPIRType::Boolean:    return UniformType::Bool;
+            case spirv_cross::SPIRType::Boolean:    retType = UniformType::Bool; break;
             case spirv_cross::SPIRType::Int: {
-                if (type.vecsize == 1)   return UniformType::Int;
-                if (type.vecsize == 2)   return UniformType::Int2;
-                if (type.vecsize == 3)   return UniformType::Int3;
-                if (type.vecsize == 4)   return UniformType::Int4;
+                if (type.vecsize == 1)   retType = UniformType::Int;
+                else if (type.vecsize == 2)   retType = UniformType::Int2;
+                else if (type.vecsize == 3)   retType = UniformType::Int3;
+                else if (type.vecsize == 4)   retType = UniformType::Int4;
+                break;
             }
             case spirv_cross::SPIRType::Float: {
-                if (type.vecsize == 1)   return UniformType::Float;
-                if (type.vecsize == 2)   return UniformType::Float2;
-                if (type.vecsize == 3)   return UniformType::Float3;
-                if (type.vecsize == 4)   return UniformType::Float4;
+                if (type.vecsize == 1)   retType = UniformType::Float;
+                else if (type.vecsize == 2)   retType = UniformType::Float2;
+                else if (type.vecsize == 3) {
+                    retType = UniformType::Float3;
 
-                if (type.columns == 3 && type.vecsize == 3)  return UniformType::Mat3x3;
-                if (type.columns == 4 && type.vecsize == 4)  return UniformType::Mat4x4;
+
+                    if (type.columns == 3)  retType = UniformType::Mat3x3;
+                }
+                else if (type.vecsize == 4) {
+                    retType = UniformType::Float4;
+
+                    if (type.columns == 4)  retType = UniformType::Mat4x4;
+                }
+                break;
             }
+            case spirv_cross::SPIRType::Struct:
+                retType = UniformType::Struct;
+                break;
             }
-            return UniformType::None;
+            return retType;
         }
 
         void OpenGLPipeline::LinkShaders() {
@@ -148,9 +181,10 @@ namespace Snow {
 
             for (auto& shader : m_Specification.Shaders) {
                 Ref<OpenGLShader> glShader = shader.As<OpenGLShader>();
-                //spirv_cross::Compiler compiler(glShader->GetSPIRVBinaryData());
-                spirv_cross::Compiler compiler(glShader->GetGLSLBinaryData());
+                spirv_cross::Compiler compiler(glShader->GetSPIRVBinaryData());
+                //spirv_cross::CompilerGLSL compilerGLSL(glShader->GetGLSLBinaryData());
                 spirv_cross::ShaderResources res = compiler.get_shader_resources();
+                //spirv_cross::ShaderResources res2 = compilerGLSL.get_shader_resources();
 
                 SNOW_CORE_INFO("==========================");
                 SNOW_CORE_INFO("Shader file {0}", glShader->GetPath());
@@ -219,6 +253,47 @@ namespace Snow {
                         buffer.BindingPoint = bindingPoint;
                         buffer.Size = compiler.get_declared_struct_size(bufferType);
 
+                        uint32_t uniformCount = compiler.get_type(resource.base_type_id).member_types.size();
+                        for (uint32_t i = 0; i < uniformCount; i++) {
+                            std::string name = compiler.get_member_name(resource.base_type_id, i);
+                            UniformType type = SPIRVTypeToShaderUniformType(compiler.get_type(compiler.get_type(resource.base_type_id).member_types[i]));
+                            uint32_t size = compiler.get_declared_struct_member_size(compiler.get_type(resource.base_type_id), i);
+                            uint32_t offset = compiler.type_struct_member_offset(compiler.get_type(resource.base_type_id), i);
+                            
+                            ShaderStruct sstruct = ShaderStruct(name);
+                            if (type == UniformType::Struct) {
+                                auto structType = compiler.get_type(compiler.get_type(resource.base_type_id).member_types[i]);
+
+
+                                spirv_cross::TypeID typeID = compiler.get_type(resource.base_type_id).member_types[i];
+                                spirv_cross::SPIRType SPIRtype = compiler.get_type(compiler.get_type(resource.base_type_id).member_types[i]);
+
+                                uint32_t count = 1;
+                                if (SPIRtype.array.size() == 1) {
+                                    count = SPIRtype.array[0];
+                                }
+                                else if(SPIRtype.array.size() == 0) {
+                                    count = 1;
+                                }
+
+                                uint32_t memberCount = compiler.get_type(typeID).member_types.size();
+                                for (uint32_t j = 0; j < memberCount; j++) {
+                                    const auto& name = compiler.get_member_name(typeID, j);
+                                    UniformType UniformType = SPIRVTypeToShaderUniformType(compiler.get_type(compiler.get_type(typeID).member_types[j]));
+                                    uint32_t size = compiler.get_declared_struct_member_size(compiler.get_type(typeID), j);
+                                    uint32_t offset = compiler.type_struct_member_offset(compiler.get_type(typeID), j);
+
+                                    sstruct.AddUniform(ShaderUniform(name, UniformType, size, offset));
+                                }
+                                buffer.Uniforms.push_back(ShaderUniform(name, &sstruct, count));
+                            }
+                            else {
+                                buffer.Uniforms.push_back(ShaderUniform(name, type, size, offset));
+                            }
+                                
+                                
+                        }
+
                         // move uniform buffers to their own class
                         glGenBuffers(1, &buffer.RendererID);
                         glBindBuffer(GL_UNIFORM_BUFFER, buffer.RendererID);
@@ -256,11 +331,11 @@ namespace Snow {
                     
 
                     
-                    m_Resources[name] = ShaderResource(name, binding, arrayCount);
+                    m_Resources[name] = ShaderResource(name, glShader->GetType(), Render::ResourceType::Texture2D, binding, arrayCount);
                     if (arrayCount > 1)
-                        UploadUniformIntArray(location, samplers, arrayCount);
+                        SetUniformIntArray(name, samplers, arrayCount);
                     else if (arrayCount == 1)
-                        UploadUniformInt(location, binding);
+                        SetUniform(name, binding);
 
                     //SNOW_CORE_INFO("   Binding resource {0}, at location {1}", name, location);
 
@@ -275,6 +350,7 @@ namespace Snow {
         void OpenGLPipeline::OpenGLReflection() {
             glUseProgram(m_PipelineHandle);
 
+            
 
         }
 
@@ -289,6 +365,10 @@ namespace Snow {
 
         void OpenGLPipeline::SetUniform(const std::string& name, int value) {
             glUniform1i(GetUniformLocation(name), value);
+        }
+
+        void OpenGLPipeline::SetUniform(const std::string& name, uint32_t value) {
+            glUniform1ui(GetUniformLocation(name), value);
         }
 
         void OpenGLPipeline::SetUniform(const std::string& name, float value) {

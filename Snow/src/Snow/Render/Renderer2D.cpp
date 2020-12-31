@@ -4,6 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Snow/Math/Mat4.h"
+
 namespace Snow {
     namespace Render {
 
@@ -72,7 +74,7 @@ namespace Snow {
                     { AttribType::Float, "TexID" },
                     { AttribType::Float4, "Color" },
                 };
-                pipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/QuadBatchRenderVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/QuadBatchRenderFrag.glsl") };
+                pipelineSpec.Shaders = { Renderer::GetShaderLibrary()->Get("QuadBatchRenderVert"), Renderer::GetShaderLibrary()->Get("QuadBatchRenderFrag") };
                 pipelineSpec.Type = PrimitiveType::Triangle;
 
                 s_Data.QuadPipeline = Pipeline::Create(pipelineSpec);
@@ -120,7 +122,7 @@ namespace Snow {
                     { AttribType::Float3, "Position" },
                     { AttribType::Float4, "Color" }
                 };
-                linePipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/LineBatchRenderVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/LineBatchRenderFrag.glsl") };
+                linePipelineSpec.Shaders = { Renderer::GetShaderLibrary()->Get("LineBatchRenderVert"), Renderer::GetShaderLibrary()->Get("LineBatchRenderFrag") };
                 linePipelineSpec.Type = PrimitiveType::Line;
 
                 s_Data.LinePipeline = Pipeline::Create(linePipelineSpec);
@@ -155,13 +157,14 @@ namespace Snow {
             s_Data.QuadPipeline->Bind();
 
             glm::mat4 viewProjMatrix = editorCamera.GetViewProjectionMatrix();
-            s_Data.QuadPipeline->SetUniformBufferData(0, glm::value_ptr(viewProjMatrix), sizeof(glm::mat4));
+            s_Data.QuadPipeline->SetUniformBufferData("Camera", glm::value_ptr(viewProjMatrix), sizeof(glm::mat4));
 
             BeginBatch();
         }
 
         void Renderer2D::EndScene() {
             EndBatch();
+            RenderCommand::SetBlending(false);
         }
 
         void Renderer2D::BeginBatch() {
@@ -181,22 +184,24 @@ namespace Snow {
 
                 for(uint32_t i=0; i< s_Data.TextureSlotIndex; i++)
                     s_Data.TextureSlots[i]->Bind(i);
-                
+                RenderCommand::SetDepthTesting(true);
                 s_Data.QuadPipeline->Bind();
-
-                for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-                    s_Data.TextureSlots[i]->Bind(i);
-
+                s_Data.QuadVBO->Bind();
                 s_Data.QuadIBO->Bind();
+
+                
                 RenderCommand::DrawIndexed(s_Data.QuadIndexCount, s_Data.QuadPipeline->GetSpecification().Type);
+                RenderCommand::SetDepthTesting(false);
             }
 
             size = (uint8_t*)s_Data.LineVertexData - (uint8_t*)s_Data.LineVertexBase;
             if(size) {
                 s_Data.LineVBO->SetData(s_Data.LineVertexBase, size);
+                RenderCommand::SetDepthTesting(true);
                 s_Data.LinePipeline->Bind();
                 s_Data.LineIBO->Bind();
                 RenderCommand::DrawIndexed(s_Data.LineIndexCount, s_Data.LinePipeline->GetSpecification().Type);
+                RenderCommand::SetDepthTesting(false);
             }
         }
 
@@ -227,6 +232,8 @@ namespace Snow {
         }
 
         void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color) {
+            if (color.a != 1.0f)
+                RenderCommand::SetBlending(true);
             constexpr size_t quadVertexCount = 4;
             const float textureIndex = 0.0f;
             constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f} };

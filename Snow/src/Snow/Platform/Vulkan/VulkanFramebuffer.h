@@ -29,8 +29,8 @@ namespace Snow {
 
 			virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override {}
 
-			virtual uint32_t GetColorAttachmentRendererID(int index = 0) const override { return 0; }
-			virtual uint32_t GetDepthAttachmentRendererID() const override { return 0; }
+			virtual void* GetColorAttachmentTexture(int index = 0) const override { return 0; }
+			virtual void* GetDepthAttachmentTexture() const override { return 0; }
 
 			VkFramebuffer GetFramebufferHandle() { return m_VulkanFramebufferHandle; }
 			VkRenderPass GetRenderPass() { return m_RenderPass; }

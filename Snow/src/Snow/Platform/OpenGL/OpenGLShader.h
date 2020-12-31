@@ -17,10 +17,11 @@ namespace Snow {
             const ShaderType GetType() const override { return m_Type; }
 
             const std::string& GetPath() const override { return m_Path; }
+            const std::string& GetName() const override { return m_Name; }
 
             const std::vector<uint32_t>& GetSPIRVBinaryData() const { return m_SPIRVBinaryData; }
             const std::vector<uint32_t>& GetGLSLBinaryData() const { return m_GLSLBinaryData; }
-            const std::vector<std::string>& GetGLSLSourceData() const { return m_GLSLSourceData; }
+            const std::vector<std::string>& GetGLSLSourceDataString() const { return m_GLSLSourceData; }
 
         private:
 

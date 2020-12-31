@@ -17,7 +17,7 @@ namespace Snow {
             SNOW_CORE_INFO("Creating Application...");
             s_Instance = this;
 
-            Render::Renderer::SetRenderAPI(Render::RenderAPIType::OpenGL);
+            Render::Renderer::SetRenderAPI(Render::RenderAPIType::DirectX);
             m_Window = new Window();
             m_Window->SetEventCallback(SNOW_BIND_EVENT_FN(Application::OnEvent));
             Input::Init();
@@ -53,7 +53,6 @@ namespace Snow {
                 OnUpdate();
                 
 
-                //Render::Renderer2D::DrawQuad({0.0f, 0.0f},{1.0f , 1.0f});
                 OnImGuiRender();
 
                 //Render::Renderer::SwapBuffers();

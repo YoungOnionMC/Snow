@@ -8,6 +8,9 @@ namespace Snow {
 		OpenGLRenderPass(const Render::RenderPassSpecification& spec);
 		virtual ~OpenGLRenderPass();
 
+		virtual void BeginPass() override {};
+		virtual void EndPass() override {};
+
 		virtual Render::RenderPassSpecification& GetSpecification() override { return m_Specification; }
 		virtual const Render::RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 	private:

@@ -30,14 +30,26 @@ project "Glacier"
 	}
 
     if os.target() == "windows" then
+        links {
+            "Snow",
+            
+        }
+
         libdirs {
             "%{VendorLibraryDir.Assimp}/Windows"
         }
 
-        links {
-            "Snow",
-            "assimp-vc142-mtd.lib",
-        }
+        filter "configurations:Debug"
+            links {
+                "Debug/assimp-vc142-mtd.lib",
+            }
+
+        filter "configurations:Release"
+            links {
+                "Release/assimp-vc142-mt.lib",
+            }
+
+        filter ""
     end
 
     if os.target() == "linux" then

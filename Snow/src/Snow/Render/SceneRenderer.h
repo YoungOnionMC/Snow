@@ -20,14 +20,22 @@ namespace Snow {
 			static void OnViewportResize(uint32_t width, uint32_t height);
 
 			static void BeginScene(const Ref<Scene> scene, const SceneRendererCamera& camera);
+			static void BeginScene(const Ref<Scene> scene, const EditorCamera& camera);
 			static void EndScene();
 
-			static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+			static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), const Ref<MaterialInstance> overrideMaterial = nullptr);
+
+
+			static void* GetFinalColorAttachment();
 		private:
 			static void FlushDrawList();
 
 			static void GeometryPass();
 			static void CompositePass();
+
+			
+
+			
 		};
 	}
 }

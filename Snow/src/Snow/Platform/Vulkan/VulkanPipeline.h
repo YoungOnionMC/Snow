@@ -9,43 +9,42 @@
 #include <spirv_cross.hpp>
 
 namespace Snow {
-	namespace Render {
-		class VulkanPipeline : public Pipeline {
-		public:
-			VulkanPipeline(const PipelineSpecification& spec);
 
-			void Bind() const override;
+	struct VulkanUniformBuffer {
+		VkDeviceMemory Memory; // Vulkan specific buffer stuff
+		VkBuffer VKBuffer;
+		VkDescriptorBufferInfo DescriptorInfo;
 
-			void SetUniformBufferData(const std::string& name, void* data, uint32_t size) override {}
-			void SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) override {}
+		Render::ShaderUniformBuffer Buffer;
+	};
 
-			const PipelineSpecification& GetSpecification() const override { return m_Specification; }
-		private:
-			void Invalidate();
+	class VulkanPipeline : public Render::Pipeline {
+	public:
+		VulkanPipeline(const Render::PipelineSpecification& spec);
 
-			void Reflect(VkGraphicsPipelineCreateInfo& pipelineCreateInfo);
+		void Bind() const override;
 
-			static VkFormat SPIRVTypeToVKFormat(spirv_cross::SPIRType type);
-			static VkShaderStageFlagBits SnowShaderTypeToVKShaderStage(ShaderType type);
+		void SetUniformBufferData(const std::string& name, void* data, uint32_t size) override {}
+		void SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) override {}
 
-			PipelineSpecification m_Specification;
+		const Render::PipelineSpecification& GetSpecification() const override { return m_Specification; }
+	private:
+		void Invalidate();
 
-			VkGraphicsPipelineCreateInfo m_GraphicsPipelineCreateInfo;
-			VkPipeline m_VulkanPipeline;
+		void Reflect(VkGraphicsPipelineCreateInfo& pipelineCreateInfo);
 
-			struct VulkanUniformBuffer {
-				VkDeviceMemory Memory;
-				VkBuffer Buffer;
-				VkDescriptorBufferInfo DescriptorInfo;
-				uint32_t Size;
-				uint32_t BindingPoint;
-				std::string Name;
-				VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
-			};
+		static VkFormat SPIRVTypeToVKFormat(spirv_cross::SPIRType type);
+		static VkShaderStageFlagBits SnowShaderTypeToVKShaderStage(Render::ShaderType type);
 
-			void AllocateUniformBuffer(VulkanUniformBuffer& buffer);
+		Render::PipelineSpecification m_Specification;
 
-			std::unordered_map<uint32_t, VulkanUniformBuffer> m_UniformBuffers;
-		};
-	}
+		VkGraphicsPipelineCreateInfo m_GraphicsPipelineCreateInfo;
+		VkPipeline m_VulkanPipeline;
+
+
+
+		void AllocateUniformBuffer(VulkanUniformBuffer& buffer);
+
+		std::unordered_map<uint32_t, VulkanUniformBuffer> m_UniformBuffers;
+	};
 }

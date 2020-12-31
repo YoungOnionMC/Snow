@@ -3,19 +3,9 @@
 
 #include "Snow/Core/Application.h"
 
-#define IMGUI_IMPL_OPENGL_LOADER_GLAD
-#include <examples/imgui_impl_opengl3.h>
+
 #include <examples/imgui_impl_opengl3.cpp>
 
-#if defined(SNOW_WINDOW_GLFW)
-    #include <GLFW/glfw3.h>
-    #include <examples/imgui_impl_glfw.h>
-    #include <examples/imgui_impl_glfw.cpp>
-#elif defined(SNOW_WINDOW_WIN32)
-    #include <windows.h>
-    #include <examples/imgui_impl_win32.h>
-    #include <examples/imgui_impl_win32.cpp>
-#endif
 
 #include <ImGuizmo.h>
 

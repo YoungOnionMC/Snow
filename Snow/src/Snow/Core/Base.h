@@ -21,6 +21,11 @@
 
 #define BIT(x) (1<<x)
 
+template<class type, ptrdiff_t n>
+ptrdiff_t countOf(type(&)[n]) { return n; }
+
+#define CountOf(x) countOf(x)
+
 #define SNOW_BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 namespace Snow {

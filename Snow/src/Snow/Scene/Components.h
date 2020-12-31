@@ -81,6 +81,42 @@ namespace Snow {
 
     };
 
+    struct BRDFMaterialComponent {
+        Ref<Render::MaterialInstance> MaterialInstance;
+
+        struct Albedo {
+            Ref<Render::API::Texture2D> AlbedoTexture;
+            glm::vec3 AlbedoColor = { 1.0, 1.0, 1.0 };
+            bool UseTexture = false;
+        };
+        Albedo AlbedoInput;
+
+        struct Normal {
+            Ref<Render::API::Texture2D> NormalTexture;
+            bool UseTexture = false;
+        };
+        Normal NormalInput;
+
+        struct Metalness {
+            Ref<Render::API::Texture2D> MetalnessTexture;
+            float Value = 0.0f;
+            bool UseTexture = false;
+        };
+        Metalness MetalnessInput;
+
+        struct Roughness {
+            Ref<Render::API::Texture2D> RoughnessTexture;
+            float Value = 0.2f;
+            bool UseTexture = false;
+        };
+        Roughness RoughnessInput;
+
+        BRDFMaterialComponent() = default;
+        BRDFMaterialComponent(const BRDFMaterialComponent& other) = default;
+        BRDFMaterialComponent(const Ref<Render::MaterialInstance>& materialInstance) :
+            MaterialInstance(materialInstance) {}
+    };
+
     struct MeshComponent {
         Ref<Render::Mesh> Mesh;
 

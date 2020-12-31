@@ -3,6 +3,7 @@
 
 #include "Snow/Utils/FileDialogs.h"
 #include "Snow/Scene/SceneSerializer.h"
+#include "Snow/Render/SceneRenderer.h"
 
 #include "Snow/Math/Mat4.h"
 
@@ -20,8 +21,9 @@ namespace Snow {
         Render::FramebufferSpecification fbSpec;
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
-        fbSpec.Attachments = { Render::FramebufferTextureFormat::RGBA16F };
+        fbSpec.AttachmentList = { Render::FramebufferTextureFormat::RGBA8 };
         fbSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+        fbSpec.SwapChainTarget = true;
 
         m_Framebuffer = Render::Framebuffer::Create(fbSpec);
         Render::RenderPassSpecification compRenderPassSpec;
@@ -58,22 +60,18 @@ namespace Snow {
             m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         }
 
-        Render::Renderer::BeginRenderPass(m_CompRenderPass);
+        
         m_ActiveScene->OnUpdateEditor(m_EditorCamera);
         if(m_ViewportFocused)
             m_EditorCamera.OnUpdate();
-        Render::Renderer::EndRenderPass();
-
-
-        //Snow::Render::Renderer2D::DrawQuad({ 0.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0, 1.0, 0.0, 1.0 });
-        //Snow::Render::Renderer2D::DrawQuad({ -0.2f, -0.8f }, { 0.5f, 0.7f }, { 1.0, 0.0, 0.0, 1.0 });
-        //Snow::Render::Renderer2D::PresentBatch();
+        m_Framebuffer->Unbind();
     }
 
     void EditorLayer::OnImGuiRender() {
-
-        static bool dockspaceOpen = true;
-        static bool opt_fullscreen_persistant = true;
+        m_Framebuffer->Bind();
+#if 1
+        static bool dockspaceOpen = false;
+        static bool opt_fullscreen_persistant = false;
         bool opt_fullscreen = opt_fullscreen_persistant;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
@@ -102,7 +100,7 @@ namespace Snow {
         // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
         // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+        //ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
         ImGui::PopStyleVar();
 
         if (opt_fullscreen)
@@ -153,6 +151,8 @@ namespace Snow {
         //ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+        
+
         ImGui::Begin("Viewport");
 
         m_ViewportFocused = ImGui::IsWindowFocused();
@@ -161,8 +161,8 @@ namespace Snow {
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-        uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-        ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+        void* textureID = Render::SceneRenderer::GetFinalColorAttachment();
+        ImGui::Image((textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 
         // Gizmos
@@ -200,13 +200,15 @@ namespace Snow {
                 transformComp.Rotation += deltaRot;
                 transformComp.Scale = scale;
             }
-
         }
 
-        ImGui::End();
+        //ImGui::End();
         ImGui::PopStyleVar();
         ImGui::End();
+#endif
 
+        //ImGui::ShowDemoWindow();
+        m_Framebuffer->Unbind();
     }
 
     void EditorLayer::NewScene() {
@@ -260,6 +262,10 @@ namespace Snow {
             break;
         }
 
+        case KeyCode::Q: {
+            m_ImGuizmoSelection = -1;
+            break;
+        }
         case KeyCode::W: {
             m_ImGuizmoSelection = ImGuizmo::OPERATION::TRANSLATE;
             break;

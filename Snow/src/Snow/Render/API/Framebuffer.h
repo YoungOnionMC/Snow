@@ -39,7 +39,7 @@ namespace Snow {
 		struct FramebufferSpecification {
 			uint32_t Width = 0, Height = 0;
 			glm::vec4 ClearColor;
-			FramebufferAttachmentSpecification Attachments;
+			FramebufferAttachmentSpecification AttachmentList;
 			uint32_t Samples = 1;
 
 			bool SwapChainTarget = false;
@@ -60,8 +60,8 @@ namespace Snow {
 			virtual uint32_t GetWidth() const = 0;
 			virtual uint32_t GetHeight() const = 0;
 
-			virtual uint32_t GetColorAttachmentRendererID(int index = 0) const = 0;
-			virtual uint32_t GetDepthAttachmentRendererID() const = 0;
+			virtual void* GetColorAttachmentTexture(int index = 0) const = 0;
+			virtual void* GetDepthAttachmentTexture() const = 0;
 
 			virtual const FramebufferSpecification& GetSpecification() const = 0;
 

@@ -24,40 +24,39 @@
 
 
 namespace Snow {
-    namespace Render {
-        class VulkanContext : public Context {
-        public:
-            VulkanContext(const ContextSpecification& spec);
-            ~VulkanContext();
+    class VulkanContext : public Render::Context {
+    public:
+        VulkanContext(const Render::ContextSpecification& spec);
+        ~VulkanContext();
 
-            static VkInstance GetVulkanInstance() { return s_VulkanInstance; }
+        static VkInstance GetVulkanInstance() { return s_VulkanInstance; }
 
-            virtual const ContextSpecification& GetSpecification() const override { return m_Specification; }
+        virtual const Render::ContextSpecification& GetSpecification() const override { return m_Specification; }
 
-            Ref<VulkanDevice> GetDevice() { return m_Device; }
-            VulkanSwapChain GetSwapChain() {return m_SwapChain; }
+        Ref<VulkanDevice> GetDevice() { return m_Device; }
+        VulkanSwapChain GetSwapChain() { return m_SwapChain; }
 
-            static VulkanContext* Get() {return static_cast<VulkanContext*>(Renderer::GetContext());}
-            static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
-        private:
-            void CreateInstance();
-
+        static VulkanContext* Get() { return static_cast<VulkanContext*>(Render::Renderer::GetContext()); }
+        static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
+    private:
+        void CreateInstance();
 
 
-            static VkInstance s_VulkanInstance;
-            
 
-            Ref<VulkanDevice> m_Device;
-            VulkanSwapChain m_SwapChain;
-
-            std::vector<const char*> m_InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
-            std::vector<VkExtensionProperties> m_Extensions;
-
-            std::vector<const char*> m_InstanceLayers = { "VK_LAYER_KHRONOS_validation","VK_LAYER_LUNARG_api_dump", "VK_LAYER_LUNARG_standard_validation", };
+        static VkInstance s_VulkanInstance;
 
 
-            ContextSpecification m_Specification;
+        Ref<VulkanDevice> m_Device;
+        VulkanSwapChain m_SwapChain;
 
-        };
-    }
+        std::vector<const char*> m_InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+        std::vector<VkExtensionProperties> m_Extensions;
+
+        std::vector<const char*> m_InstanceLayers = { "VK_LAYER_KHRONOS_validation","VK_LAYER_LUNARG_api_dump", "VK_LAYER_LUNARG_standard_validation", };
+
+
+        Render::ContextSpecification m_Specification;
+
+    };
+
 }

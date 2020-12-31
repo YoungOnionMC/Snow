@@ -86,6 +86,7 @@ project "Snow"
             "%{VendorIncludeDir.shaderc}",
         }
         
+
         libdirs {
             "%{VendorLibraryDir.Assimp}/Windows",
             "%{VendorLibraryDir.Vulkan}/Windows",
@@ -97,6 +98,7 @@ project "Snow"
         links {
             "opengl32.lib",
             "dxgi.lib",
+            "dxguid.lib",
             "d3d11.lib",
             "d3d12.lib",
             "D3DCompiler.lib",
@@ -105,24 +107,58 @@ project "Snow"
             "shaderc.lib",
             "shaderc_util.lib",
 
-            "glslangd.lib",
-            "MachineIndependentd.lib",
-            "SPIRVd.lib",
-            "OGLCompilerd.lib",
-            "OSDependentd.lib",
-            "GenericCodeGend.lib",
-
-            "SPIRV-Tools.lib",
-            "SPIRV-Tools-opt.lib",
-
-            "assimp-vc142-mtd.lib",
-            
-
             "GLFW",
             "ImGui",
-
+            
             "SPIRVCross",
         }
+
+        filter "configurations:Debug"
+            libdirs {
+                "%{VendorLibraryDir.Assimp}/Windows/Debug",
+                "%{VendorLibraryDir.glslang}/Windows/Debug",
+                "%{VendorLibraryDir.SPIRVTools}/Windows/Debug",
+
+            }
+
+            links {
+                "glslangd.lib",
+                "MachineIndependentd.lib",
+                "SPIRVd.lib",
+                "OGLCompilerd.lib",
+                "OSDependentd.lib",
+                "GenericCodeGend.lib",
+
+                "SPIRV-Tools.lib",
+                "SPIRV-Tools-opt.lib",
+                
+                "assimp-vc142-mtd.lib",
+            }
+
+        filter "configurations:Release"
+            libdirs {
+                "%{VendorLibraryDir.Assimp}/Windows/Release",
+                "%{VendorLibraryDir.glslang}/Windows/Release",
+                "%{VendorLibraryDir.SPIRVTools}/Windows/Release"
+            }
+
+            links {
+                "glslang.lib",
+                "MachineIndependent.lib",
+                "SPIRV.lib",
+                "OGLCompiler.lib",
+                "OSDependent.lib",
+                "GenericCodeGen.lib",
+
+                "SPIRV-Tools.lib",
+                "SPIRV-Tools-opt.lib",
+
+                "assimp-vc142-mt.lib",
+            }
+
+        filter ""
+
+        
 
         files {
             "src/Snow/Platform/Windows/**.*"

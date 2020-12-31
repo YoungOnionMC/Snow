@@ -5,6 +5,8 @@
 
 #include "Snow/Platform/OpenGL/OpenGLRenderCommand.h"
 
+#include "Snow/Platform/DirectX11/DirectXRenderCommand.h"
+
 namespace Snow {
     namespace Render {
         Core::Scope<RenderAPI> RenderCommand::s_RenderAPI = nullptr;
@@ -13,6 +15,7 @@ namespace Snow {
             switch (Renderer::GetRenderAPI()) {
             case RenderAPIType::None:   return nullptr;
             case RenderAPIType::OpenGL: return Core::CreateScope<OpenGLRenderCommand>();
+            case RenderAPIType::DirectX:    return Core::CreateScope<DirectX11RenderCommand>();
             }
         }
     }

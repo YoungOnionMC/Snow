@@ -15,6 +15,9 @@ namespace Snow {
 
             void Bind() const override;
 
+            const ShaderUniformBuffer& GetUniformBuffer(const std::string& name) const override;
+            const std::unordered_map<std::string, ShaderResource>& GetResources() const override { return m_Resources; }
+
             void SetUniformBufferData(const std::string& uniformBufferName, void* data, uint32_t size) override;
             void SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) override;
 
@@ -26,11 +29,14 @@ namespace Snow {
             void SPIRVReflection();
             void OpenGLReflection();
 
+            //void ReflectStruct(ShaderStruct& sstruct, spirv_cross::Resource resource);
+
             uint32_t GetUniformLocation(const std::string& name);
 
             GLenum OpenGLBufferAttribType(AttribType type) const;
 
             void SetUniform(const std::string& name, int value);
+            void SetUniform(const std::string& name, uint32_t value);
             void SetUniform(const std::string& name, float value);
             void SetUniform(const std::string& name, const glm::vec2& value);
             void SetUniform(const std::string& name, const glm::vec3& value);
