@@ -17,6 +17,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 VendorIncludeDir = {}
 VendorIncludeDir["Assimp"] = "%{wks.location}/Snow/vendor/assimp/include"
+VendorIncludeDir["box2d"] = "%{wks.location}/Snow/vendor/box2d/include"
 VendorIncludeDir["ENTT"] = "%{wks.location}/Snow/vendor/ENTT/include"
 VendorIncludeDir["Glad"] = "%{wks.location}/Snow/vendor/Glad/include"
 VendorIncludeDir["GLFW"] = "%{wks.location}/Snow/vendor/GLFW/include"
@@ -42,6 +43,7 @@ VendorLibraryDir["SPIRVTools"] = "%{wks.location}/Snow/vendor/SPIRV-Tools/Lib"
 
 
 group "Vendor"
+    include "Snow/vendor/box2d" 
     include "Snow/vendor/Glad"
     include "Snow/vendor/GLFW"
     include "Snow/vendor/imgui"

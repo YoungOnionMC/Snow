@@ -109,6 +109,10 @@ namespace Snow {
 				Set(name, (const Ref<API::Texture>&)texture);
 			}
 
+			void Set(const std::string& name, const Ref<API::TextureCube>& texture) {
+				Set(name, (const Ref<API::Texture>&)texture);
+			}
+
 			template<typename T>
 			T& Get(const std::string& name) {
 				auto u = m_Material->FindUniformDecl(name);

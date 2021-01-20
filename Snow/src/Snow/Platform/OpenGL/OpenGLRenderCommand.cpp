@@ -29,7 +29,7 @@ namespace Snow {
         }
 
         static GLenum GetPrimitiveType(PrimitiveType type) {
-            switch(type){
+            switch(type) {
             case PrimitiveType::None:   return GL_NONE;
             case PrimitiveType::Triangle:   return GL_TRIANGLES;
             case PrimitiveType::Line:   return GL_LINES;

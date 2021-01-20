@@ -213,6 +213,14 @@ namespace Snow {
 #endif
         }
 
+        float Window::GetSystemTime() {
+#if defined(SNOW_WINDOW_WIN32)
+            return 0.0f;
+#elif defined(SNOW_WINDOW_GLFW)
+            return glfwGetTime();
+#endif
+        }
+
         void Window::SetEventCallback(const std::function<void(Event::Event&)>& callback) {
             WindowEventCallback = callback;
             

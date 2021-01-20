@@ -11,7 +11,7 @@
 
 namespace Snow {
     SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene) {
-//        m_CheckerboardTexture = Render::API::Texture2D::Create("assets/textures/Checkerboard.png");
+        m_CheckerboardTexture = Render::API::Texture2D::Create("assets/textures/Checkerboard.png");
 
         SetScene(scene);
     }
@@ -243,6 +243,12 @@ namespace Snow {
                 ImGui::CloseCurrentPopup();
             }
 
+            if (ImGui::MenuItem("RigidBody")) {
+                auto transform = m_SelectionContext.GetComponent<TransformComponent>();
+                m_SelectionContext.AddComponent<RigidBody2DComponent>(m_SceneContext->GetPhysicsWorld(), glm::vec2(transform.Translation.x, transform.Translation.y), glm::vec2(transform.Scale.x, transform.Scale.y), true, 1.0f, 0.3f);
+                ImGui::CloseCurrentPopup();
+            }
+
             ImGui::EndPopup();
 
         }
@@ -380,6 +386,32 @@ namespace Snow {
             }
         });
 
+        DrawComponent<RigidBody2DComponent>("RigidBody", entity, [](auto& component) {
+            auto rigidBody = component;
+            
+            glm::vec2 position = rigidBody.GetPosition();
+            ImGui::InputFloat2("Position", glm::value_ptr(position), 2);
+            component.SetPosition(position);
+
+            float friction = rigidBody.GetFriction();
+            ImGui::InputFloat("Friction Value", &friction);
+            component.SetFriction(friction);
+
+            float density = rigidBody.GetDensity();
+            ImGui::InputFloat("Density Value", &density);
+            component.SetDensity(density);
+
+            uint32_t dynamic = rigidBody.GetType();
+            const std::array<const char*, 3> types = { "Static", "Kinematic", "Dynamic" };
+            ImGui::Combo("RigidBody Type", (int*)&dynamic, types.data(), types.size());
+            component.SetType((RigidBodyType)dynamic);
+        });
+        /*
+        DrawComponent<Box2DShapeComponent>("Box2DShape", entity, [](auto& component) {
+            //float 
+           // ImGui::InputFloat("Density", &component.FixtureDef->density);
+        });
+        */
         if (removeEntity) {
             m_SceneContext->DestroyEntity(m_SelectionContext);
             m_SelectionContext = {};

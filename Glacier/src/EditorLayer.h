@@ -15,7 +15,7 @@ namespace Snow {
     public:
         void OnAttach() override;
         void OnDetach() override;
-        void OnUpdate() override;
+        void OnUpdate(Timestep ts) override;
 
         void OnImGuiRender();
 
@@ -39,6 +39,8 @@ namespace Snow {
 
         bool m_ViewportFocused = false, m_ViewportHovered = false;
         glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+
+        bool m_Running = false;
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
 

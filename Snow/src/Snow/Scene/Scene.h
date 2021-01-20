@@ -2,10 +2,15 @@
 
 #include "Snow/Core/Ref.h"
 #include "Snow/Render/EditorCamera.h"
+#include "Snow/Render/API/Texture.h"
+
+#include "Snow/Core/Timestep.h"
 
 #include <entt.hpp>
 
 #include <glm/glm.hpp>
+
+#include <box2d/b2_world.h>
 
 namespace Snow {
 
@@ -28,12 +33,14 @@ namespace Snow {
         Entity CreateEntity(const std::string& name = std::string());
         void DestroyEntity(Entity entity);
 
-        void OnUpdateRuntime();
-        void OnUpdateEditor(Render::EditorCamera& editorCamera);
+        void OnUpdateRuntime(Timestep ts);
+        void OnUpdateEditor(Timestep ts, Render::EditorCamera& editorCamera);
         void OnViewportResize(uint32_t width, uint32_t height);
 
         Light& GetLight() { return m_Light; }
         const Light& GetLight() const { return m_Light; }
+
+        b2World* GetPhysicsWorld() const { return m_PhysicsWorld; }
         
         Entity GetMainCamera();
     private:
@@ -45,7 +52,13 @@ namespace Snow {
         Light m_Light;
         float m_LightMultiplier = 0.3f;
 
+        Ref<Render::API::TextureCube> m_EnvMap;
+        Ref<Render::API::Texture2D> m_BRDFLUT;
+
         std::string m_Name;
+
+        b2Vec2 m_Gravity = b2Vec2(0.0f, -1.0f);
+        b2World* m_PhysicsWorld;
 
         friend class Entity;
         friend class SceneSerializer;

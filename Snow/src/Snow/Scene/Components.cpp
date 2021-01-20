@@ -4,6 +4,25 @@
 
 namespace YAML {
     template<>
+    struct convert<glm::vec2> {
+        static Node encode(const glm::vec2& rhs) {
+            Node node;
+            node.push_back(rhs.x);
+            node.push_back(rhs.y);
+            node.SetStyle(EmitterStyle::Flow);
+            return node;
+        }
+
+        static bool decode(const Node& node, glm::vec2& rhs) {
+            if (!node.IsSequence() || node.size() != 2)
+                return false;
+            rhs.x = node[0].as<float>();
+            rhs.y = node[1].as<float>();
+            return true;
+        }
+    };
+
+    template<>
     struct convert<glm::vec3> {
         static Node encode(const glm::vec3& rhs) {
             Node node;
@@ -45,7 +64,13 @@ namespace YAML {
             rhs.w = node[3].as<float>();
             return true;
         }
-    };
+    };  
+
+    Emitter& operator<<(Emitter& out, const ::glm::vec2& vec) {
+        out << Flow;
+        out << BeginSeq << vec.x << vec.y << EndSeq;
+        return out;
+    }
 
     Emitter& operator<<(Emitter& out, const ::glm::vec3& vec) {
         out << Flow;
@@ -113,6 +138,34 @@ namespace Snow {
         auto src = node["SpriteRendererComponent"];
         if (src) {
             outSRC.Color = src["Color"].as<glm::vec4>();
+            return true;
+        }
+        return false;
+    }
+
+    void RigidBody2DComponent::Serialize(YAML::Emitter& out) {
+        out << YAML::Key << "RigidBody2DComponent";
+        out << YAML::BeginMap;
+
+        out << YAML::Key << "Type" << YAML::Value << GetType();
+        out << YAML::Key << "Position" << YAML::Value << GetPosition();
+        out << YAML::Key << "Size" << YAML::Value << GetSize();
+        out << YAML::Key << "Density" << YAML::Value << GetDensity();
+        out << YAML::Key << "Friction" << YAML::Value << GetFriction();
+
+        out << YAML::EndMap;
+        
+    }
+
+    bool RigidBody2DComponent::Deserialize(YAML::Node node, RigidBody2DComponent& outRB2D) {
+        auto src = node["RigidBody2DComponent"];
+        if (src) {
+            outRB2D.SetType((RigidBodyType)src["Type"].as<uint32_t>());
+            outRB2D.SetPosition(src["Position"].as<glm::vec2>());
+            outRB2D.SetSize(src["Size"].as<glm::vec2>());
+            outRB2D.SetDensity(src["Density"].as<float>());
+            outRB2D.SetFriction(src["Friction"].as<float>());
+
             return true;
         }
         return false;

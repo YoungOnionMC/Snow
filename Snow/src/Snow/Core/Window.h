@@ -21,6 +21,7 @@ namespace Snow {
             uint32_t GetHeight();
 
             void* GetWindowHandle();
+            float GetSystemTime();
 
             using EventCallbackFn = std::function<void(Event::Event&)>;
             void SetEventCallback(const EventCallbackFn& callback);

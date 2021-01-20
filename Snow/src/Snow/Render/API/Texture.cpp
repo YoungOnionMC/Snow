@@ -32,6 +32,13 @@ namespace Snow {
                 }
             }
 
+            Ref<TextureCube> TextureCube::Create(const std::string& path, bool srgb) {
+                switch (Render::Renderer::GetRenderAPI()) {
+                case RenderAPIType::None:   return nullptr;
+                case RenderAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(path, srgb);
+                }
+            }
+
             uint32_t Texture::GetBPP(TextureFormat format) {
                 switch(format){
                 case TextureFormat::RGB:    return 3;

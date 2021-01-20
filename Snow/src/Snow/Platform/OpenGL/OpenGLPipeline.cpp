@@ -32,8 +32,6 @@ namespace Snow {
                 glVertexAttribPointer(layoutIndex, element.GetComponentCount(), OpenGLBufferAttribType(element.Type), element.Normalized? GL_TRUE: GL_FALSE, m_Specification.Layout.GetStride(), (const void*)(intptr_t)element.Offset);
                 layoutIndex++;
             }
-
-            //SNOW_CORE_ERROR("UNIFORM BUFFER SIZE : {0}", m_UniformBuffers.size());
         }
 
         const ShaderUniformBuffer& OpenGLPipeline::GetUniformBuffer(const std::string& name) const {

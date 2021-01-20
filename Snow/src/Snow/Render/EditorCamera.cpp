@@ -52,7 +52,7 @@ namespace Snow {
 
 		static int test = 0;
 
-		void EditorCamera::OnUpdate() {
+		void EditorCamera::OnUpdate(Timestep ts) {
 			if (Core::Input::IsKeyPressed(KeyCode::LeftControl)) {
 				const glm::vec2& mouse = Core::Input::GetMousePos();
 				glm::vec2 delta = (mouse - m_InitialMousePos) * 0.003f;

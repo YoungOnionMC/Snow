@@ -3,6 +3,7 @@
 #include <string>
 
 #include "Snow/Scene/SceneCamera.h"
+#include "Snow/Scene/ScriptableEntity.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,6 +15,8 @@
 #include <string>
 
 #include <yaml-cpp/yaml.h>
+
+#include <box2d/box2d.h>
 
 
 namespace Snow {
@@ -30,9 +33,9 @@ namespace Snow {
     };
 
     struct TransformComponent {
-        glm::vec3 Translation = {0.0f ,0.0f, 0.0f};
-        glm::vec3 Rotation = {0.0f, 0.0f, 0.0f};
-        glm::vec3 Scale = {1.0f, 1.0f, 1.0f};
+        glm::vec3 Translation = { 0.0f ,0.0f, 0.0f };
+        glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
         TransformComponent() = default;
         TransformComponent(const TransformComponent&) = default;
@@ -41,11 +44,11 @@ namespace Snow {
 
         glm::mat4 GetTransform() const {
             glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 })
-				* glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
-				* glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
+                * glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
+                * glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
 
             return glm::translate(glm::mat4(1.0f), Translation) *
-                    rotation * glm::scale(glm::mat4(1.0f), Scale);
+                rotation * glm::scale(glm::mat4(1.0f), Scale);
 
         }
 
@@ -54,7 +57,7 @@ namespace Snow {
     };
 
     struct SpriteRendererComponent {
-        glm::vec4 Color = {1.0f, 1.0f, 1.0f, 1.0f};
+        glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         Ref<Render::API::Texture2D> Texture;
 
@@ -124,5 +127,98 @@ namespace Snow {
         MeshComponent(const std::string& filePath) {
             Mesh = Ref<Render::Mesh>::Create(filePath);
         }
+    };
+
+    struct NativeScriptComponent {
+        ScriptableEntity* Instance = nullptr;
+
+        ScriptableEntity* (*InstantiateScript)();
+        void (*DestroyScript)(NativeScriptComponent*);
+
+        template<typename T>
+        void Bind() {
+            InstantiateScript = []() {return static_cast<ScriptableEntity*>(new T()); };
+            DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
+        }
+    };
+
+    enum class RigidBodyType {
+        Static = 0,
+        Kinematic,
+        Dynamic
+    };
+
+    struct RigidBody2DComponent {
+        b2Body* Body;
+        b2BodyDef* BodyDef;
+        b2World* World;
+        b2PolygonShape* Shape;
+        b2FixtureDef* FixtureDef;
+        b2Fixture* Fixture;
+        glm::vec2 Size;
+
+        RigidBody2DComponent() = default;
+        RigidBody2DComponent(b2World* world, const glm::vec2& position, const glm::vec2& size, bool dynamic, float density, float friction) {
+            World = world;
+            BodyDef = new b2BodyDef();
+            BodyDef->type = dynamic ? b2_dynamicBody : b2_staticBody;
+            BodyDef->position.Set(position.x, position.y);
+            
+            Body = world->CreateBody(BodyDef);
+
+            Shape = new b2PolygonShape();
+            Size = size;
+            Shape->SetAsBox(size.x / 2.0f, size.y / 2.0f);
+            FixtureDef = new b2FixtureDef();
+            FixtureDef->shape = Shape;
+            FixtureDef->density = density;
+            FixtureDef->friction = friction;
+            Fixture = Body->CreateFixture(FixtureDef);
+        }
+
+        glm::vec2 GetPosition() const {
+            return glm::vec2(Body->GetPosition().x, Body->GetPosition().y);
+        }
+
+        void SetPosition(const glm::vec2& position) {
+            Body->SetTransform({ position.x, position.y }, 0);
+        }
+
+        glm::vec2 GetSize() const { return Size; }
+
+        void SetSize(const glm::vec2& size) {
+            Shape->SetAsBox(size.x / 2.0f, size.y / 2.0f);
+        }
+
+        float GetFriction() const {
+            return Fixture->GetFriction();
+        }
+
+        void SetFriction(float friction) {
+            Fixture->SetFriction(friction);
+        }
+
+        float GetDensity() const {
+            return Fixture->GetDensity();
+        }
+
+        void SetDensity(float density) {
+            Fixture->SetDensity(density);
+        }
+
+        uint32_t GetType() const {
+            return (uint32_t)Body->GetType();
+        }
+
+        void SetType(RigidBodyType type) {
+            Body->SetType((b2BodyType)type);
+        }
+
+        void SetPolygonShape(const glm::vec2* points, uint32_t numPoints) {
+            Shape->Set((b2Vec2*)points, numPoints);
+        }
+
+        void Serialize(YAML::Emitter& out);
+        static bool Deserialize(YAML::Node node, RigidBody2DComponent& outRB2D);
     };
 }

@@ -29,6 +29,11 @@ namespace Snow {
 			src.Serialize(out);
 		}
 
+		if (entity.HasComponent<RigidBody2DComponent>()) {
+			auto& src = entity.GetComponent<RigidBody2DComponent>();
+			src.Serialize(out);
+		}
+
 		out << YAML::EndMap;
 	}
 
@@ -84,6 +89,13 @@ namespace Snow {
 				if (SpriteRendererComponent::Deserialize(entity, spriteRendererComp)) {
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComp.Color;
+				}
+
+				RigidBody2DComponent rb2dComp;
+				rb2dComp = RigidBody2DComponent(m_Scene->GetPhysicsWorld(), { 0,0 }, { 0,0 }, false, 0, 0);
+				if (RigidBody2DComponent::Deserialize(entity, rb2dComp)) {
+					auto& src = deserializedEntity.AddComponent<RigidBody2DComponent>();
+					src = rb2dComp;
 				}
 			}
 		}

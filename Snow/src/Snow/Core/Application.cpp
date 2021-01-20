@@ -17,7 +17,7 @@ namespace Snow {
             SNOW_CORE_INFO("Creating Application...");
             s_Instance = this;
 
-            Render::Renderer::SetRenderAPI(Render::RenderAPIType::DirectX);
+            Render::Renderer::SetRenderAPI(Render::RenderAPIType::OpenGL);
             m_Window = new Window();
             m_Window->SetEventCallback(SNOW_BIND_EVENT_FN(Application::OnEvent));
             Input::Init();
@@ -46,11 +46,12 @@ namespace Snow {
 
         void Application::Run() {
             while(m_Running) {
-
-
+                float time = m_Window->GetSystemTime();
+                Timestep timestep = time - m_LastFrameTime;
+                m_LastFrameTime = time;
                 
                 //Render::Renderer::BeginScene();
-                OnUpdate();
+                OnUpdate(timestep);
                 
 
                 OnImGuiRender();
@@ -61,11 +62,11 @@ namespace Snow {
             }
         }
 
-        void Application::OnUpdate() {
+        void Application::OnUpdate(Timestep ts) {
             m_Window->OnUpdate();
 
             for(Layer* layer : m_LayerStack)
-                layer->OnUpdate();
+                layer->OnUpdate(ts);
         }
 
         void Application::OnEvent(Event::Event& e) {

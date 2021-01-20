@@ -9,7 +9,7 @@
 namespace Snow {
 	namespace Render {
 		struct SceneRendererCamera {
-			SceneCamera Camera;
+			Camera Camera;
 			glm::mat4 ViewMatrix;
 		};
 
@@ -24,16 +24,16 @@ namespace Snow {
 			static void EndScene();
 
 			static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), const Ref<MaterialInstance> overrideMaterial = nullptr);
-
+			static void Submit2DQuad(const glm::mat4& transform, const glm::vec4& color);
 
 			static void* GetFinalColorAttachment();
+			static void OnImGuiRender();
 		private:
 			static void FlushDrawList();
 
 			static void GeometryPass();
 			static void CompositePass();
 
-			
 
 			
 		};

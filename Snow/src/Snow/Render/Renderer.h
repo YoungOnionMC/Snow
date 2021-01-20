@@ -1,6 +1,7 @@
 #pragma once
 #include "Snow/Render/RenderContext.h"
 #include "Snow/Render/RenderCommand.h"
+#include "Snow/Render/Material.h"
 #include "Snow/Render/Pipeline.h"
 #include "Snow/Render/Shader/ShaderLibrary.h"
 
@@ -16,6 +17,8 @@ namespace Snow {
 
             static void BeginRenderPass(Ref<RenderPass> renderPass, bool clear = true);
             static void EndRenderPass();
+
+            static void SubmitFullscreenQuad(Ref<MaterialInstance> material);
 
             //static void SwapBuffers();
 

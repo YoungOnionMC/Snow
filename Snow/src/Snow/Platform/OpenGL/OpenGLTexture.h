@@ -43,7 +43,30 @@ namespace Snow {
         };
 
         class OpenGLTextureCube : public API::TextureCube {
+        public:
+            OpenGLTextureCube(const std::string& path, bool srgb);
 
+            uint32_t GetRendererID() const { return m_RendererID; }
+
+            virtual ~OpenGLTextureCube();
+
+            void Bind(uint32_t slot) const override;
+
+            API::TextureFormat GetFormat() const override { return m_Format; }
+            uint32_t GetWidth() const override { return m_Width; }
+            uint32_t GetHeight() const override { return m_Height; }
+
+            const std::string& GetPath() const { return m_Path; }
+        private:
+            uint32_t m_RendererID;
+
+            API::TextureFormat m_Format;
+            API::TextureWrap m_Wrap;
+            uint32_t m_Width = 0, m_Height = 0;
+
+            std::string m_Path;
+
+            Buffer m_ImageData;
         };
     }
 }

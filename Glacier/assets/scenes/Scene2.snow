@@ -1,0 +1,16 @@
+Scene: Unnamed Scene
+Entities:
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Main Camera
+    TransformComponent:
+      Translation: [0, 0, 6]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Gun
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.0500000007, 0.0500000007, 0.0500000007]

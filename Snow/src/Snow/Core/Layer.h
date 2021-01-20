@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Snow/Core/Event/Event.h"
+#include "Snow/Core/Timestep.h"
 
 namespace Snow {
     namespace Core {
@@ -13,7 +14,7 @@ namespace Snow {
 
             virtual void OnAttach() {}
             virtual void OnDetach() {}
-            virtual void OnUpdate() {}
+            virtual void OnUpdate(Timestep ts) {}
 
             virtual void OnImGuiRender() {}
 

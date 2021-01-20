@@ -174,8 +174,14 @@ namespace Snow {
 	}
 
 	void OpenGLFramebuffer::BindTexture(uint32_t attachmentTexture, uint32_t slot) const {
+		uint32_t rendererID = 0;
+		if (attachmentTexture > m_ColorAttachments.size())
+			rendererID = m_DepthAttachment;
+		else
+			rendererID = m_ColorAttachments[attachmentTexture];
+
 		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTexture(Utils::TextureTarget(m_Specification.Samples > 1), attachmentTexture);
+		glBindTexture(Utils::TextureTarget(m_Specification.Samples > 1), rendererID);
 	}
 
 

@@ -107,7 +107,7 @@ float FDLambert() {
 
 // Schlick's approx on the Fresnel factor
 vec3 FresnelSchlick(vec3 f0, float cosTheta) {
-	return f0 + (vec3(1.0) - f0) * pow(1.0 - cosTheta, 5.0);
+	return f0 + (vec3(1.0) - f0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 
 vec3 FresnelSchlickRoughness(vec3 f0, float cosTheta, float roughness) {
@@ -201,5 +201,5 @@ void main() {
 
 	Color = vec4(lightContribution + iblContribution, 1.0f);
 
-	//Color = vec4(MaterialUniforms.AlbedoColor, 1.0);
+	//Color = vec4(lightContribution, 1.0);
 }

@@ -12,6 +12,8 @@
 #include "Snow/Core/Layer.h"
 #include "Snow/ImGui/ImGuiLayer.h"
 
+#include "Snow/Core/Timestep.h"
+
 
 namespace Snow {
     namespace Core {
@@ -32,7 +34,7 @@ namespace Snow {
             void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }
             void PopLayer(Layer* layer) { m_LayerStack.PopLayer(layer); }
 
-            virtual void OnUpdate();
+            virtual void OnUpdate(Timestep ts);
 
             void OnImGuiRender();
 
@@ -51,6 +53,7 @@ namespace Snow {
             ImGuiLayer* m_ImGuiLayer;
 
             bool m_Running = true;
+            float m_LastFrameTime = 0.0f;
         };
 
         Application* CreateApplication();

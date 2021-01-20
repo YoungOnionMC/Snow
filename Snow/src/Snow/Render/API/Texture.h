@@ -59,6 +59,8 @@ namespace Snow {
 
             class TextureCube : public Texture {
             public:
+                static Ref<TextureCube> Create(const std::string& path, bool srgb = false);
+
 
 
             };

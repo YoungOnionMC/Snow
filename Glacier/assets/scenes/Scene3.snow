@@ -1,0 +1,84 @@
+Scene: Unnamed Scene
+Entities:
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Cieling
+    TransformComponent:
+      Translation: [0, 7.0999999, 0]
+      Rotation: [0, 0, 0]
+      Scale: [24.7999992, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.101261407, 0.0785274953, 0.843137264, 1]
+    RigidBody2DComponent:
+      Type: 0
+      Position: [0, 7.0999999]
+      Size: [24.7999992, 1]
+      Density: 1
+      Friction: 0.300000012
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Wall2
+    TransformComponent:
+      Translation: [12.1000004, 0.600000024, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 12.3999996, 1]
+    SpriteRendererComponent:
+      Color: [0.178571463, 1, 0, 1]
+    RigidBody2DComponent:
+      Type: 0
+      Position: [12.1000004, 0.600000024]
+      Size: [1, 12.3999996]
+      Density: 1
+      Friction: 0.300000012
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Wall 1
+    TransformComponent:
+      Translation: [-12.1000004, 0.600000024, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 12.3999996, 1]
+    SpriteRendererComponent:
+      Color: [0.960784316, 0, 0, 1]
+    RigidBody2DComponent:
+      Type: 0
+      Position: [-12.1000004, 0.600000024]
+      Size: [1, 12.3999996]
+      Density: 1
+      Friction: 0.300000012
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Translation: [0, 0, 18.8999996]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [0, -6, 0]
+      Rotation: [0, 0, 0]
+      Scale: [24.7999992, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.838235259, 0.213667795, 0.213667795, 1]
+    RigidBody2DComponent:
+      Type: 0
+      Position: [0, -6]
+      Size: [24.7999992, 1]
+      Density: 1
+      Friction: 0.300000012
+  - Entity: 2345652456367
+    TagComponent:
+      Tag: Square
+    TransformComponent:
+      Translation: [-7.02766514, -4.98500252, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+    RigidBody2DComponent:
+      Type: 2
+      Position: [-7.02766514, -4.98500252]
+      Size: [1, 1]
+      Density: 1
+      Friction: 0.300000012

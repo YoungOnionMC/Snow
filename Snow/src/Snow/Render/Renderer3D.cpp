@@ -23,8 +23,9 @@ namespace Snow {
 				materialInstance->Bind();
 			
 			mesh->GetIndexBuffer()->Bind();
-
+			RenderCommand::SetDepthTesting(true);
 			RenderCommand::DrawIndexed(mesh->GetIndexBuffer()->GetCount(), material->GetPipeline()->GetSpecification().Type);
+			RenderCommand::SetDepthTesting(false);
 		}
 	}
 }

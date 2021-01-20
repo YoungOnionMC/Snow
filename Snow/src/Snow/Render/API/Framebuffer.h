@@ -37,7 +37,7 @@ namespace Snow {
 		};
 
 		struct FramebufferSpecification {
-			uint32_t Width = 0, Height = 0;
+			uint32_t Width = 1280, Height = 720;
 			glm::vec4 ClearColor;
 			FramebufferAttachmentSpecification AttachmentList;
 			uint32_t Samples = 1;

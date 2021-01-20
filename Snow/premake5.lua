@@ -49,6 +49,7 @@ project "Snow"
         "src",
         "vendor/spdlog/include",
         "%{VendorIncludeDir.Assimp}",
+        "%{VendorIncludeDir.box2d}",
         "%{VendorIncludeDir.ENTT}",
         "%{VendorIncludeDir.Glad}",
         "%{VendorIncludeDir.GLFW}",
@@ -64,6 +65,7 @@ project "Snow"
     links {
         "Glad",
         "YAML",
+        "Box2D",
     }
 
     defines {

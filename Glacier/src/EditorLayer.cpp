@@ -39,19 +39,45 @@ namespace Snow {
         //m_CameraEntity.AddComponent<CameraComponent>();
 
         m_Square1 = m_ActiveScene->CreateEntity("Square");
-        m_Square1.AddComponent<SpriteRendererComponent>(glm::vec4{0.0f, 1.0f, 0.5f, 1.0f});
+        m_Square1.AddComponent<RigidBody2DComponent>(m_ActiveScene->GetPhysicsWorld(), glm::vec2{ 0 , 0 }, glm::vec2{ 1, 1 }, true, 1.0f, 0.3f);
+        //m_Square1.AddComponent<MeshComponent>("assets/models/m1911/m1911.fbx");
+        //m_Square1.AddComponent<BRDFMaterialComponent>(m_Square1.GetComponent<MeshComponent>().Mesh->GetMaterialInstance());
+        //m_Square1.AddComponent<SpriteRendererComponent>(glm::vec4{0.0f, 1.0f, 0.5f, 1.0f});
 
         m_SceneHierarchyPanel = SceneHierarchyPanel(m_ActiveScene);
         //m_SceneHierarchyPanel.SetScene(m_ActiveScene);
 
         ImGuizmo::SetOrthographic(false);
+
+        class PlayerController : public ScriptableEntity {
+        public:
+            virtual void OnCreate() override {
+
+            }
+
+            virtual void OnDestroy() override {}
+
+            virtual void OnUpdate(Timestep ts) override {
+                auto RigidBody = GetComponent<RigidBody2DComponent>();
+
+                
+                if (Core::Input::IsKeyPressed(Key::Space))
+                    RigidBody.Body->ApplyForceToCenter({ 0.0, 10.0f }, true);
+                if (Core::Input::IsKeyPressed(Key::D))
+                    RigidBody.Body->ApplyForceToCenter({ 1.0f, 0.0f }, true);
+                else if(Core::Input::IsKeyPressed(Key::A))
+                    RigidBody.Body->ApplyForceToCenter({ -1.0f, 0.0f }, true);
+            }
+        };
+
+        m_Square1.AddComponent<NativeScriptComponent>().Bind<PlayerController>();
     }
 
     void EditorLayer::OnDetach() {
 
     }
 
-    void EditorLayer::OnUpdate() {
+    void EditorLayer::OnUpdate(Timestep ts) {
 
         if (Render::FramebufferSpecification spec = m_Framebuffer->GetSpecification();
             m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0 && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y)) {
@@ -60,26 +86,27 @@ namespace Snow {
             m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         }
 
-        
-        m_ActiveScene->OnUpdateEditor(m_EditorCamera);
-        if(m_ViewportFocused)
-            m_EditorCamera.OnUpdate();
+        if (!m_Running) {
+            m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+            if (m_ViewportFocused)
+                m_EditorCamera.OnUpdate(ts);
+        }
+        else {
+            m_ActiveScene->OnUpdateRuntime(ts);
+        }
         m_Framebuffer->Unbind();
     }
 
     void EditorLayer::OnImGuiRender() {
-        m_Framebuffer->Bind();
-#if 1
-        static bool dockspaceOpen = false;
-        static bool opt_fullscreen_persistant = false;
+        static bool dockspaceOpen = true;
+        static bool opt_fullscreen_persistant = true;
         bool opt_fullscreen = opt_fullscreen_persistant;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
         // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
         // because it would be confusing to have two docking targets within each others.
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        if (opt_fullscreen)
-        {
+        if (opt_fullscreen) {
             ImGuiViewport* viewport = ImGui::GetMainViewport();
             ImGui::SetNextWindowPos(viewport->Pos);
             ImGui::SetNextWindowSize(viewport->Size);
@@ -100,7 +127,7 @@ namespace Snow {
         // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
         // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        //ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+        ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
         ImGui::PopStyleVar();
 
         if (opt_fullscreen)
@@ -111,8 +138,7 @@ namespace Snow {
         ImGuiStyle& style = ImGui::GetStyle();
         float minWinSizeX = style.WindowMinSize.x;
         style.WindowMinSize.x = 370.0f;
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        {
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
             ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         }
@@ -139,17 +165,6 @@ namespace Snow {
 
         m_SceneHierarchyPanel.OnImGuiRender();
 
-        //ImGui::Begin("Stats");
-
-        //auto stats = Render::Renderer2D::GetStats();
-        //ImGui::Text("Renderer2D Stats:");
-        //ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-        //ImGui::Text("Quads: %d", stats.QuadCount);
-        //ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
-        //ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
-        //
-        //ImGui::End();
-
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
         
 
@@ -162,12 +177,12 @@ namespace Snow {
         m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
         void* textureID = Render::SceneRenderer::GetFinalColorAttachment();
-        ImGui::Image((textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+        ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 
         // Gizmos
         Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-        if (selectedEntity && m_ImGuizmoSelection != -1) {
+        if (selectedEntity && m_ImGuizmoSelection != -1 && !m_Running) {
             ImGuizmo::SetDrawlist();
 
             float windowWidth = (float)ImGui::GetWindowWidth();
@@ -202,13 +217,11 @@ namespace Snow {
             }
         }
 
-        //ImGui::End();
-        ImGui::PopStyleVar();
         ImGui::End();
-#endif
+        ImGui::PopStyleVar();
 
-        //ImGui::ShowDemoWindow();
-        m_Framebuffer->Unbind();
+        Render::SceneRenderer::OnImGuiRender();
+        ImGui::End();
     }
 
     void EditorLayer::NewScene() {
@@ -222,7 +235,8 @@ namespace Snow {
         std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("Snow Scene (*.snow)\0*.snow\0");
         if (filepath) {
             m_ActiveScene = Ref<Scene>::Create();
-            m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            //m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_ActiveScene->OnViewportResize((uint32_t)1280, (uint32_t)720);
             m_SceneHierarchyPanel.SetScene(m_ActiveScene);
 
             SceneSerializer serializer(m_ActiveScene);
@@ -246,6 +260,14 @@ namespace Snow {
 
     bool EditorLayer::OnKeyPressed(Core::Event::KeyPressedEvent& e) {
         switch (e.GetKeyCode()) {
+        case KeyCode::LeftBracket: {
+            m_Running = true;
+            break;
+        }
+        case KeyCode::RightBracket: {
+            m_Running = false;
+            break;
+        }
         case KeyCode::N: {
             if(Core::Input::IsKeyPressed(KeyCode::LeftControl))
                 NewScene();

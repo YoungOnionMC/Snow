@@ -2,6 +2,8 @@
 
 #include "Snow/Render/Camera.h"
 
+#include "Snow/Core/Timestep.h"
+
 #include <glm/glm.hpp>
 
 #include <tuple>
@@ -14,7 +16,7 @@ namespace Snow {
 			EditorCamera(float fov, float aspectRatio, float nearC, float farC);
 
 
-			void OnUpdate();
+			void OnUpdate(Timestep ts);
 			//void OnEvent(Core::Event::Event& e);
 
 

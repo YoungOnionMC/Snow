@@ -145,10 +145,7 @@ namespace Snow {
             s_Data.QuadPipeline->Bind();
 
             glm::mat4 viewProjMatrix = camera.GetProjection() * viewMatrix;
-            s_Data.QuadPipeline->SetUniformBufferData(0, glm::value_ptr(viewProjMatrix), sizeof(glm::mat4));
-
-            //glm::vec3 color = { 0.5, 0.0, 0.8 };
-            //s_Data.QuadPipeline->SetUniformBufferData(1, glm::value_ptr(color), sizeof(glm::vec3));
+            s_Data.QuadPipeline->SetUniformBufferData("Camera", glm::value_ptr(viewProjMatrix), sizeof(glm::mat4));
 
             BeginBatch();
         }

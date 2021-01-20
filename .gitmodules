@@ -22,3 +22,6 @@
 [submodule "Snow/vendor/ImGuizmo"]
 	path = Snow/vendor/ImGuizmo
 	url = https://github.com/JamesStroebe/ImGuizmo
+[submodule "Snow/vendor/box2d"]
+	path = Snow/vendor/box2d
+	url = https://github.com/erincatto/box2d
