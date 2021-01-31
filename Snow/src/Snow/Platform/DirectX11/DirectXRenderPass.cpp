@@ -24,7 +24,7 @@ namespace Snow {
 			dxDevice->GetDeviceContext()->ClearRenderTargetView(dxFramebuffer->GetColorAttachments()[i].RenderTargetView, color);
 		}
 
-		if(dxFramebuffer->GetDepthStencilFormat() != Render::FramebufferTextureFormat::None)
+		if(dxFramebuffer->GetDepthStencilAttachment().DepthStencilView != nullptr)
 			dxDevice->GetDeviceContext()->ClearDepthStencilView(dxFramebuffer->GetDepthStencilAttachment().DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 

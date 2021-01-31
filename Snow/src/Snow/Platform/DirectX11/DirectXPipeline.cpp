@@ -263,9 +263,12 @@ namespace Snow {
 			ID3D11ShaderReflectionConstantBuffer* constBuffer = shaderReflection->GetConstantBufferByIndex(i);
 			constBuffer->GetDesc(&desc);
 
+			D3D11_SHADER_INPUT_BIND_DESC inputBindDesc;
+			shaderReflection->GetResourceBindingDescByName(desc.Name, &inputBindDesc);
+
 			Render::ShaderUniformBuffer buffer = {};
 			buffer.Name = desc.Name;
-			buffer.BindingPoint = i;
+			buffer.BindingPoint = inputBindDesc.BindPoint;
 			buffer.Size = 0;
 			uint32_t bufferSize = 0;
 			for (uint32_t j = 0; j < desc.Variables; j++) {

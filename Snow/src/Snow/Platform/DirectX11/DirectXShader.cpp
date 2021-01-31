@@ -144,6 +144,7 @@ namespace Snow {
         std::string message;
         std::string profile = SnowToHLSLTarget(m_Type);
         if (errorBlob) {
+            
             if (errorBlob->GetBufferSize())
                 SNOW_CORE_ERROR("Shader compilation error (shader {0}) : {1}", profile, (const char*)errorBlob->GetBufferPointer());
             errorBlob->Release();

@@ -64,15 +64,9 @@ namespace Snow {
 
 		if (m_ColorFormat != DXGI_FORMAT_UNKNOWN) {
 			desc.Format = m_ColorFormat;
-			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			desc.BindFlags = D3D11_BIND_RENDER_TARGET;
 
 			DXCheckError(m_SwapChain->GetBuffer(0, __uuidof(m_BackBuffer.Image), (void**)&m_BackBuffer.Image));
-
-			//m_Device->GetDevice()->CreateTexture2D(&desc, nullptr, &m_BackBuffer.Image));
-
-			//D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-			//rtvDesc.Format = desc.Format;
-			//rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			DXCheckError(m_Device->GetDevice()->CreateRenderTargetView(m_BackBuffer.Image, nullptr, &m_BackBuffer.RenderTargetView));
 		}
 	}

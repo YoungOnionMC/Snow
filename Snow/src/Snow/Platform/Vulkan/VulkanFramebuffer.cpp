@@ -41,8 +41,8 @@ namespace Snow {
 					return VkFormat::VK_FORMAT_R32G32_SFLOAT;
 				case FramebufferTextureFormat::Depth32F:
 					return VkFormat::VK_FORMAT_D32_SFLOAT;
-				case FramebufferTextureFormat::Depth32Stencil8:
-					return VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
+				case FramebufferTextureFormat::Depth24Stencil8:
+					return VkFormat::VK_FORMAT_D24_UNORM_S8_UINT;
 				}
 
 				return VkFormat::VK_FORMAT_UNDEFINED;
@@ -138,7 +138,7 @@ namespace Snow {
 				imageViewCI.image = imageAttachment.Image;
 				imageViewCI.subresourceRange = {};
 				imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				if (format == FramebufferTextureFormat::Depth32Stencil8)
+				if (format == FramebufferTextureFormat::Depth24Stencil8)
 					imageViewCI.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 				imageViewCI.subresourceRange.baseMipLevel = 0;
 				imageViewCI.subresourceRange.levelCount = 1;
@@ -160,7 +160,7 @@ namespace Snow {
 
 			static bool IsDepthFormat(Render::FramebufferTextureFormat format) {
 				switch (format) {
-				case Render::FramebufferTextureFormat::Depth32Stencil8:
+				case Render::FramebufferTextureFormat::Depth24Stencil8:
 				case Render::FramebufferTextureFormat::Depth32F:
 					return true;
 				}

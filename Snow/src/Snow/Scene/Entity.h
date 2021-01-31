@@ -3,6 +3,7 @@
 #include <entt.hpp>
 
 #include "Snow/Scene/Scene.h"
+//#include "Snow/Scene/Components.h"
 
 namespace Snow {
     class Entity {
@@ -27,9 +28,17 @@ namespace Snow {
         }
 
         template<typename T>
+        bool HasComponent() const {
+            return m_Scene->m_Registry.has<T>(m_EntityHandle);
+        }
+
+        template<typename T>
         void RemoveComponent() {
             m_Scene->m_Registry.remove<T>(m_EntityHandle);
         }
+
+        glm::mat4& GetTransform();
+        const glm::mat4& GetTransform() const;
 
         operator bool() const { return m_EntityHandle != entt::null; }
         operator entt::entity() const { return m_EntityHandle; }
@@ -43,11 +52,13 @@ namespace Snow {
             return !(*this == other);
         }
 
+        UUID GetUUID();
+        UUID GetSceneUUID() { return m_Scene->GetUUID(); }
     private:
         entt::entity m_EntityHandle{entt::null};
         Scene* m_Scene = nullptr;
 
-
-
+        friend class Scene;
+        friend class ScriptEngine;
     };
 }

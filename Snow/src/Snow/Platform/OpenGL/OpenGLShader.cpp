@@ -40,56 +40,52 @@ namespace Snow {
             m_Name = found != std::string::npos ? m_Name.substr(0, found) : m_Name;
 
 
-            m_Source = ReadShaderFromFile(m_Path);
-            CreateSPIRVBinaryCache();
-            CreateGLSLBinaryCache();
-            CreateOpenGLShaderModule(false);
-            GLSLReflect();
-            //Load(m_Source);
+            
+            Reload();
 
         }
 
+        void OpenGLShader::Reload() {
+            m_Source = ReadShaderFromFile(m_Path);
+            Load(m_Source);
+            m_Reloaded = true;
+        }
+
         void OpenGLShader::Load(const std::string& source) {
-            m_RendererID = glCreateShader(GetShaderType(m_Type));
-            const GLchar* sourceC = (const GLchar*)m_Source.c_str();
-            glShaderSource(m_RendererID, 1, &sourceC, 0);
-
-            glCompileShader(m_RendererID);
-
-            GLint isCompiled = 0;
-            glGetShaderiv(m_RendererID, GL_COMPILE_STATUS, &isCompiled);
-            if(isCompiled == GL_FALSE) {
-                GLint maxLength = 0;
-                glGetShaderiv(m_RendererID, GL_INFO_LOG_LENGTH, &maxLength);
-
-                std::vector<GLchar> infoLog(maxLength);
-                glGetShaderInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
-                SNOW_CORE_ERROR("Shader compilation failed {0}, Shader Path {1}", &infoLog[0], m_Path);
+            if (m_RendererID)
                 glDeleteShader(m_RendererID);
-            }
+
+            CreateSPIRVBinaryCache();
+            CreateGLSLBinaryCache();
+            CreateOpenGLShaderModule(false);
+            //GLSLReflect();
+
+            
         }
 
         
 
         void OpenGLShader::CreateSPIRVBinaryCache() {
-            std::filesystem::path directoryPath = m_Path;
-            if (!std::filesystem::is_directory(directoryPath.parent_path() / "cached")) {
-                std::string dirPath = (directoryPath.parent_path() / "cached").string();
-                std::filesystem::create_directory(directoryPath.parent_path() / "cached");
-            }
             {
-                std::filesystem::path filePath = m_Path;
-                auto path = filePath.parent_path() / "cached" / (filePath.filename().string() + ".cached_vulkan");
-                std::string cachedFilePath = path.string();
+                std::filesystem::path directoryPath = m_Path;
+                if (!std::filesystem::is_directory(directoryPath.parent_path() / "cached")) {
+                    std::string dirPath = (directoryPath.parent_path() / "cached").string();
+                    std::filesystem::create_directory(directoryPath.parent_path() / "cached");
+                }
+                {
+                    std::filesystem::path filePath = m_Path;
+                    auto path = filePath.parent_path() / "cached" / (filePath.filename().string() + ".cached_vulkan");
+                    std::string cachedFilePath = path.string();
 
-                FILE* f = fopen(cachedFilePath.c_str(), "rb");
-                if (f) {
-                    fseek(f, 0, SEEK_END);
-                    uint64_t size = ftell(f);
-                    fseek(f, 0, SEEK_SET);
-                    m_SPIRVBinaryData = std::vector<uint32_t>(size / sizeof(uint32_t));
-                    fread(m_SPIRVBinaryData.data(), sizeof(uint32_t), m_SPIRVBinaryData.size(), f);
-                    fclose(f);
+                    FILE* f = fopen(cachedFilePath.c_str(), "rb");
+                    if (f) {
+                        fseek(f, 0, SEEK_END);
+                        uint64_t size = ftell(f);
+                        fseek(f, 0, SEEK_SET);
+                        m_SPIRVBinaryData = std::vector<uint32_t>(size / sizeof(uint32_t));
+                        fread(m_SPIRVBinaryData.data(), sizeof(uint32_t), m_SPIRVBinaryData.size(), f);
+                        fclose(f);
+                    }
                 }
             }
 
@@ -122,10 +118,6 @@ namespace Snow {
                     fwrite(m_SPIRVBinaryData.data(), sizeof(uint32_t), m_SPIRVBinaryData.size(), f);
                     fclose(f);
                 }
-
-                //SNOW_CORE_TRACE("Size of shader {0}", m_SPIRVBinaryData.size());
-
-                
             }
         }
 
@@ -192,8 +184,8 @@ namespace Snow {
             std::string source = compilerGLSL.compile();
             m_GLSLSourceData = SplitString(source, "\r\n");
 
-            shaderc::PreprocessedSourceCompilationResult reult = compiler.PreprocessGlsl(source, SnowShaderTypeToShaderC(m_Type), m_Path.c_str(), options);
-            m_GLSLBinaryData = std::vector<uint32_t>(reult.begin(), reult.end());
+            //shaderc::PreprocessedSourceCompilationResult reult = compiler.PreprocessGlsl(source, SnowShaderTypeToShaderC(m_Type), m_Path.c_str(), options);
+            //m_GLSLBinaryData = std::vector<uint32_t>(reult.begin(), reult.end());
 
             
 

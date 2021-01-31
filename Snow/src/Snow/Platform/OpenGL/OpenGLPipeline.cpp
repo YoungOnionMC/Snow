@@ -24,6 +24,7 @@ namespace Snow {
         }
 
         void OpenGLPipeline::Bind() const {
+
             glUseProgram(m_PipelineHandle);
             
             uint32_t layoutIndex = 0;

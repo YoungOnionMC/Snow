@@ -12,6 +12,11 @@
 
 #include "Snow/Render/Mesh.h"
 
+#include "Snow/Math/Mat4.h"
+#include "Snow/Physics/2D/RigidBody2D.h"
+
+#include "Snow/Core/UUID.h"
+
 #include <string>
 
 #include <yaml-cpp/yaml.h>
@@ -20,6 +25,10 @@
 
 
 namespace Snow {
+    struct IDComponent {
+        UUID ID = 0;
+    };
+
     struct TagComponent {
         std::string Tag;
 
@@ -33,24 +42,54 @@ namespace Snow {
     };
 
     struct TransformComponent {
-        glm::vec3 Translation = { 0.0f ,0.0f, 0.0f };
+        glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
         glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
         glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
+
+        glm::mat4 Transform = glm::mat4(1.0f);
 
         TransformComponent() = default;
         TransformComponent(const TransformComponent&) = default;
         TransformComponent(const glm::vec3& translation) :
-            Translation(translation) {}
+            Translation(translation) {
+            UpdateTransform();
+        }
 
-        glm::mat4 GetTransform() const {
+        void SetTranslation(const glm::vec3& translation) {
+            Translation = translation;
+            UpdateTransform();
+        }
+
+        void SetRotation(const glm::vec3& rotation) {
+            Rotation = rotation;
+            UpdateTransform();
+        }
+
+        void SetScale(const glm::vec3& scale) {
+            Scale = scale;
+            UpdateTransform();
+        }
+
+        void UpdateTransform() {
             glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 })
                 * glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
                 * glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
 
-            return glm::translate(glm::mat4(1.0f), Translation) *
+            Transform = glm::translate(glm::mat4(1.0f), Translation) *
                 rotation * glm::scale(glm::mat4(1.0f), Scale);
-
         }
+
+        glm::mat4 GetTransform() {
+            return Transform;
+        }
+
+        void SetTransform(const glm::mat4& transform) {
+            Transform = transform;
+            Math::DecomposeTransform(Transform, Translation, Rotation, Scale);
+        }
+
+        operator glm::mat4& () { return GetTransform(); }
+        //operator const glm::mat4& () const { return GetTransform(); }
 
         void Serialize(YAML::Emitter& out);
         static bool Deserialize(YAML::Node node, TransformComponent& outTC);
@@ -77,8 +116,8 @@ namespace Snow {
 
         CameraComponent() {
             Camera.SetViewportSize(1280, 720);
-            //Camera.SetPerspective(45.0f, 0.1f, 1000.0f);
-            Camera.SetOrthographic(20, -1.0f, 1.0f);
+            Camera.SetPerspective(glm::radians(45.0f), 0.1f, 1000.0f);
+            //Camera.SetOrthographic(20, -1.0f, 1.0f);
         }
         CameraComponent(const CameraComponent&) = default;
 
@@ -129,6 +168,15 @@ namespace Snow {
         }
     };
 
+    struct ScriptComponent {
+        std::string ModuleName;
+
+        ScriptComponent() = default;
+        ScriptComponent(const ScriptComponent& other) = default;
+        ScriptComponent(const std::string& moduleName) :
+            ModuleName(moduleName) {}
+    };
+
     struct NativeScriptComponent {
         ScriptableEntity* Instance = nullptr;
 
@@ -142,81 +190,11 @@ namespace Snow {
         }
     };
 
-    enum class RigidBodyType {
-        Static = 0,
-        Kinematic,
-        Dynamic
-    };
-
     struct RigidBody2DComponent {
-        b2Body* Body;
-        b2BodyDef* BodyDef;
-        b2World* World;
-        b2PolygonShape* Shape;
-        b2FixtureDef* FixtureDef;
-        b2Fixture* Fixture;
-        glm::vec2 Size;
+        RigidBody2D RigidBody;
 
         RigidBody2DComponent() = default;
-        RigidBody2DComponent(b2World* world, const glm::vec2& position, const glm::vec2& size, bool dynamic, float density, float friction) {
-            World = world;
-            BodyDef = new b2BodyDef();
-            BodyDef->type = dynamic ? b2_dynamicBody : b2_staticBody;
-            BodyDef->position.Set(position.x, position.y);
-            
-            Body = world->CreateBody(BodyDef);
-
-            Shape = new b2PolygonShape();
-            Size = size;
-            Shape->SetAsBox(size.x / 2.0f, size.y / 2.0f);
-            FixtureDef = new b2FixtureDef();
-            FixtureDef->shape = Shape;
-            FixtureDef->density = density;
-            FixtureDef->friction = friction;
-            Fixture = Body->CreateFixture(FixtureDef);
-        }
-
-        glm::vec2 GetPosition() const {
-            return glm::vec2(Body->GetPosition().x, Body->GetPosition().y);
-        }
-
-        void SetPosition(const glm::vec2& position) {
-            Body->SetTransform({ position.x, position.y }, 0);
-        }
-
-        glm::vec2 GetSize() const { return Size; }
-
-        void SetSize(const glm::vec2& size) {
-            Shape->SetAsBox(size.x / 2.0f, size.y / 2.0f);
-        }
-
-        float GetFriction() const {
-            return Fixture->GetFriction();
-        }
-
-        void SetFriction(float friction) {
-            Fixture->SetFriction(friction);
-        }
-
-        float GetDensity() const {
-            return Fixture->GetDensity();
-        }
-
-        void SetDensity(float density) {
-            Fixture->SetDensity(density);
-        }
-
-        uint32_t GetType() const {
-            return (uint32_t)Body->GetType();
-        }
-
-        void SetType(RigidBodyType type) {
-            Body->SetType((b2BodyType)type);
-        }
-
-        void SetPolygonShape(const glm::vec2* points, uint32_t numPoints) {
-            Shape->Set((b2Vec2*)points, numPoints);
-        }
+        RigidBody2DComponent(const RigidBody2D& rigidBody) : RigidBody(rigidBody) {}
 
         void Serialize(YAML::Emitter& out);
         static bool Deserialize(YAML::Node node, RigidBody2DComponent& outRB2D);

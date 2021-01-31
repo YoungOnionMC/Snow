@@ -48,4 +48,5 @@ void main() {
     }
 
     Color = texColor;
+    //Color = vec4(0.0f);
 }

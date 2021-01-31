@@ -11,7 +11,6 @@ SamplerState samplers[1] : register(s0);
 
 float4 main(PixelShaderInput input) : SV_TARGET {
     float4 texColor = input.Color;
-    /*
     switch(input.TexID) {
         case 0: texColor *= textures[0].Sample(samplers[0], input.TexCoord); break;
         case 1: texColor *= textures[1].Sample(samplers[0], input.TexCoord); break;
@@ -46,6 +45,5 @@ float4 main(PixelShaderInput input) : SV_TARGET {
         case 30: texColor *= textures[30].Sample(samplers[0], input.TexCoord); break;
         case 31: texColor *= textures[31].Sample(samplers[0], input.TexCoord); break;
     }
-    */
     return texColor;
 };

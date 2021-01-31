@@ -34,6 +34,8 @@ namespace Snow {
 	public:
 		DirectX11Shader(Render::ShaderType type, const std::string& path);
 
+		void Reload() override {}
+
 		const Render::ShaderType GetType() const override { return m_Type; }
 
 		const std::string& GetPath() const override { return m_Path; }

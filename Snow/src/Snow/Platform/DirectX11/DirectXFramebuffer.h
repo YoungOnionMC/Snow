@@ -14,6 +14,7 @@ namespace Snow {
 	struct FramebufferDepthStencilAttachment {
 		ID3D11Texture2D* Image = nullptr;
 		ID3D11DepthStencilView* DepthStencilView = nullptr;
+		ID3D11ShaderResourceView* ShaderResourceView = nullptr;
 	};
 
 	class DirectX11Framebuffer : public Render::Framebuffer {
@@ -28,7 +29,7 @@ namespace Snow {
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
-		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override {}
+		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
 
 		virtual void* GetColorAttachmentTexture(int index = 0) const override { return m_ColorAttachments[index].ShaderResourceView; }
 		virtual void* GetDepthAttachmentTexture() const override { return m_DepthStencilAttachment.Image; }
@@ -37,18 +38,18 @@ namespace Snow {
 
 		const std::vector<FramebufferColorAttachment>& GetColorAttachments() const { return m_ColorAttachments; }
 		const FramebufferDepthStencilAttachment& GetDepthStencilAttachment() const { return m_DepthStencilAttachment; }
-		Render::FramebufferTextureFormat GetDepthStencilFormat() { return m_DepthStencilFormat; }
+		Render::FramebufferTextureFormat GetDepthStencilFormat() { return m_DepthStencilAttachmentSpecification.TextureFormat; }
 
 	private:
 
+		Render::FramebufferSpecification m_Specification;
 
 
 		std::vector<FramebufferColorAttachment> m_ColorAttachments;
-		std::vector<Render::FramebufferTextureFormat> m_ColorFormats;
+		std::vector<Render::FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
 		FramebufferDepthStencilAttachment m_DepthStencilAttachment;
-		Render::FramebufferTextureFormat m_DepthStencilFormat = Render::FramebufferTextureFormat::None;
+		Render::FramebufferTextureSpecification m_DepthStencilAttachmentSpecification;
 
-		Render::FramebufferSpecification m_Specification;
 
 		bool m_Created = false;
 		uint32_t m_Width, m_Height;

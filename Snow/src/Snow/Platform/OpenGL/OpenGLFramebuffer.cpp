@@ -39,6 +39,7 @@ namespace Snow {
 
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -56,6 +57,7 @@ namespace Snow {
 
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
@@ -64,7 +66,7 @@ namespace Snow {
 
 		static bool IsDepthFormat(Render::FramebufferTextureFormat format) {
 			switch (format) {
-			case Render::FramebufferTextureFormat::Depth32Stencil8:
+			case Render::FramebufferTextureFormat::Depth24Stencil8:
 			case Render::FramebufferTextureFormat::Depth32F:
 				return true;
 			}
@@ -77,9 +79,9 @@ namespace Snow {
 
 		for (auto format : m_Specification.AttachmentList.Attachments) {
 			if (!Utils::IsDepthFormat(format.TextureFormat))
-				m_ColorAttachmentFormats.emplace_back(format.TextureFormat);
+				m_ColorAttachmentSpecifications.emplace_back(format);
 			else
-				m_DepthAttachmentFormat = format.TextureFormat;
+				m_DepthAttachmentSpecification = format;
 		}
 
 		Resize(spec.Width, spec.Height);
@@ -108,13 +110,13 @@ namespace Snow {
 
 		bool multisample = m_Specification.Samples > 1;
 
-		if (m_ColorAttachmentFormats.size()) {
-			m_ColorAttachments.resize(m_ColorAttachmentFormats.size());
+		if (m_ColorAttachmentSpecifications.size()) {
+			m_ColorAttachments.resize(m_ColorAttachmentSpecifications.size());
 			Utils::CreateTextures(multisample, m_ColorAttachments.data(), m_ColorAttachments.size());
 
 			for (int i = 0; i < m_ColorAttachments.size(); i++) {
 				Utils::BindTexture(multisample, m_ColorAttachments[i]);
-				switch (m_ColorAttachmentFormats[i]) {
+				switch (m_ColorAttachmentSpecifications[i].TextureFormat) {
 				case Render::FramebufferTextureFormat::RGBA8:
 					Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RGBA8, m_Width, m_Height, i);
 					break;
@@ -131,11 +133,11 @@ namespace Snow {
 			}
 		}
 
-		if (m_DepthAttachmentFormat != Render::FramebufferTextureFormat::None) {
+		if (m_DepthAttachmentSpecification.TextureFormat != Render::FramebufferTextureFormat::None) {
 			Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
 			Utils::BindTexture(multisample, m_DepthAttachment);
-			switch (m_DepthAttachmentFormat) {
-			case Render::FramebufferTextureFormat::Depth32Stencil8:
+			switch (m_DepthAttachmentSpecification.TextureFormat) {
+			case Render::FramebufferTextureFormat::Depth24Stencil8:
 				Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Width, m_Height);
 				break;
 			case Render::FramebufferTextureFormat::Depth32F:

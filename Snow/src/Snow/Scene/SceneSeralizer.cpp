@@ -92,7 +92,7 @@ namespace Snow {
 				}
 
 				RigidBody2DComponent rb2dComp;
-				rb2dComp = RigidBody2DComponent(m_Scene->GetPhysicsWorld(), { 0,0 }, { 0,0 }, false, 0, 0);
+				rb2dComp = RigidBody2DComponent(RigidBody2D(m_Scene->GetPhysicsWorld(), transformComp.GetTransform()));
 				if (RigidBody2DComponent::Deserialize(entity, rb2dComp)) {
 					auto& src = deserializedEntity.AddComponent<RigidBody2DComponent>();
 					src = rb2dComp;

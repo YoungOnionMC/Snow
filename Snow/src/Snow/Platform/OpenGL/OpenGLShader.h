@@ -12,6 +12,8 @@ namespace Snow {
         public:
             OpenGLShader(ShaderType type, const std::string& path);
 
+            void Reload() override;
+
             uint32_t GetShaderID() const { return m_RendererID; }
 
             const ShaderType GetType() const override { return m_Type; }
@@ -44,7 +46,9 @@ namespace Snow {
             std::string m_Name, m_Path;
             std::string m_Source;
 
-            uint32_t m_RendererID;
+            uint32_t m_RendererID = 0;
+
+            bool m_Reloaded = false;
 
             std::vector<uint32_t> m_SPIRVBinaryData;
             std::vector<uint32_t> m_GLSLBinaryData;

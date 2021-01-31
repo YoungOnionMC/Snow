@@ -4,6 +4,9 @@
 #include "Snow/Utils/FileDialogs.h"
 #include "Snow/Scene/SceneSerializer.h"
 #include "Snow/Render/SceneRenderer.h"
+#include "Snow/Script/ScriptEngine.h"
+
+#include "UI/ImGuiUI.h" 
 
 #include "Snow/Math/Mat4.h"
 
@@ -17,7 +20,7 @@ namespace Snow {
     int EditorLayer::m_ImGuizmoSelection = -1;
 
     void EditorLayer::OnAttach() {
-
+        /*
         Render::FramebufferSpecification fbSpec;
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
@@ -29,26 +32,24 @@ namespace Snow {
         Render::RenderPassSpecification compRenderPassSpec;
         compRenderPassSpec.TargetFramebuffer = m_Framebuffer;
         m_CompRenderPass = Render::RenderPass::Create(compRenderPassSpec);
-
-        m_ActiveScene = Snow::Ref<Snow::Scene>::Create();
+        */
+        m_EditorScene = Ref<Scene>::Create();
 
         m_EditorCamera = Render::EditorCamera(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-
+        m_PlayButtonTex = Render::API::Texture2D::Create("assets/textures/Windows.png");
 
         //m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
         //m_CameraEntity.AddComponent<CameraComponent>();
 
-        m_Square1 = m_ActiveScene->CreateEntity("Square");
-        m_Square1.AddComponent<RigidBody2DComponent>(m_ActiveScene->GetPhysicsWorld(), glm::vec2{ 0 , 0 }, glm::vec2{ 1, 1 }, true, 1.0f, 0.3f);
-        //m_Square1.AddComponent<MeshComponent>("assets/models/m1911/m1911.fbx");
-        //m_Square1.AddComponent<BRDFMaterialComponent>(m_Square1.GetComponent<MeshComponent>().Mesh->GetMaterialInstance());
-        //m_Square1.AddComponent<SpriteRendererComponent>(glm::vec4{0.0f, 1.0f, 0.5f, 1.0f});
+        m_Square1 = m_EditorScene->CreateEntity("Square");
 
-        m_SceneHierarchyPanel = SceneHierarchyPanel(m_ActiveScene);
+        m_SceneHierarchyPanel = SceneHierarchyPanel(m_EditorScene);
+        Script::ScriptEngine::SetSceneContext(m_EditorScene);
         //m_SceneHierarchyPanel.SetScene(m_ActiveScene);
 
         ImGuizmo::SetOrthographic(false);
 
+#if 0
         class PlayerController : public ScriptableEntity {
         public:
             virtual void OnCreate() override {
@@ -58,43 +59,87 @@ namespace Snow {
             virtual void OnDestroy() override {}
 
             virtual void OnUpdate(Timestep ts) override {
-                auto RigidBody = GetComponent<RigidBody2DComponent>();
+                auto RigidBody = GetComponent<RigidBody2DComponent>().RigidBody;
 
                 
                 if (Core::Input::IsKeyPressed(Key::Space))
-                    RigidBody.Body->ApplyForceToCenter({ 0.0, 10.0f }, true);
+                    RigidBody->ApplyForceToCenter({ 0.0, 10.0f }, true);
                 if (Core::Input::IsKeyPressed(Key::D))
-                    RigidBody.Body->ApplyForceToCenter({ 1.0f, 0.0f }, true);
+                    RigidBody->ApplyForceToCenter({ 1.0f, 0.0f }, true);
                 else if(Core::Input::IsKeyPressed(Key::A))
-                    RigidBody.Body->ApplyForceToCenter({ -1.0f, 0.0f }, true);
+                    RigidBody->ApplyForceToCenter({ -1.0f, 0.0f }, true);
             }
         };
 
         m_Square1.AddComponent<NativeScriptComponent>().Bind<PlayerController>();
+#endif
     }
 
     void EditorLayer::OnDetach() {
 
     }
 
+    void EditorLayer::OnScenePlay() {
+
+        m_SceneState = SceneState::Play;
+        if (m_ReloadScriptOnPlay)
+            Script::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+
+        m_RuntimeScene = Ref<Scene>::Create();
+        m_EditorScene->CopyScene(m_RuntimeScene);
+
+        m_RuntimeScene->OnRuntimeStart();
+        m_SceneHierarchyPanel.SetScene(m_RuntimeScene);
+    }
+
+    void EditorLayer::OnSceneStop() {
+        m_RuntimeScene->OnRuntimeStop();
+        m_SceneState = SceneState::Editor;
+
+        m_RuntimeScene = nullptr;
+
+        
+        Script::ScriptEngine::SetSceneContext(m_EditorScene);
+        m_SceneHierarchyPanel.SetScene(m_EditorScene);
+    }
+
     void EditorLayer::OnUpdate(Timestep ts) {
+        switch (m_SceneState) {
+        case SceneState::Editor: {
+            /*
+            if (Render::FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+                m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0 && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y)) {
+                m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+                m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+                m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            }
+            */
 
-        if (Render::FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-            m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0 && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y)) {
-            m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-            m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-        }
-
-        if (!m_Running) {
-            m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
             if (m_ViewportFocused)
                 m_EditorCamera.OnUpdate(ts);
+
+            m_EditorScene->OnRenderEditor(ts, m_EditorCamera);
+
+            //m_Framebuffer->Unbind();
+
+            break;
         }
-        else {
-            m_ActiveScene->OnUpdateRuntime(ts);
+        case SceneState::Play: {
+            if (m_ViewportFocused)
+                m_EditorCamera.OnUpdate(ts);
+
+            m_RuntimeScene->OnUpdate(ts);
+            m_RuntimeScene->OnRenderRuntime(ts);
+            break;
         }
-        m_Framebuffer->Unbind();
+        case SceneState::Pause: {
+            if (m_ViewportFocused)
+                m_EditorCamera.OnUpdate(ts);
+
+            m_RuntimeScene->OnRenderRuntime(ts);
+            break;
+        }
+        }
     }
 
     void EditorLayer::OnImGuiRender() {
@@ -160,10 +205,70 @@ namespace Snow {
 
                 ImGui::EndMenu();
             }
+
+            if (ImGui::BeginMenu("Scripting")) {
+                if (ImGui::MenuItem("Reload C# Assembly"))
+                    Script::ScriptEngine::ReloadAssembly("assets/scripts/ExampleScriptApp.dll");
+
+                ImGui::MenuItem("reload assembly on play", nullptr, &m_ReloadScriptOnPlay);
+                ImGui::EndMenu();
+            }
             ImGui::EndMenuBar();
         }
 
         m_SceneHierarchyPanel.OnImGuiRender();
+
+        ImGui::Begin("Shaders");
+        if (ImGui::TreeNode("Shaders")) {
+            auto& shaders = Render::Renderer::GetShaderLibrary()->Get();
+            for (auto& [name, shader] : shaders) {
+                if (ImGui::TreeNode(shader->GetName().c_str())) {
+                    std::string buttonName = "Reload##" + shader->GetName();
+                    if (ImGui::Button(buttonName.c_str()))
+                        shader->Reload();
+                    ImGui::TreePop();
+                }
+            }
+            ImGui::TreePop();
+        }
+        ImGui::End();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 0));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12, 4));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+        ImGui::Begin("Toolbar");
+        if (m_SceneState == SceneState::Editor) {
+            UI::BeginGrid(2);
+            if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f))) {
+                OnScenePlay();
+            }
+            ImGui::NextColumn();
+            ImGui::Text("Play Scene");
+            UI::EndGrid();
+        }
+        else if (m_SceneState == SceneState::Play) {
+            UI::BeginGrid(2);
+            if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetRendererID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f))) {
+                OnSceneStop();
+            }
+            ImGui::NextColumn();
+            ImGui::Text("Switch to Editor Scene");
+            UI::EndGrid();
+        }
+
+        ImGui::SameLine();
+
+        ImGui::End();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleVar();
+
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
         
@@ -175,6 +280,12 @@ namespace Snow {
 
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+        Render::SceneRenderer::OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        if (m_RuntimeScene)
+            m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        m_EditorCamera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)m_ViewportSize.x, (float)m_ViewportSize.y, 0.1f, 1000.0f));
+        m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         void* textureID = Render::SceneRenderer::GetFinalColorAttachment();
         ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
@@ -182,7 +293,7 @@ namespace Snow {
 
         // Gizmos
         Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-        if (selectedEntity && m_ImGuizmoSelection != -1 && !m_Running) {
+        if (selectedEntity && m_ImGuizmoSelection != -1 && (m_ViewportFocused) && !m_Running && (m_SceneState == SceneState::Editor)) {
             ImGuizmo::SetDrawlist();
 
             float windowWidth = (float)ImGui::GetWindowWidth();
@@ -221,25 +332,27 @@ namespace Snow {
         ImGui::PopStyleVar();
 
         Render::SceneRenderer::OnImGuiRender();
+
+        Script::ScriptEngine::OnImGuiRender();
         ImGui::End();
     }
 
     void EditorLayer::NewScene() {
-        m_ActiveScene = Ref<Scene>::Create();
-        m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        m_EditorScene = Ref<Scene>::Create();
+        m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         
-        m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+        m_SceneHierarchyPanel.SetScene(m_EditorScene);
     }
 
     void EditorLayer::OpenScene() {
         std::optional<std::string> filepath = Utils::FileDialogs::OpenFile("Snow Scene (*.snow)\0*.snow\0");
         if (filepath) {
-            m_ActiveScene = Ref<Scene>::Create();
+            m_EditorScene = Ref<Scene>::Create();
             //m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            m_ActiveScene->OnViewportResize((uint32_t)1280, (uint32_t)720);
-            m_SceneHierarchyPanel.SetScene(m_ActiveScene);
+            m_EditorScene->OnViewportResize((uint32_t)1280, (uint32_t)720);
+            m_SceneHierarchyPanel.SetScene(m_EditorScene);
 
-            SceneSerializer serializer(m_ActiveScene);
+            SceneSerializer serializer(m_EditorScene);
             serializer.DeserializeText(*filepath);
         }
     }
@@ -247,7 +360,7 @@ namespace Snow {
     void EditorLayer::SaveSceneAs() {
         std::optional<std::string> filepath = Utils::FileDialogs::SaveFile("Snow Scene (*.snow)\0*.snow\0");
         if (filepath) {
-            SceneSerializer serializer(m_ActiveScene);
+            SceneSerializer serializer(m_EditorScene);
             serializer.SerializeText(*filepath);
         }
     }

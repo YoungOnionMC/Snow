@@ -4,6 +4,7 @@
 #include "Snow/Scene/Entity.h"
 
 namespace Snow {
+	class Entity;
 	class ScriptableEntity {
 	public:
 		virtual ~ScriptableEntity() {}

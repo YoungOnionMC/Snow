@@ -12,6 +12,8 @@ namespace Snow {
 	public:
 		VulkanShader(Render::ShaderType type, const std::string& filePath);
 
+		void Reload() override {}
+
 		const Render::ShaderType GetType() const override { return m_Type; }
 		const std::string& GetPath() const override { return m_Path; }
 		const std::string& GetName() const override { return m_Name; }

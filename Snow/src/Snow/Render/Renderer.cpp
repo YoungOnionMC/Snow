@@ -86,6 +86,8 @@ namespace Snow {
             else if (s_RenderAPI == RenderAPIType::DirectX) {
                 Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/QuadBatchRenderVert.hlsl");
                 Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/QuadBatchRenderFrag.hlsl");
+                Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/SceneCompositeVert.hlsl");
+                Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/SceneCompositeFrag.hlsl");
                 Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/LineBatchRenderVert.hlsl");
                 Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/LineBatchRenderFrag.hlsl");
             }

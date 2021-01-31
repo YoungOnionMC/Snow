@@ -5,9 +5,13 @@
 
 #include "Snow/Scene/Components.h"
 
+#include "Snow/Script/ScriptEngine.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Snow/Utils/FileDialogs.h"
+
+#include "UI/ImGuiUI.h"
 
 namespace Snow {
     SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene) {
@@ -22,34 +26,40 @@ namespace Snow {
     }
 
     void SceneHierarchyPanel::OnImGuiRender() {
-        ImGui::Begin("Scene Hierarchy");
+        
 
-        m_SceneContext->m_Registry.each([&](auto entityID) {
-            Entity entity{ entityID, m_SceneContext.Raw() };
-            DrawEntityNode(entity);
-        });
+        if (m_SceneContext) {
+            ImGui::Begin("Scene Hierarchy");
+            uint32_t entityCount = 0;
 
-        if(ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-            m_SelectionContext = {};
+            m_SceneContext->m_Registry.each([&](auto entity) {
+                Entity e{ entity, m_SceneContext.Raw() };
+                if(e.HasComponent<IDComponent>())
+                    DrawEntityNode(e);
+            });
 
-        if (ImGui::BeginPopupContextWindow(0, 1, false)) {
-            if (ImGui::MenuItem("Create empty entity"))
-                m_SceneContext->CreateEntity("Empty Entity");
+            if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+                m_SelectionContext = {};
 
-            ImGui::EndPopup();
+            if (ImGui::BeginPopupContextWindow(0, 1, false)) {
+                if (ImGui::MenuItem("Create empty entity"))
+                    m_SceneContext->CreateEntity("Empty Entity");
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::End();
+
+            ImGui::Begin("Properties");
+            if (m_SelectionContext)
+                DrawComponents(m_SelectionContext);
+
+            ImGui::End();
+
+            ImGui::Begin("Environment");
+            DrawEnvironment();
+            ImGui::End();
         }
-
-        ImGui::End();
-
-        ImGui::Begin("Properties");
-        if(m_SelectionContext)
-            DrawComponents(m_SelectionContext);
-
-        ImGui::End();
-
-        ImGui::Begin("Environment");
-        DrawEnvironment();
-        ImGui::End();
     }
 
     void SceneHierarchyPanel::DrawEntityNode(Entity entity) {
@@ -69,70 +79,7 @@ namespace Snow {
         }
     }
 
-    static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f) {
-        ImGuiIO& io = ImGui::GetIO();
-        auto boldFont = io.Fonts->Fonts[0];
-
-        ImGui::PushID(label.c_str());
-
-        ImGui::Columns(2);
-        ImGui::SetColumnWidth(0, columnWidth);
-        ImGui::Text(label.c_str());
-        ImGui::NextColumn();
-
-        ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
-
-        float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-        ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
-        ImGui::PushFont(boldFont);
-        if (ImGui::Button("X", buttonSize))
-            values.x = resetValue;
-        ImGui::PopFont();
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
-        ImGui::PopItemWidth();
-        ImGui::SameLine();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
-        ImGui::PushFont(boldFont);
-        if (ImGui::Button("Y", buttonSize))
-            values.y = resetValue;
-        ImGui::PopFont();
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
-        ImGui::PopItemWidth();
-        ImGui::SameLine();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.2f, 0.35f, 0.9f, 1.0f });
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.1f, 0.25f, 0.8f, 1.0f });
-        ImGui::PushFont(boldFont);
-        if (ImGui::Button("Z", buttonSize))
-            values.z = resetValue;
-        ImGui::PopFont();
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-        ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
-        ImGui::PopItemWidth();
-
-        ImGui::PopStyleVar();
-
-        ImGui::Columns(1);
-
-        ImGui::PopID();
-    }
+    
 
     void SceneHierarchyPanel::DrawIconedImage(const std::string& label, Ref<Render::API::Texture2D>& texture) {
         ImGui::PushID(label.c_str());
@@ -157,18 +104,29 @@ namespace Snow {
     static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction) {
         const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
         if (entity.HasComponent<T>()) {
+            ImGui::PushID((void*)typeid(T).hash_code());
+
             auto& component = entity.GetComponent<T>();
             ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
             float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
             ImGui::Separator();
-            bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+
+            bool open = ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(T).hash_code()), treeNodeFlags, name.c_str());
             ImGui::PopStyleVar();
+
+            
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+
             ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-            if (ImGui::Button("...", ImVec2{ lineHeight, lineHeight })) {
+            if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight })) {
                 ImGui::OpenPopup("ComponentSettings");
             }
+
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
 
             bool removeComponent = false;
             if (ImGui::BeginPopup("ComponentSettings")) {
@@ -180,11 +138,16 @@ namespace Snow {
 
             if (open) {
                 uiFunction(component);
+                ImGui::NextColumn();
+                ImGui::Columns(1);
                 ImGui::TreePop();
             }
+            
 
             if (removeComponent)
                 entity.RemoveComponent<T>();
+
+            ImGui::PopID();
         }
     }
 
@@ -226,6 +189,11 @@ namespace Snow {
                 ImGui::CloseCurrentPopup();
             }
 
+            if (ImGui::MenuItem("Script")) {
+                m_SelectionContext.AddComponent<ScriptComponent>("ExampleScriptApp.Controller");
+                ImGui::CloseCurrentPopup();
+            }
+
             if (ImGui::MenuItem("BRDF Material")) {
                 Render::PipelineSpecification pipelineSpec;
                 pipelineSpec.Layout = {
@@ -245,7 +213,8 @@ namespace Snow {
 
             if (ImGui::MenuItem("RigidBody")) {
                 auto transform = m_SelectionContext.GetComponent<TransformComponent>();
-                m_SelectionContext.AddComponent<RigidBody2DComponent>(m_SceneContext->GetPhysicsWorld(), glm::vec2(transform.Translation.x, transform.Translation.y), glm::vec2(transform.Scale.x, transform.Scale.y), true, 1.0f, 0.3f);
+                auto rb = RigidBody2D(m_SceneContext->GetPhysicsWorld(), transform.GetTransform());
+                m_SelectionContext.AddComponent<RigidBody2DComponent>(rb);
                 ImGui::CloseCurrentPopup();
             }
 
@@ -255,12 +224,13 @@ namespace Snow {
 
         ImGui::PopItemWidth();
 
-        DrawComponent<TransformComponent>("Transform", entity, [](auto& component) {
-            DrawVec3Control("Translation", component.Translation);
+        DrawComponent<TransformComponent>("Transform", entity, [](TransformComponent& component) {
+            UI::DrawVec3Control("Translation", component.Translation);
             glm::vec3 rotation = glm::degrees(component.Rotation);
-            DrawVec3Control("Rotation", rotation);
+            UI::DrawVec3Control("Rotation", rotation);
             component.Rotation = glm::radians(rotation);
-            DrawVec3Control("Scale", component.Scale, 1.0f);
+            UI::DrawVec3Control("Scale", component.Scale, 1.0f);
+            component.UpdateTransform();
         });
 
         DrawComponent<CameraComponent>("Camera", entity, [](auto& component) {
@@ -386,25 +356,127 @@ namespace Snow {
             }
         });
 
+        DrawComponent<ScriptComponent>("Script", entity, [=](ScriptComponent& component) mutable {
+            UI::BeginGrid(2);
+            std::string oldName = component.ModuleName;
+
+            if (UI::DrawStringControl("Module Name", component.ModuleName, !Script::ScriptEngine::ModuleExists(component.ModuleName))) {
+                if (Script::ScriptEngine::ModuleExists(oldName))
+                    Script::ScriptEngine::ShutdownScriptEntity(entity, oldName);
+
+                if (Script::ScriptEngine::ModuleExists(component.ModuleName))
+                    Script::ScriptEngine::InitScriptEntity(entity);
+            }
+
+            if (Script::ScriptEngine::ModuleExists(component.ModuleName)) {
+                Script::EntityInstanceData& entityInstanceData = Script::ScriptEngine::GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID());
+                auto& moduleFieldMap = entityInstanceData.ModuleFieldMap;
+                if (moduleFieldMap.find(component.ModuleName) != moduleFieldMap.end()) {
+                    auto& publicFields = moduleFieldMap.at(component.ModuleName);
+                    for (auto& [name, field] : publicFields) {
+                        bool isRuntime = m_SceneContext->m_IsPlaying && field.IsRuntimeAvailable();
+                        switch (field.Type) {
+                        case Script::FieldType::Bool: {
+                            bool value = isRuntime ? field.GetRuntimeValue<bool>() : field.GetStoredValue<bool>();
+                            if (UI::DrawBoolControl(field.Name.c_str(), &value)) {
+                                if (isRuntime)
+                                    field.SetRuntimeValue(value);
+                                else
+                                    field.SetStoredValue(value);
+                            }
+                            break;
+                        }
+                        case Script::FieldType::Char: {
+                            char value = isRuntime ? field.GetRuntimeValue<char>() : field.GetStoredValue<char>();
+                            if (UI::DrawCharControl(field.Name.c_str(), &value)) {
+                                if (isRuntime)
+                                    field.SetRuntimeValue(value);
+                                else
+                                    field.SetStoredValue(value);
+                            }
+                            break;
+                        }
+                        case Script::FieldType::Int: {
+                            int value = isRuntime ? field.GetRuntimeValue<int>() : field.GetStoredValue<int>();
+                            if (UI::DrawIntControl(field.Name.c_str(), &value)) {
+                                if (isRuntime)
+                                    field.SetRuntimeValue(value);
+                                else
+                                    field.SetStoredValue(value);
+                            }
+                            break;
+                        }
+                        case Script::FieldType::Float: {
+                            float value = isRuntime ? field.GetRuntimeValue<float>() : field.GetStoredValue<float>();
+                            if (UI::DrawFloatControl(field.Name.c_str(), &value)) {
+                                if (isRuntime)
+                                    field.SetRuntimeValue(value);
+                                else
+                                    field.SetStoredValue(value);
+                            }
+                            break;
+                        }
+                        case Script::FieldType::Vec2: {
+                            glm::vec2 value = isRuntime ? field.GetRuntimeValue<glm::vec2>() : field.GetStoredValue<glm::vec2>();
+                            if (UI::DrawFloat2Control(field.Name.c_str(), value, 0.2f)) {
+                                if (isRuntime)
+                                    field.SetRuntimeValue(value);
+                                else
+                                    field.SetStoredValue(value);
+                            }
+                            break;
+                        }
+                        case Script::FieldType::Vec3: {
+                            glm::vec3 value = isRuntime ? field.GetRuntimeValue<glm::vec3>() : field.GetStoredValue<glm::vec3>();
+                            if (UI::DrawFloat3Control(field.Name.c_str(), value, 0.2f)) {
+                                if (isRuntime)
+                                    field.SetRuntimeValue(value);
+                                else
+                                    field.SetStoredValue(value);
+                            }
+                            break;
+                        }
+                        case Script::FieldType::Vec4: {
+                            glm::vec4 value = isRuntime ? field.GetRuntimeValue<glm::vec4>() : field.GetStoredValue<glm::vec4>();
+                            if (UI::DrawFloat4Control(field.Name.c_str(), value, 0.2f)) {
+                                if (isRuntime)
+                                    field.SetRuntimeValue(value);
+                                else
+                                    field.SetStoredValue(value);
+                            }
+                            break;
+                        }
+                        }
+                    }
+                }
+            }
+            UI::EndGrid();
+        });
+
         DrawComponent<RigidBody2DComponent>("RigidBody", entity, [](auto& component) {
-            auto rigidBody = component;
+            auto rigidBody = component.RigidBody;
             
             glm::vec2 position = rigidBody.GetPosition();
+            float rotation = rigidBody.GetRotation();
             ImGui::InputFloat2("Position", glm::value_ptr(position), 2);
-            component.SetPosition(position);
+            ImGui::InputFloat("Rotation", &rotation);
+
+
+
+            //rigidBody.SetTransform(position, rotation);
 
             float friction = rigidBody.GetFriction();
             ImGui::InputFloat("Friction Value", &friction);
-            component.SetFriction(friction);
+            rigidBody.SetFriction(friction);
 
             float density = rigidBody.GetDensity();
             ImGui::InputFloat("Density Value", &density);
-            component.SetDensity(density);
+            rigidBody.SetDensity(density);
 
             uint32_t dynamic = rigidBody.GetType();
             const std::array<const char*, 3> types = { "Static", "Kinematic", "Dynamic" };
             ImGui::Combo("RigidBody Type", (int*)&dynamic, types.data(), types.size());
-            component.SetType((RigidBodyType)dynamic);
+            rigidBody.SetType((RigidBodyType)dynamic);
         });
         /*
         DrawComponent<Box2DShapeComponent>("Box2DShape", entity, [](auto& component) {

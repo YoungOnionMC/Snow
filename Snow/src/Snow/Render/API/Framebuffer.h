@@ -16,16 +16,16 @@ namespace Snow {
 			RG32F = 4,
 
 			Depth32F = 5,
-			Depth32Stencil8 = 6,
+			Depth24Stencil8 = 6,
 
-			Depth = Depth32Stencil8
+			Depth = Depth24Stencil8
 		};
 
 		struct FramebufferTextureSpecification {
 			FramebufferTextureSpecification() = default;
 			FramebufferTextureSpecification(FramebufferTextureFormat format) : TextureFormat(format) {}
 
-			FramebufferTextureFormat TextureFormat;
+			FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
 		};
 
 		struct FramebufferAttachmentSpecification {

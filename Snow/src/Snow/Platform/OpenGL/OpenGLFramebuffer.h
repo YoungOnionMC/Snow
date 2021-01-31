@@ -35,8 +35,8 @@ namespace Snow {
 		std::vector<uint32_t> m_ColorAttachments;
 		uint32_t m_DepthAttachment = 0;
 
-		std::vector<Render::FramebufferTextureFormat> m_ColorAttachmentFormats;
-		Render::FramebufferTextureFormat m_DepthAttachmentFormat = Render::FramebufferTextureFormat::None;
+		std::vector<Render::FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
+		Render::FramebufferTextureSpecification m_DepthAttachmentSpecification;
 
 		uint32_t m_Width = 0, m_Height = 0;
 

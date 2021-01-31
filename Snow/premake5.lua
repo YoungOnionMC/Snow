@@ -21,7 +21,9 @@ project "Snow"
         "src/Snow/ImGui/**.*",
         "src/Snow/Render/**.*",
         "src/Snow/Math/**.*",
+        "src/Snow/Physics/**.*",
         "src/Snow/Scene/**.*",
+        "src/Snow/Script/**.*",
         "src/Snow/Platform/OpenGL/**.*",
         "src/Snow/Platform/Vulkan/**.*",
 
@@ -56,6 +58,7 @@ project "Snow"
         "%{VendorIncludeDir.glm}",
         "%{VendorIncludeDir.ImGui}",
         "%{VendorIncludeDir.ImGuizmo}",
+        "%{VendorIncludeDir.mono}",
         "%{VendorIncludeDir.stb}",
         "%{VendorIncludeDir.SPIRVCross}",
         "%{VendorIncludeDir.yaml_cpp}",
@@ -69,7 +72,10 @@ project "Snow"
     }
 
     defines {
-        "GLFW_INCLUDE_NONE"
+        "GLFW_INCLUDE_NONE",
+        "GLM_FORCE_SWIZZLE",
+
+        "SNOW_ENABLE_ASSERTS",
     }
 
     flags { "NoPCH" }
@@ -83,6 +89,11 @@ project "Snow"
 
         characterset("MBCS")
 
+        files {
+            "src/Snow/Platform/DirectX11/**.*",
+            "src/Snow/Platform/Windows/**.*",
+        }
+
         includedirs {
             "%{VendorIncludeDir.Vulkan}/Windows", 
             "%{VendorIncludeDir.shaderc}",
@@ -95,6 +106,7 @@ project "Snow"
             "%{VendorLibraryDir.shaderc}/Windows",
             "%{VendorLibraryDir.glslang}/Windows",
             "%{VendorLibraryDir.SPIRVTools}/Windows",
+            "%{VendorLibraryDir.mono}/Windows",
         }
 
         links {
@@ -113,6 +125,9 @@ project "Snow"
             "ImGui",
             
             "SPIRVCross",
+
+            "mono-2.0-sgen.lib",
+            "eglib.lib",
         }
 
         filter "configurations:Debug"
@@ -162,9 +177,7 @@ project "Snow"
 
         
 
-        files {
-            "src/Snow/Platform/Windows/**.*"
-        }
+        
 
     end
 

@@ -17,6 +17,8 @@ namespace Snow {
             virtual const std::string& GetPath() const = 0;
             virtual const std::string& GetName() const = 0;
 
+            virtual void Reload() = 0;
+
             static Ref<Shader> Create(ShaderType type, const std::string& path);
 
             

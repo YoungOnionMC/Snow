@@ -5,6 +5,8 @@
 
 #include "Snow/Render/Renderer2D.h"
 
+#include "Snow/Script/ScriptEngine.h"
+
 namespace Snow {
     namespace Core {
 
@@ -28,6 +30,8 @@ namespace Snow {
             Render::Renderer::Init();
             m_ImGuiLayer = ImGuiLayer::Create();
             m_LayerStack.PushOverlay(m_ImGuiLayer);
+
+            Script::ScriptEngine::Init("assets/scripts/ExampleScriptApp.dll");
         }
 
         Application::~Application() {

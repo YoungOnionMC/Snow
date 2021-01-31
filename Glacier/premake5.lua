@@ -40,6 +40,10 @@ project "Glacier"
             "%{VendorLibraryDir.Assimp}/Windows"
         }
 
+        postbuildcommands {
+            '{COPY} "../Snow/vendor/mono/bin/Windows/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+        }
+
         filter "configurations:Debug"
             links {
                 "Debug/assimp-vc142-mtd.lib",
