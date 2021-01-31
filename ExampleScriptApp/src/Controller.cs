@@ -28,14 +28,14 @@ namespace ExampleScriptApp
             translation.XY = m_CameraEntity.GetTransform().Translation.XY;
 
             if (Input.IsKeyPressed(KeyCode.W))
-                translation.Y += 10.0f * ts;
+                translation.Y += Speed * ts;
             else if (Input.IsKeyPressed(KeyCode.S))
-                translation.Y -= 10.0f * ts;
+                translation.Y -= Speed * ts;
 
             if (Input.IsKeyPressed(KeyCode.D))
-                translation.X += 10.0f * ts;
+                translation.X += Speed * ts;
             else if (Input.IsKeyPressed(KeyCode.A))
-                translation.X -= 10.0f * ts;
+                translation.X -= Speed * ts;
 
             transform.Translation = translation;
             SetTransform(transform);

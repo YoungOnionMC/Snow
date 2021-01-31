@@ -77,7 +77,7 @@ namespace Snow {
 			bool IsRuntimeAvailable() const;
 
 			template<typename T>
-			T GetStoredValue() {
+			T GetStoredValue() const {
 				T value;
 				GetStoredValue_Internal(&value);
 				return value;

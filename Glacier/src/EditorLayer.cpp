@@ -338,10 +338,12 @@ namespace Snow {
     }
 
     void EditorLayer::NewScene() {
+
         m_EditorScene = Ref<Scene>::Create();
         m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         
         m_SceneHierarchyPanel.SetScene(m_EditorScene);
+        Script::ScriptEngine::SetSceneContext(m_EditorScene);
     }
 
     void EditorLayer::OpenScene() {
@@ -351,6 +353,9 @@ namespace Snow {
             //m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_EditorScene->OnViewportResize((uint32_t)1280, (uint32_t)720);
             m_SceneHierarchyPanel.SetScene(m_EditorScene);
+            Script::ScriptEngine::SetSceneContext(m_EditorScene);
+            //Script::ScriptEngine::LoadSnowRuntimeAssembly("assets/scripts/ExamplescriptApp.dll");
+
 
             SceneSerializer serializer(m_EditorScene);
             serializer.DeserializeText(*filepath);

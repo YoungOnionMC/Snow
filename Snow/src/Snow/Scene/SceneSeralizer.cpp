@@ -4,6 +4,8 @@
 #include "Snow/Scene/Entity.h"
 #include "Snow/Scene/Components.h"
 
+
+
 #include <yaml-cpp/yaml.h>
 
 namespace Snow {
@@ -12,7 +14,7 @@ namespace Snow {
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity) {
 		out << YAML::BeginMap;
-		out << YAML::Key << "Entity" << YAML::Value << "2345652456367"; // should be uuid
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
 		if (entity.HasComponent<TagComponent>()) {
 			auto& tc = entity.GetComponent<TagComponent>();
@@ -34,17 +36,23 @@ namespace Snow {
 			src.Serialize(out);
 		}
 
+		if (entity.HasComponent<ScriptComponent>()) {
+			auto& sc = entity.GetComponent<ScriptComponent>();
+			sc.Serialize(out, entity);
+			
+		}
+
 		out << YAML::EndMap;
 	}
 
 	void SceneSerializer::SerializeText(const std::string& filepath) {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << m_Scene->m_Name;
+		out << YAML::Key << "Scene" << YAML::Value << m_Scene->m_SceneID;
 		out << YAML::Key << "Entities" << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID) {
 			Entity entity = { entityID, m_Scene.Raw() };
-			if (!entity)
+			if (!entity || !entity.HasComponent<IDComponent>())
 				return;
 
 			SerializeEntity(out, entity);
@@ -65,17 +73,22 @@ namespace Snow {
 		if (!data["Scene"])
 			return false;
 
-		std::string sceneName = data["Scene"].as<std::string>();
-		SNOW_CORE_TRACE("Deserializing Scene '{0}'", sceneName);
+		uint64_t uuid = data["Scene"].as<uint64_t>();
+		SNOW_CORE_TRACE("Deserializing Scene with id = {0}", uuid);
+		m_Scene->m_SceneID = uuid;
 
 		auto entities = data["Entities"];
 		if (entities) {
 			for (auto entity : entities) {
+				uint64_t uuid = entity["Entity"].as<uint64_t>();
+
 				auto tagComp = TagComponent();
 				if (!tagComp.Deserialize(entity)) {
 					SNOW_CORE_ERROR("Entity does not have a tag component");
 				}
-				Entity deserializedEntity = m_Scene->CreateEntity(tagComp.Tag);
+
+				SNOW_CORE_INFO("Deserialized entity with ID = {0}, name = {1}", uuid, tagComp.Tag);
+				Entity deserializedEntity = m_Scene->CreateEntityWithID(uuid, tagComp.Tag);
 
 				TransformComponent transformComp;
 				if (TransformComponent::Deserialize(entity, transformComp)) {
@@ -87,15 +100,19 @@ namespace Snow {
 				
 				SpriteRendererComponent spriteRendererComp;
 				if (SpriteRendererComponent::Deserialize(entity, spriteRendererComp)) {
-					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
-					src.Color = spriteRendererComp.Color;
+					deserializedEntity.AddComponent<SpriteRendererComponent>(spriteRendererComp);
 				}
 
 				RigidBody2DComponent rb2dComp;
 				rb2dComp = RigidBody2DComponent(RigidBody2D(m_Scene->GetPhysicsWorld(), transformComp.GetTransform()));
 				if (RigidBody2DComponent::Deserialize(entity, rb2dComp)) {
-					auto& src = deserializedEntity.AddComponent<RigidBody2DComponent>();
-					src = rb2dComp;
+					deserializedEntity.AddComponent<RigidBody2DComponent>(rb2dComp);
+					
+				}
+
+				ScriptComponent sComp;
+				if (ScriptComponent::Deserialize(entity, sComp, deserializedEntity)) {
+					auto& sc = deserializedEntity.AddComponent<ScriptComponent>(sComp.ModuleName);
 				}
 			}
 		}

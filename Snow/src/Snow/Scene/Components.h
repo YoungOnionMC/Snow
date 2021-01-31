@@ -175,6 +175,9 @@ namespace Snow {
         ScriptComponent(const ScriptComponent& other) = default;
         ScriptComponent(const std::string& moduleName) :
             ModuleName(moduleName) {}
+
+        void Serialize(YAML::Emitter& out, Entity entity);
+        static bool Deserialize(YAML::Node node, ScriptComponent& outRB2D, Entity entity);
     };
 
     struct NativeScriptComponent {

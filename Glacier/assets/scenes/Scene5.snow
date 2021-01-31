@@ -1,0 +1,24 @@
+Scene: 15449877016847296707
+Entities:
+  - Entity: 4936977659783630360
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 20.3999996]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 14231008862332065492
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+    ScriptComponent:
+      ModuleName: ExampleScriptApp.Controller
+      StoredFields:
+        - Name: Speed
+          Type: 11
+          Data: 1.70000005

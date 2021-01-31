@@ -1,0 +1,24 @@
+Scene: Unnamed Scene
+Entities:
+  - Entity: 6806243273118466660
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Translation: [0, 0, 25.7999992]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 12979199718931226618
+    TagComponent:
+      Tag: Square
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+    ScriptComponent:
+      ModuleName: ExampleScriptApp.Controller
+      StoredFields:
+        - Name: Speed
+          Type: 11
+          Data: 4.4000001
