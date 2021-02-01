@@ -90,7 +90,7 @@ namespace Snow {
 				{ AttribType::Float3, "a_Bitangent" },
 				{ AttribType::Float2, "a_TexCoord" }
 			};
-			pipelineSpec.Shaders = { Renderer::GetShaderLibrary()->Get("PBRVert"), Renderer::GetShaderLibrary()->Get("PBRFrag") };
+			pipelineSpec.Shader = Renderer::GetShaderLibrary()->Get("PBR");
 			pipelineSpec.Type = PrimitiveType::Triangle;
 			Ref<Pipeline> pipeline = Pipeline::Create(pipelineSpec);
 			m_MaterialInstance = Ref<MaterialInstance>::Create(Ref<Material>::Create(pipeline));

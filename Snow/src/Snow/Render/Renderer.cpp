@@ -24,6 +24,7 @@ namespace Snow {
             Ref<API::VertexBuffer> FullscreenQuadVertexBuffer;
             Ref<API::IndexBuffer> FullscreenQuadIndexBuffer;
             Ref<Pipeline> FullscreenQuadPipeline;
+            Ref<Shader> FullscreenShader;
         };
 
         static RendererData s_Data;
@@ -74,22 +75,29 @@ namespace Snow {
             s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
 
             if (s_RenderAPI == RenderAPIType::OpenGL) {
-                Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/glsl/QuadBatchRenderVert.glsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/glsl/QuadBatchRenderFrag.glsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/glsl/SceneCompositeVert.glsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/glsl/SceneCompositeFrag.glsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/glsl/LineBatchRenderVert.glsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/glsl/LineBatchRenderFrag.glsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/glsl/PBRVert.glsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/glsl/PBRFrag.glsl");
+                Renderer::GetShaderLibrary()->Load({
+                    { ShaderType::Vertex, "assets/shaders/glsl/QuadBatchRender.vert.glsl" },
+                    { ShaderType::Pixel, "assets/shaders/glsl/QuadBatchRender.frag.glsl" } });
+
+                Renderer::GetShaderLibrary()->Load({
+                    { ShaderType::Vertex, "assets/shaders/glsl/SceneComposite.vert.glsl" },
+                    { ShaderType::Pixel, "assets/shaders/glsl/SceneComposite.frag.glsl" } });
+
+                Renderer::GetShaderLibrary()->Load({
+                    { ShaderType::Vertex, "assets/shaders/glsl/LineBatchRender.vert.glsl" },
+                    { ShaderType::Pixel, "assets/shaders/glsl/LineBatchRender.frag.glsl" } });
+
+                Renderer::GetShaderLibrary()->Load({
+                    { ShaderType::Vertex, "assets/shaders/glsl/PBR.vert.glsl" },
+                    { ShaderType::Pixel, "assets/shaders/glsl/PBR.frag.glsl" } });
             }
             else if (s_RenderAPI == RenderAPIType::DirectX) {
-                Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/QuadBatchRenderVert.hlsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/QuadBatchRenderFrag.hlsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/SceneCompositeVert.hlsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/SceneCompositeFrag.hlsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/LineBatchRenderVert.hlsl");
-                Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/LineBatchRenderFrag.hlsl");
+                //Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/QuadBatchRenderVert.hlsl");
+                //Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/QuadBatchRenderFrag.hlsl");
+                //Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/SceneCompositeVert.hlsl");
+                //Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/SceneCompositeFrag.hlsl");
+                //Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/LineBatchRenderVert.hlsl");
+                //Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/LineBatchRenderFrag.hlsl");
             }
             /*
             Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/PBRVert.hlsl");
@@ -107,7 +115,8 @@ namespace Snow {
                 {AttribType::Float3, "a_Position"},
                 {AttribType::Float2, "a_TexCoord"}
             };
-            fullscreenPipelineSpec.Shaders = { GetShaderLibrary()->Get("SceneCompositeVert"), GetShaderLibrary()->Get("SceneCompositeFrag") };
+            //fullscreenPipelineSpec.Shader = { GetShaderLibrary()->Get("SceneComposite"), GetShaderLibrary()->Get("SceneCompositeFrag") };
+            s_Data.FullscreenShader = GetShaderLibrary()->Get("SceneComposite");
 
             s_Data.FullscreenQuadPipeline = Pipeline::Create(fullscreenPipelineSpec);
         }
@@ -137,11 +146,14 @@ namespace Snow {
             }
 
             s_Data.FullscreenQuadVertexBuffer->Bind();
+            s_Data.FullscreenShader->Bind();
             s_Data.FullscreenQuadPipeline->Bind();
             s_Data.FullscreenQuadIndexBuffer->Bind();
 
             RenderCommand::DrawIndexed(6, s_Data.FullscreenQuadPipeline->GetSpecification().Type);
 
+            s_Data.FullscreenQuadIndexBuffer->Unbind();
+            s_Data.FullscreenQuadVertexBuffer->Unbind();
         }
         
     }

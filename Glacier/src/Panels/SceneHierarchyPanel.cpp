@@ -195,6 +195,8 @@ namespace Snow {
             }
 
             if (ImGui::MenuItem("BRDF Material")) {
+                /*
+                Render::
                 Render::PipelineSpecification pipelineSpec;
                 pipelineSpec.Layout = {
                     { Render::AttribType::Float3, "a_Position" },
@@ -208,6 +210,7 @@ namespace Snow {
                 Ref<Render::Pipeline> pipeline = Render::Pipeline::Create(pipelineSpec);
                 Ref<Render::MaterialInstance> m_MaterialInstance = Ref<Render::MaterialInstance>::Create(Ref<Render::Material>::Create(pipeline));
                 m_SelectionContext.AddComponent<BRDFMaterialComponent>(m_MaterialInstance);
+                */
                 ImGui::CloseCurrentPopup();
             }
 

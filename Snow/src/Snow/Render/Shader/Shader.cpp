@@ -12,13 +12,13 @@
 
 namespace Snow {
     namespace Render {
-        Ref<Shader> Shader::Create(ShaderType type, const std::string& path) {
+        Ref<Shader> Shader::Create(const std::initializer_list<ShaderModule>& shaderModules) {
             switch(Renderer::GetRenderAPI()) {
             case RenderAPIType::None:   return nullptr;
-            case RenderAPIType::OpenGL: return Ref<OpenGLShader>::Create(type, path);
-            case RenderAPIType::Vulkan: return Ref<VulkanShader>::Create(type, path);
+            case RenderAPIType::OpenGL: return Ref<OpenGLShader>::Create(shaderModules);
+            //case RenderAPIType::Vulkan: return Ref<VulkanShader>::Create(shaderModules);
 #if defined(SNOW_PLATFORM_WINDOWS)
-            case RenderAPIType::DirectX:    return Ref<DirectX11Shader>::Create(type, path);
+            //case RenderAPIType::DirectX:    return Ref<DirectX11Shader>::Create(shaderModules);
 #endif
             }
 

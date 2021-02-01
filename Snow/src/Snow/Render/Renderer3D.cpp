@@ -13,18 +13,18 @@ namespace Snow {
 			Ref<Material> material = matInstance->GetMaterial();
 			
 			mesh->GetVertexBuffer()->Bind();
-			material->GetPipeline()->Bind();
+			material->GetShader()->Bind();
 
 			auto tf = transform;
 
-			material->GetPipeline()->SetUniformBufferData("ObjectTransform", &tf, sizeof(glm::mat4));
+			material->GetShader()->SetUniformBufferData("ObjectTransform", &tf, sizeof(glm::mat4));
 
 			if(materialInstance)
 				materialInstance->Bind();
 			
 			mesh->GetIndexBuffer()->Bind();
 			RenderCommand::SetDepthTesting(true);
-			RenderCommand::DrawIndexed(mesh->GetIndexBuffer()->GetCount(), material->GetPipeline()->GetSpecification().Type);
+			RenderCommand::DrawIndexed(mesh->GetIndexBuffer()->GetCount(), PrimitiveType::Triangle);
 			RenderCommand::SetDepthTesting(false);
 		}
 	}

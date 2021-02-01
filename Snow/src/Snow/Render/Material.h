@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Snow/Render/Shader/Shader.h"
+#include "Snow/Render/Shader/ShaderUniform.h"
 
 #include "Snow/Core/Ref.h"
 
-#include "Snow/Render/Pipeline.h"
 
 #include "Snow/Render/API/Texture.h"
 
@@ -15,7 +15,7 @@ namespace Snow {
 		class Material : public RefCounted {
 			friend class MaterialInstance;
 		public:
-			Material(const Ref<Pipeline>& pipeline);
+			Material(const Ref<Shader>& shader);
 
 			void Bind();
 
@@ -55,9 +55,9 @@ namespace Snow {
 				return m_Textures[slot];
 			}
 
-			Ref<Pipeline> GetPipeline() { return m_Pipeline; }
+			Ref<Shader> GetShader() { return m_Shader; }
 
-			static Ref<Material> Create(const Ref<Pipeline>& pipeline);
+			static Ref<Material> Create(const Ref<Shader>& shader);
 		private:
 			void AllocateStorage();
 			void BindTextures();
@@ -65,7 +65,7 @@ namespace Snow {
 			const ShaderUniform* FindUniformDecl(const std::string& name);
 			const ShaderResource* FindResourceDecl(const std::string& name);
 
-			Ref<Pipeline> m_Pipeline;
+			Ref<Shader> m_Shader;
 
 			std::unordered_set<MaterialInstance*> m_MaterialInstances;
 

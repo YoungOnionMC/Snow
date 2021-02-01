@@ -5,7 +5,7 @@
 //#include "Snow/Platform/Vulkan/VulkanPipeline.h"
 
 #if defined(SNOW_PLATFORM_WINDOWS)
-#include "Snow/Platform/DirectX11/DirectXPipeline.h"
+//#include "Snow/Platform/DirectX11/DirectXPipeline.h"
 #endif
 
 #include "Snow/Render/Renderer.h"
@@ -18,7 +18,7 @@ namespace Snow {
             case RenderAPIType::OpenGL: return Ref<OpenGLPipeline>::Create(spec);
             //case RenderAPIType::Vulkan: return Ref<VulkanPipeline>::Create(spec);
 #if defined(SNOW_PLATFORM_WINDOWS)
-            case RenderAPIType::DirectX:    return Ref<DirectX11Pipeline>::Create(spec);
+            //case RenderAPIType::DirectX:    return Ref<DirectX11Pipeline>::Create(spec);
 #endif
             }
 

@@ -23,7 +23,7 @@ namespace Snow {
 			struct CompositeInfo {
 				float Exposure = 1.0f;
 				int Samples = 4;
-				bool Bloom = true;
+				bool Bloom = false;
 				float BloomThreshold = 1.0f;
 			} CompositeData;
 
@@ -44,7 +44,7 @@ namespace Snow {
 
 			std::vector<DrawQuadCommand> QuadDrawList;
 
-			Ref<Pipeline> CompositePipeline;
+			Ref<Shader> CompositeShader;
 
 			Ref<RenderPass> GeometryPass;
 			Ref<RenderPass> CompPass;
@@ -79,10 +79,9 @@ namespace Snow {
 				{ AttribType::Float3, "a_Position" },
 				{ AttribType::Float2, "a_TexCoord" }
 			};
-			compPipelineSpec.Shaders = { Renderer::GetShaderLibrary()->Get("SceneCompositeVert"), Renderer::GetShaderLibrary()->Get("SceneCompositeFrag") };
-			//compPipelineSpec.Shaders = { Shader::Create(ShaderType::Vertex, "assets/shaders/glsl/PBRVert.glsl"), Shader::Create(ShaderType::Pixel, "assets/shaders/glsl/PBRFrag.glsl") };
+			compPipelineSpec.Shader = Renderer::GetShaderLibrary()->Get("SceneComposite");
 			
-			s_Data.CompositePipeline = Pipeline::Create(compPipelineSpec);
+			s_Data.CompositeShader = Renderer::GetShaderLibrary()->Get("SceneComposite");
 
 
 		}
@@ -140,13 +139,12 @@ namespace Snow {
 			EnvironmentUB enviroUB;
 			enviroUB.lights = s_Data.SceneData.ActiveLight;
 			enviroUB.u_CameraPosition = cameraPosition;
-			s_Data.CompositePipeline->SetUniformBufferData("Environment", &enviroUB, sizeof(EnvironmentUB));
+			s_Data.CompositeShader->SetUniformBufferData("Environment", &enviroUB, sizeof(EnvironmentUB));
 
-			s_Data.CompositePipeline->SetUniformBufferData("Camera", &viewProjection, sizeof(glm::mat4));
+			s_Data.CompositeShader->SetUniformBufferData("Camera", &viewProjection, sizeof(glm::mat4));
 
 			for (auto& dc : s_Data.MeshDrawList) {
 				Ref<MaterialInstance> mi = dc.Mesh->GetMaterialInstance();
-				Ref<Pipeline> pl = mi->GetMaterial()->GetPipeline();
 
 				
 
@@ -172,8 +170,8 @@ namespace Snow {
 			
 			s_Data.CompositeData.Samples = s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
 
-			s_Data.CompositePipeline->Bind();
-			s_Data.CompositePipeline->SetUniformBufferData("CompositeBuffer", &s_Data.CompositeData, sizeof(SceneRendererData::CompositeInfo));
+			s_Data.CompositeShader->Bind();
+			s_Data.CompositeShader->SetUniformBufferData("CompositeBuffer", &s_Data.CompositeData, sizeof(SceneRendererData::CompositeInfo));
 			s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture();
 			Renderer::SubmitFullscreenQuad(nullptr);
 

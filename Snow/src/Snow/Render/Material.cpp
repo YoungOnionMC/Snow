@@ -5,24 +5,24 @@
 namespace Snow {
 	namespace Render {
 
-		Ref<Material> Material::Create(const Ref<Pipeline>& pipeline) {
-			return Ref<Material>::Create(pipeline);
+		Ref<Material> Material::Create(const Ref<Shader>& shader) {
+			return Ref<Material>::Create(shader);
 		}
 
-		Material::Material(const Ref<Pipeline>& pipeline) :
-			m_Pipeline(pipeline) {
+		Material::Material(const Ref<Shader>& shader) :
+			m_Shader(shader) {
 			AllocateStorage();
 		}
 
 		void Material::AllocateStorage() {
-			const auto& uniformBuffer = m_Pipeline->GetUniformBuffer("Material");
+			const auto& uniformBuffer = m_Shader->GetUniformBuffer("Material");
 
 			m_UniformStorageBuffer.Allocate(uniformBuffer.Size);
 			m_UniformStorageBuffer.ZeroInitialize();
 		}
 
 		const ShaderUniform* Material::FindUniformDecl(const std::string& name) {
-			const auto& uniformBuffer = m_Pipeline->GetUniformBuffer("Material");
+			const auto& uniformBuffer = m_Shader->GetUniformBuffer("Material");
 
 			for (uint32_t i = 0; i < uniformBuffer.Uniforms.size(); i++) {
 				if (uniformBuffer.Uniforms[i].GetName() == name) {
@@ -33,7 +33,7 @@ namespace Snow {
 		}
 
 		const ShaderResource* Material::FindResourceDecl(const std::string& name) {
-			auto& resources = m_Pipeline->GetResources();
+			auto& resources = m_Shader->GetResources();
 			for (const auto& [n, resource] : resources) {
 				if (resource.GetName() == name)
 					return &resource;
@@ -43,9 +43,9 @@ namespace Snow {
 		}
 
 		void Material::Bind() {
-			m_Pipeline->Bind();
+			m_Shader->Bind();
 
-			m_Pipeline->SetUniformBufferData("Material", m_UniformStorageBuffer.Data, m_UniformStorageBuffer.Size);
+			m_Shader->SetUniformBufferData("Material", m_UniformStorageBuffer.Data, m_UniformStorageBuffer.Size);
 
 			BindTextures();
 		}
@@ -73,7 +73,7 @@ namespace Snow {
 		}
 
 		void MaterialInstance::AllocateStorage() {
-			const auto& uniformBuffer = m_Material->GetPipeline()->GetUniformBuffer("Material");
+			const auto& uniformBuffer = m_Material->GetShader()->GetUniformBuffer("Material");
 
 			m_UniformStorageBuffer.Allocate(uniformBuffer.Size);
 			m_UniformStorageBuffer.ZeroInitialize();
@@ -88,9 +88,9 @@ namespace Snow {
 		}
 
 		void MaterialInstance::Bind() {
-			m_Material->GetPipeline()->Bind();
+			m_Material->GetShader()->Bind();
 
-			m_Material->GetPipeline()->SetUniformBufferData("Material", m_UniformStorageBuffer.Data, m_UniformStorageBuffer.Size);
+			m_Material->GetShader()->SetUniformBufferData("Material", m_UniformStorageBuffer.Data, m_UniformStorageBuffer.Size);
 			m_Material->BindTextures();
 
 			for (size_t i = 0; i < m_Textures.size(); i++) {

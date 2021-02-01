@@ -8,6 +8,8 @@
 
 #include "Snow/Render/API/Buffer.h"
 
+#include <glm/glm.hpp>
+
 namespace Snow {
 	namespace Render {
 		struct Vertex {

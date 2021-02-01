@@ -7,11 +7,14 @@ namespace Snow {
     namespace Render {
         OpenGLVertexBuffer::OpenGLVertexBuffer(void* data, uint32_t size) {
 
-            m_LocalBuffer = Buffer(data, size);
+            if (data)
+                m_LocalBuffer = Buffer::Copy(data, size);
+            else
+                m_LocalBuffer.Allocate(size);
 
             glGenBuffers(1, &m_RendererID);
             glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-            glBufferData(GL_ARRAY_BUFFER, size, (void*)data, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, m_LocalBuffer.Size, (void*)(data ? m_LocalBuffer.Data : nullptr), GL_STATIC_DRAW);
         }
 
         void OpenGLVertexBuffer::Bind() const {
@@ -39,11 +42,12 @@ namespace Snow {
         OpenGLIndexBuffer::OpenGLIndexBuffer(void* data, uint32_t size) :
             m_Count(size / sizeof(uint32_t)) {
 
-            m_LocalBuffer = Buffer(data, size);
+            m_LocalBuffer = Buffer::Copy(data, size);
 
             glGenBuffers(1, &m_RendererID);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, (void*)data, GL_STATIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_LocalBuffer.Size, (void*)m_LocalBuffer.Data, GL_STATIC_DRAW);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
         void OpenGLIndexBuffer::Bind() const {

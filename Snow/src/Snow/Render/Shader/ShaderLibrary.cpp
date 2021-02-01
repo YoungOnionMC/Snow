@@ -15,16 +15,16 @@ namespace Snow {
 			m_Shaders[name] = shader;
 		}
 
-		void ShaderLibrary::Load(ShaderType type, const std::string& path) {
-			auto shader = Ref<Shader>(Shader::Create(type, path));
+		void ShaderLibrary::Load(std::initializer_list<ShaderModule> shaderModules) {
+			auto shader = Ref<Shader>(Shader::Create(shaderModules));
 			auto& name = shader->GetName();
 			SNOW_ASSERT(m_Shaders.find(name) == m_Shaders.end());
 			m_Shaders[name] = shader;
 		}
 
-		void ShaderLibrary::Load(ShaderType type, const std::string& name, const std::string& path) {
+		void ShaderLibrary::Load(std::initializer_list<ShaderModule> shaderModules, const std::string& name) {
 			SNOW_ASSERT(m_Shaders.find(name) == m_Shaders.end());
-			m_Shaders[name] = Ref<Shader>(Shader::Create(type, path));
+			m_Shaders[name] = Ref<Shader>(Shader::Create(shaderModules));
 		}
 
 		const Ref<Shader>& ShaderLibrary::Get(const std::string& name) const {

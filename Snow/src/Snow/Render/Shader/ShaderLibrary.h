@@ -12,8 +12,8 @@ namespace Snow {
 			~ShaderLibrary();
 
 			void Add(const Ref<Shader>& shader);
-			void Load(ShaderType type, const std::string& path);
-			void Load(ShaderType type, const std::string& name, const std::string& path);
+			void Load(std::initializer_list<ShaderModule> shaderModules);
+			void Load(std::initializer_list<ShaderModule> shaderModules, const std::string& name);
 
 			const Ref<Shader>& Get(const std::string& name) const;
 			std::unordered_map<std::string, Ref<Shader>>& Get() { return m_Shaders; }
