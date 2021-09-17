@@ -1,6 +1,8 @@
 #include "spch.h"
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 
+#include "Snow/Platform/Vulkan/VulkanImage.h"
+
 #if defined(SNOW_WINDOW_GLFW)
 #include <GLFW/glfw3.h>
 #elif defined(SNOW_WINDOW_WIN32)
@@ -11,10 +13,31 @@
 
 namespace Snow {
 
-    VkInstance VulkanContext::s_VulkanInstance = nullptr;
+    static bool s_Validation = true;
+    //VkInstance VulkanContext::s_VulkanInstance = nullptr;
 
     VulkanContext::VulkanContext(const Render::ContextSpecification& spec) :
         m_Specification(spec) {
+    }
+
+  //static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
+    static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData) {
+        (void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix;
+        SNOW_CORE_WARN("VulkanDebugCallback:\n Object Type: {0}\n Message: {1}", objectType, pMessage);
+
+        const auto& imageRefs = VulkanImage2D::GetImageRefs();
+        if (strstr(pMessage, "CoreValidation-DrawState-InvalidImageLayout"))
+            SNOW_CORE_ASSERT(false);
+
+
+        return VK_FALSE;
+    }
+
+    VulkanContext::~VulkanContext() {
+        vkDestroyInstance(s_VulkanInstance, nullptr);
+    }
+
+    void VulkanContext::Create() {
 
         SNOW_CORE_INFO("Creating Vulkan Context");
 #if defined(SNOW_WINDOW_GLFW)
@@ -23,31 +46,11 @@ namespace Snow {
             SNOW_CORE_ERROR("GLFW does not support vulkan");
 #endif
 
-        CreateInstance();
-
-        m_Device = Ref<VulkanDevice>::Create();
-
-        m_SwapChain.Init(s_VulkanInstance, m_Device);
-
-        uint32_t width = 1080, height = 720;
-        m_SwapChain.Create(&width, &height);
-    }
-
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-        SNOW_CORE_ERROR("Vulkan error {0}", pCallbackData->pMessage);
-        return VK_FALSE;
-    }
-
-    VulkanContext::~VulkanContext() {
-        vkDestroyInstance(s_VulkanInstance, nullptr);
-    }
-
-    void VulkanContext::CreateInstance() {
         // Application information 
 
         VkApplicationInfo applicationInfo = {};
         applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        applicationInfo.pApplicationName = "ApplicationName";
+        applicationInfo.pApplicationName = "Glacier";
         applicationInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);
         applicationInfo.pEngineName = "Snow Engine";
         applicationInfo.engineVersion = VK_MAKE_VERSION(0, 0, 2);
@@ -65,6 +68,9 @@ namespace Snow {
         const char** extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
 
         for (uint32_t i = 0; i < extensionCount; i++) {
+            if (strcmp(extensions[i], VK_KHR_SURFACE_EXTENSION_NAME) == 0) {
+                continue;
+            }
             m_InstanceExtensions.push_back(extensions[i]);
             //SNOW_CORE_TRACE("Extensions {0}", extensions[i]);
         }
@@ -95,61 +101,86 @@ namespace Snow {
         m_InstanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
 #endif
 
+        if (s_Validation) {
+            m_InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            m_InstanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+        }
+
         VkInstanceCreateInfo instanceCreateInfo = {};
         instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        instanceCreateInfo.pNext = NULL;
         instanceCreateInfo.pApplicationInfo = &applicationInfo;
+        instanceCreateInfo.enabledExtensionCount = (uint32_t)m_InstanceExtensions.size();
+        instanceCreateInfo.ppEnabledExtensionNames = m_InstanceExtensions.data();
+        
 
-        VkDebugUtilsMessengerCreateInfoEXT debugMessageCreateInfo;
-        if (m_InstanceExtensions.size() > 0) {
-            instanceCreateInfo.enabledExtensionCount = m_InstanceExtensions.size();
-            instanceCreateInfo.ppEnabledExtensionNames = m_InstanceExtensions.data();
-
-            debugMessageCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-            debugMessageCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-            debugMessageCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-            debugMessageCreateInfo.pfnUserCallback = debugCallback;
-            SNOW_CORE_INFO("Using Vulkan debug message callback");
-            instanceCreateInfo.pNext = nullptr;
+        bool debugUtils = false, debugReport = false;
+        for (auto extension : m_InstanceExtensions) {
+            if (extension == VK_EXT_DEBUG_UTILS_EXTENSION_NAME) {
+                debugUtils = true;
+            }
+            if (extension == VK_EXT_DEBUG_REPORT_EXTENSION_NAME) {
+                debugReport = true;
+            }
         }
 
-        uint32_t instanceLayerCount = 0;
-        VKCheckError(vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr));
-        std::vector<VkLayerProperties> availableLayers(instanceLayerCount);
-        VKCheckError(vkEnumerateInstanceLayerProperties(&instanceLayerCount, availableLayers.data()));
+        std::vector<const char*> validationLayers;
+        if (debugUtils && debugReport) {
+            for (auto& validationLayer : m_InstanceLayers) {
+                const char* validationLayerName = validationLayer;
 
-        bool allValidationLayersPresent = true;
-        for (const char* layerName : m_InstanceLayers) {
-            bool layerFound = false;
-            for (const auto& layerProperties : availableLayers) {
-                if (strcmp(layerName, layerProperties.layerName) == 0) {
-                    SNOW_CORE_INFO("Validation Layer {0} found", layerName);
-                    layerFound = true;
-                    break;
+                uint32_t instanceLayerCount = 0;
+                VKCheckError(vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr));
+                std::vector<VkLayerProperties> instanceLayerProperties(instanceLayerCount);
+                VKCheckError(vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayerProperties.data()));
+                bool validationLayerPresent = false;
+                SNOW_CORE_TRACE("Vulkan Instance Layers:");
+                for (const VkLayerProperties& layer : instanceLayerProperties) {
+                    SNOW_CORE_TRACE("   {0}", layer.layerName);
+                    if (strcmp(layer.layerName, validationLayerName) == 0) {
+                        validationLayerPresent = true;
+                        break;
+                    }
+                }
+                if (validationLayerPresent) {
+                    validationLayers.push_back(validationLayerName);
+                }
+                else {
+                    SNOW_CORE_ERROR("Validation layer {0} not present, validation is disabled", validationLayer);
                 }
             }
-            if (!layerFound) {
-                SNOW_CORE_WARN("Validation Layer {0} not found", layerName);
-                allValidationLayersPresent &= false;
-            }
-            else {
-                allValidationLayersPresent &= true;
-            }
-        }
 
-        if (allValidationLayersPresent) {
-            instanceCreateInfo.ppEnabledLayerNames = m_InstanceLayers.data();
-            instanceCreateInfo.enabledLayerCount = m_InstanceLayers.size();
-        }
-        else {
-            SNOW_CORE_WARN("Not all validation layers are present");
-        }
 
+            instanceCreateInfo.enabledLayerCount = validationLayers.size();
+            instanceCreateInfo.ppEnabledLayerNames = validationLayers.data();
+        }
 
         VKCheckError(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
 
+        if (debugUtils && debugReport) {
+            auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkCreateDebugReportCallbackEXT");
+            SNOW_CORE_ASSERT(vkCreateDebugReportCallbackEXT != NULL, "Creation of vulkan debug extension callback failed");
+            VkDebugReportCallbackCreateInfoEXT debugReportCI = {};
+            debugReportCI.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+            debugReportCI.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+            debugReportCI.pfnCallback = VulkanDebugReportCallback;
+            debugReportCI.pUserData = NULL;
+            VKCheckError(vkCreateDebugReportCallbackEXT(s_VulkanInstance, &debugReportCI, nullptr, &m_DebugReportCallback));
+        }
+
+        m_Device = Ref<VulkanDevice>::Create();
+
+        VulkanAllocator::Init(m_Device);
+
     }
 
+    void VulkanContext::BeginFrame() {
+        m_SwapChain.BeginFrame();
+    }
 
+    void VulkanContext::SwapBuffers() {
+        m_SwapChain.SwapBuffers();
+    }
 
 
 }

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Snow/Core/Ref.h"
-#include "Snow/Render/EditorCamera.h"
-#include "Snow/Render/API/Texture.h"
+#include "Snow/Editor/EditorCamera.h"
+#include "Snow/Render/Texture.h"
+#include "Snow/Render/Renderer2D.h"
 
 #include "Snow/Core/Timestep.h"
 #include "Snow/Core/UUID.h"
@@ -14,9 +15,18 @@
 #include <box2d/b2_world.h>
 
 namespace Snow {
+    namespace Render {
+        class SceneRenderer;
+    }
 
     class Entity;
     using EntityMap = std::unordered_map<UUID, Entity>;
+
+    struct Environment {
+        std::string Path;
+        Ref<Render::TextureCube> RadianceMap;
+        Ref<Render::TextureCube> IrradianceMap;
+    };
 
     struct Light {
         glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
@@ -32,6 +42,8 @@ namespace Snow {
         Scene(const std::string& name = "Unnamed Scene");
         ~Scene();
 
+        void Init();
+
         Entity CreateEntity(const std::string& name = std::string());
         Entity CreateEntityWithID(UUID uuid, const std::string& name = std::string(), bool runtimeMap = false);
         void DestroyEntity(Entity entity);
@@ -45,8 +57,8 @@ namespace Snow {
         void OnRuntimeStop();
 
         void OnUpdate(Timestep ts);
-        void OnRenderRuntime(Timestep ts);
-        void OnRenderEditor(Timestep ts, Render::EditorCamera& editorCamera);
+        void OnRenderRuntime(Ref<Render::SceneRenderer> renderer, Timestep ts);
+        void OnRenderEditor(Ref<Render::SceneRenderer> renderer, Timestep ts, Editor::EditorCamera& editorCamera);
 
         void OnViewportResize(uint32_t width, uint32_t height);
 
@@ -75,8 +87,10 @@ namespace Snow {
         Light m_Light;
         float m_LightMultiplier = 0.3f;
 
-        Ref<Render::API::TextureCube> m_EnvMap;
-        Ref<Render::API::Texture2D> m_BRDFLUT;
+        Ref<Render::TextureCube> m_EnvMap;
+        Ref<Render::Texture2D> m_BRDFLUT;
+
+        Ref<Render::Renderer2D> m_SceneRenderer2D;
 
         bool m_IsPlaying;
 

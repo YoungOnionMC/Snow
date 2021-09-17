@@ -5,7 +5,13 @@
 #include "Snow/Scene/Scene.h"
 //#include "Snow/Scene/Components.h"
 
+
 namespace Snow {
+    namespace Script {
+        class ScriptEngine;
+
+    }
+
     class Entity {
     public:
         Entity() = default;
@@ -59,6 +65,6 @@ namespace Snow {
         Scene* m_Scene = nullptr;
 
         friend class Scene;
-        friend class ScriptEngine;
+        friend class Script::ScriptEngine;
     };
 }

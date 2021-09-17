@@ -60,9 +60,9 @@ namespace Snow {
 
         s_ActiveScenes[m_SceneID] = this;
 
-
-        m_EnvMap = Render::API::TextureCube::Create("assets/textures/SunnyTextureCube.png");
-        m_BRDFLUT = Render::API::Texture2D::Create("assets/textures/BRDFLUT.png");
+        Init();
+        //m_EnvMap = Render::API::TextureCube::Create("assets/textures/SunnyTextureCube.png");
+        //m_BRDFLUT = Render::API::Texture2D::Create("assets/textures/BRDFLUT.png");
     }
 
     Scene::~Scene() {
@@ -71,6 +71,10 @@ namespace Snow {
         m_Registry.clear();
         s_ActiveScenes.erase(m_SceneID);
         Script::ScriptEngine::OnSceneDestruct(m_SceneID);
+    }
+
+    void Scene::Init() {
+        m_SceneRenderer2D = Ref<Render::Renderer2D>::Create();
     }
 
     Entity Scene::CreateEntity(const std::string& name) {
@@ -143,7 +147,7 @@ namespace Snow {
                 UUID entityID = m_Registry.get<IDComponent>(entity).ID;
                 Entity e = { entity, this };
                 if (Script::ScriptEngine::ModuleExists(e.GetComponent<ScriptComponent>().ModuleName))
-                    Script::ScriptEngine::OnUpdateEntity(m_SceneID, entityID, ts);
+                    Script::ScriptEngine::OnUpdateEntity(e, ts);
             }
         }
 
@@ -165,9 +169,11 @@ namespace Snow {
                     glm::scale(glm::mat4(1.0f), scale);
             }
         }
+
+        
     }
 
-    void Scene::OnRenderRuntime(Timestep ts) {
+    void Scene::OnRenderRuntime(Ref<Render::SceneRenderer> renderer, Timestep ts) {
         Entity cameraEntity = GetMainCamera();
         SNOW_CORE_ASSERT(cameraEntity.m_Scene);
         if (!cameraEntity || !cameraEntity.m_Scene)
@@ -180,7 +186,9 @@ namespace Snow {
         SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
         camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 
-        Render::SceneRenderer::BeginScene(this, { camera, cameraViewMatrix });
+        renderer->SetScene(this);
+        renderer->BeginScene({ camera, cameraViewMatrix, 0.1f, 1000.0f, 45.0f });
+        //Render::SceneRenderer::BeginScene( { camera, cameraViewMatrix });
         {
             auto group = m_Registry.view<TransformComponent, MeshComponent, BRDFMaterialComponent>();
             for (auto entity : group) {
@@ -188,7 +196,7 @@ namespace Snow {
 
                 if (mesh.Mesh.Raw() != nullptr) {
                     //auto material = group.get<BRDFMaterialComponent>(entity);
-
+                    /*
                     if (material.MaterialInstance) {
                         auto& matInstance = material.MaterialInstance;
                         matInstance->Set("AlbedoColor", material.AlbedoInput.AlbedoColor);
@@ -211,12 +219,12 @@ namespace Snow {
 
                         matInstance->Set("RoughnessTexToggle", material.RoughnessInput.UseTexture ? 1.0f : 0.0f);
                         if (material.RoughnessInput.UseTexture)
-                            matInstance->Set("u_MetalnessTexture", material.RoughnessInput.RoughnessTexture);
+                            matInstance->Set("u_RoughnessTexture", material.RoughnessInput.RoughnessTexture);
 
                         matInstance->Set("u_EnvRadianceTexture", m_EnvMap);
                     }
-
-                    Render::SceneRenderer::SubmitMesh(mesh.Mesh, transform.GetTransform(), material.MaterialInstance);
+                    */
+                    //Render::SceneRenderer::SubmitMesh(mesh.Mesh, transform.GetTransform(), material.MaterialInstance);
                 }
             }
         }
@@ -225,19 +233,21 @@ namespace Snow {
             for (auto entity : group) {
                 auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
-                if (!sprite.Texture)
-                    Render::SceneRenderer::Submit2DQuad(transform.GetTransform(), sprite.Color);
-                else
-                    Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Color);
+                if (!sprite.Texture);
+                    //Render::SceneRenderer::Submit2DQuad(transform.GetTransform(), sprite.Color);
+                //else
+                    //Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Color);
             }
         }
-        Render::SceneRenderer::EndScene();
+        //Render::SceneRenderer::EndScene();
           
-        
+        renderer->EndScene();
     }
 
-    void Scene::OnRenderEditor(Timestep ts, Render::EditorCamera& editorCamera) {
-        Render::SceneRenderer::BeginScene(this, editorCamera);
+    void Scene::OnRenderEditor(Ref<Render::SceneRenderer> renderer, Timestep ts, Editor::EditorCamera& editorCamera) {
+        //Render::SceneRenderer::BeginScene(editorCamera);
+        renderer->SetScene(this);
+        renderer->BeginScene({ editorCamera, editorCamera.GetViewMatrix(), 0.1f, 1000.0f, 45.0f });
         {
             auto group = m_Registry.view<TransformComponent, MeshComponent, BRDFMaterialComponent>();
             for (auto entity : group) {
@@ -245,7 +255,7 @@ namespace Snow {
 
                 if (mesh.Mesh.Raw() != nullptr) {
                     //auto material = group.get<BRDFMaterialComponent>(entity);
-
+                    /*
                     if (material.MaterialInstance) {
                         auto& matInstance = material.MaterialInstance;
                         matInstance->Set("AlbedoColor", material.AlbedoInput.AlbedoColor);
@@ -268,31 +278,38 @@ namespace Snow {
 
                         matInstance->Set("RoughnessTexToggle", material.RoughnessInput.UseTexture ? 1.0f : 0.0f);
                         if (material.RoughnessInput.UseTexture)
-                            matInstance->Set("u_MetalnessTexture", material.RoughnessInput.RoughnessTexture);
+                            matInstance->Set("u_RoughnessTexture", material.RoughnessInput.RoughnessTexture);
 
+                        
                         matInstance->Set("u_EnvRadianceTexture", m_EnvMap);
                         matInstance->Set("u_EnvIrradianceTexture", m_EnvMap);
                         matInstance->Set("u_BRDFLUTTexture", m_BRDFLUT);
+                        
                     }
+                    */
 
-                    Render::SceneRenderer::SubmitMesh(mesh.Mesh, transform.GetTransform(), material.MaterialInstance);
+                    //Render::SceneRenderer::SubmitMesh(mesh.Mesh, transform.GetTransform(), material.MaterialInstance);
                 }
             }
         }
-        
-        auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-        for (auto entity : group) {
-            auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+        renderer->EndScene();
 
-            if (!sprite.Texture)
-                Render::SceneRenderer::Submit2DQuad(transform.GetTransform(), sprite.Color);
-            else
-                Render::Renderer2D::DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Color);
+        if (renderer->GetFinalPassImage()) {
+            m_SceneRenderer2D->BeginScene(editorCamera.GetViewProjectionMatrix(), editorCamera.GetViewMatrix());
+            m_SceneRenderer2D->SetTargetRenderPass(renderer->GetCompositeRenderPass());
+            auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+            for (auto entity : group) {
+                auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+
+                if (!sprite.Texture)
+                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Color);
+                else
+                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Color);
+            }
+
+            m_SceneRenderer2D->EndScene();
         }
-
-        
-
-        Render::SceneRenderer::EndScene();
+        //Render::SceneRenderer::EndScene();
         
         
     }
@@ -308,7 +325,7 @@ namespace Snow {
                 cameraComp.Camera.SetViewportSize(width, height);
         }
 
-        Render::SceneRenderer::OnViewportResize(width, height);
+        //Render::SceneRenderer::OnViewportResize(width, height);
     }
 
     template<typename T>

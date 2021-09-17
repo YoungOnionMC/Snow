@@ -176,13 +176,13 @@ namespace Snow {
                 case Script::FieldType::Int:
                     out << field.GetStoredValue<int>();
                     break;
-                case Script::FieldType::UInt:
+                case Script::FieldType::UnsignedInt:
                     out << field.GetStoredValue<unsigned int>();
                     break;
                 case Script::FieldType::Long:
                     out << field.GetStoredValue<long>();
                     break;
-                case Script::FieldType::ULong:
+                case Script::FieldType::UnsignedLong:
                     out << field.GetStoredValue<unsigned long>();
                     break;
                 case Script::FieldType::Float:
@@ -220,11 +220,12 @@ namespace Snow {
                     for (auto field : storedFields) {
                         std::string name = field["Name"].as<std::string>();
                         Script::FieldType type = (Script::FieldType)field["Type"].as<uint32_t>();
+                        std::string typeName = "";// Script::FieldTypeToString(type);
                         Script::EntityInstanceData& data = Script::ScriptEngine::GetEntityInstanceData(entity.GetSceneUUID(), entity.GetUUID());
                         auto& moduleFieldMap = data.ModuleFieldMap;
                         auto& publicFields = moduleFieldMap[sc.ModuleName];
                         if (publicFields.find(name) == publicFields.end()) {
-                            Script::PublicField f = { name, type };
+                            Script::PublicField f = { name,typeName, type };
                             publicFields.emplace(name, std::move(f));
                         }
                         auto dataNode = field["Data"];
@@ -241,13 +242,13 @@ namespace Snow {
                         case Script::FieldType::Int:
                             publicFields.at(name).SetStoredValue(dataNode.as<int>());
                             break;
-                        case Script::FieldType::UInt:
+                        case Script::FieldType::UnsignedInt:
                             publicFields.at(name).SetStoredValue(dataNode.as<unsigned int>());
                             break;
                         case Script::FieldType::Long:
                             publicFields.at(name).SetStoredValue(dataNode.as<long>());
                             break;
-                        case Script::FieldType::ULong:
+                        case Script::FieldType::UnsignedLong:
                             publicFields.at(name).SetStoredValue(dataNode.as<unsigned long>());
                             break;
                         case Script::FieldType::Float:

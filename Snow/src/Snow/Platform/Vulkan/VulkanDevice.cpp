@@ -172,6 +172,25 @@ namespace Snow {
 		VKCheckError(vkCreateDevice(m_VulkanPhysicalDevice, &deviceCreateInfo, nullptr, &m_VulkanDevice));
 	}
 
+	VkFormat VulkanDevice::FindDepthFormat() const {
+		std::vector<VkFormat> depthFormats {
+			VK_FORMAT_D32_SFLOAT_S8_UINT,
+			VK_FORMAT_D32_SFLOAT,
+			VK_FORMAT_D24_UNORM_S8_UINT,
+			VK_FORMAT_D16_UNORM_S8_UINT,
+			VK_FORMAT_D16_UNORM
+		};
+
+		for (auto& format : depthFormats) {
+			VkFormatProperties formatProperties;
+			vkGetPhysicalDeviceFormatProperties(m_VulkanPhysicalDevice, format, &formatProperties);
+			if (formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				return format;
+			}
+		}
+		return VK_FORMAT_UNDEFINED;
+	}
+
 	VulkanDevice::VulkanDevice() {
 
 		PickPhysicalDevice();
@@ -182,6 +201,8 @@ namespace Snow {
 		m_QueueFamilyIndices = GetQueueFamilyIndices(requestedQueueTypes);
 		CreateQueueInfos(requestedQueueTypes);
 
+		m_DepthFormat = FindDepthFormat();
+		SNOW_CORE_ASSERT(m_DepthFormat);
 
 		CreateLogicalDevice();
 
@@ -191,14 +212,18 @@ namespace Snow {
 		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		VKCheckError(vkCreateCommandPool(m_VulkanDevice, &commandPoolCreateInfo, nullptr, &m_CommandPool));
 
+		commandPoolCreateInfo.queueFamilyIndex = m_QueueFamilyIndices.Compute;
+		VKCheckError(vkCreateCommandPool(m_VulkanDevice, &commandPoolCreateInfo, nullptr, &m_ComputeCommandPool));
+
 		vkGetDeviceQueue(m_VulkanDevice, m_QueueFamilyIndices.Graphics, 0, &m_Queue);
+		vkGetDeviceQueue(m_VulkanDevice, m_QueueFamilyIndices.Compute, 0, &m_ComputeQueue);
 	}
 
-	VkCommandBuffer VulkanDevice::GetCommandBuffer(bool begin) {
+	VkCommandBuffer VulkanDevice::GetCommandBuffer(bool begin, bool compute) {
 		VkCommandBuffer cmdBuffer;
 		VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {};
 		cmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufferAllocateInfo.commandPool = m_CommandPool;
+		cmdBufferAllocateInfo.commandPool = compute ? m_ComputeCommandPool : m_CommandPool;
 		cmdBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		cmdBufferAllocateInfo.commandBufferCount = 1;
 		VKCheckError(vkAllocateCommandBuffers(m_VulkanDevice, &cmdBufferAllocateInfo, &cmdBuffer));
@@ -213,6 +238,10 @@ namespace Snow {
 
 	void VulkanDevice::FlushCommandBuffer(VkCommandBuffer commandBuffer) {
 		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
+
+		SNOW_CORE_ASSERT(commandBuffer != VK_NULL_HANDLE, "Invalid Command Buffer");
+		VKCheckError(vkEndCommandBuffer(commandBuffer));
+
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
@@ -229,5 +258,17 @@ namespace Snow {
 
 		vkDestroyFence(m_VulkanDevice, fence, nullptr);
 		vkFreeCommandBuffers(m_VulkanDevice, m_CommandPool, 1, &commandBuffer);
+	}
+
+	VkCommandBuffer VulkanDevice::CreateSecondaryCommandBuffer() {
+		VkCommandBuffer cmdBuffer;
+
+		VkCommandBufferAllocateInfo cmdBufferAllocateInfo = {};
+		cmdBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		cmdBufferAllocateInfo.commandPool = m_CommandPool;
+		cmdBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+		cmdBufferAllocateInfo.commandBufferCount = 1;
+		VKCheckError(vkAllocateCommandBuffers(m_VulkanDevice, &cmdBufferAllocateInfo, &cmdBuffer));
+		return cmdBuffer;
 	}
 }

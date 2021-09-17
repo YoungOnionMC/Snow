@@ -8,12 +8,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Snow/Render/API/Texture.h"
+#include "Snow/Render/Texture.h"
 
 #include "Snow/Render/Mesh.h"
+#include "Snow/Render/Material.h"
+#include "Snow/Render/MaterialAsset.h"
 
 #include "Snow/Math/Mat4.h"
 #include "Snow/Physics/2D/RigidBody2D.h"
+
+#include "Snow/Script/ScriptModuleField.h"
 
 #include "Snow/Core/UUID.h"
 
@@ -98,7 +102,7 @@ namespace Snow {
     struct SpriteRendererComponent {
         glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-        Ref<Render::API::Texture2D> Texture;
+        Ref<Render::Texture2D> Texture;
 
         SpriteRendererComponent() = default;
         SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -124,30 +128,30 @@ namespace Snow {
     };
 
     struct BRDFMaterialComponent {
-        Ref<Render::MaterialInstance> MaterialInstance;
+        //Ref<Render::MaterialInstance> MaterialInstance;
 
         struct Albedo {
-            Ref<Render::API::Texture2D> AlbedoTexture;
+            Ref<Render::Texture2D> AlbedoTexture;
             glm::vec3 AlbedoColor = { 1.0, 1.0, 1.0 };
             bool UseTexture = false;
         };
         Albedo AlbedoInput;
 
         struct Normal {
-            Ref<Render::API::Texture2D> NormalTexture;
+            Ref<Render::Texture2D> NormalTexture;
             bool UseTexture = false;
         };
         Normal NormalInput;
 
         struct Metalness {
-            Ref<Render::API::Texture2D> MetalnessTexture;
+            Ref<Render::Texture2D> MetalnessTexture;
             float Value = 0.0f;
             bool UseTexture = false;
         };
         Metalness MetalnessInput;
 
         struct Roughness {
-            Ref<Render::API::Texture2D> RoughnessTexture;
+            Ref<Render::Texture2D> RoughnessTexture;
             float Value = 0.2f;
             bool UseTexture = false;
         };
@@ -155,21 +159,23 @@ namespace Snow {
 
         BRDFMaterialComponent() = default;
         BRDFMaterialComponent(const BRDFMaterialComponent& other) = default;
-        BRDFMaterialComponent(const Ref<Render::MaterialInstance>& materialInstance) :
-            MaterialInstance(materialInstance) {}
+        //BRDFMaterialComponent(const Ref<Render::MaterialInstance>& materialInstance) :
+        //    MaterialInstance(materialInstance) {}
     };
 
     struct MeshComponent {
         Ref<Render::Mesh> Mesh;
+        Ref<MaterialTable> MaterialTable;
 
         MeshComponent() = default;
         MeshComponent(const std::string& filePath) {
-            Mesh = Ref<Render::Mesh>::Create(filePath);
+            Mesh = Ref<Render::Mesh>::Create(Ref<Render::MeshAsset>::Create(filePath));
         }
     };
 
     struct ScriptComponent {
         std::string ModuleName;
+        Script::ScriptModuleFieldMap ModuleFieldMap;
 
         ScriptComponent() = default;
         ScriptComponent(const ScriptComponent& other) = default;

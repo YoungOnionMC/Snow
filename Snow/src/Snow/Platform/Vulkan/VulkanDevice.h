@@ -16,15 +16,23 @@ namespace Snow {
 		bool IsExtensionSupported(const std::string& extensionName) const;
 
 		uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags props) const;
-		VkQueue GetQueue() { return m_Queue; }
+		VkQueue GetGraphicsQueue() { return m_Queue; }
 
-		VkCommandBuffer GetCommandBuffer(bool begin);
+		VkCommandBuffer GetCommandBuffer(bool begin, bool compute = false);
 		void FlushCommandBuffer(VkCommandBuffer commandBuffer);
+
+		VkCommandBuffer CreateSecondaryCommandBuffer();
 
 		VkPhysicalDevice GetPhysicalDevice() { return m_VulkanPhysicalDevice; }
 		VkDevice GetVulkanDevice() { return m_VulkanDevice; }
 
 		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
+
+		const VkPhysicalDeviceProperties& GetProperties() const { return m_VulkanPhysicalDeviceProperties; }
+
+		VkFormat FindDepthFormat() const;
+
+		VkFormat GetDepthFormat() const { return m_DepthFormat; }
 
 	private:
 		void PickPhysicalDevice();
@@ -53,10 +61,12 @@ namespace Snow {
 		std::unordered_set<std::string> m_ExtensionProperties;
 		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
 
+		VkFormat m_DepthFormat = VK_FORMAT_UNDEFINED;
+
 		QueueFamilyIndices m_QueueFamilyIndices;
 
-		VkQueue m_Queue;
-		VkCommandPool m_CommandPool;
+		VkQueue m_Queue, m_ComputeQueue;
+		VkCommandPool m_CommandPool, m_ComputeCommandPool;
 
 		VkDevice m_VulkanDevice;
 	};
