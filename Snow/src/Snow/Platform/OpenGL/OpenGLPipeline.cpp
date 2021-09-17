@@ -36,6 +36,8 @@ namespace Snow {
         }
 
         void OpenGLPipeline::Bind() const {
+
+            glBindVertexArray(m_PipelineVertexArrayHandle);
             
             uint32_t attribIndex = 0;
             for(const auto& element : m_Specification.Layout) {

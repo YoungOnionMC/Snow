@@ -3,6 +3,8 @@
 
 #include <glad/glad.h>
 
+#include "Snow/Platform/OpenGL/OpenGLCommon.h"
+
 #if defined(SNOW_WINDOW_WIN32)
     #include <glad/glad_wgl.h>
 #elif defined(SNOW_WINDOW_GLFW)
@@ -72,6 +74,8 @@ namespace Snow {
             SNOW_CORE_TRACE("BRUH1");
 #endif
 
+            FindExtensions();
+
             SNOW_CORE_INFO("OpenGL Information:");
             SNOW_CORE_INFO("    Vendor: {0}", glGetString(GL_VENDOR));
             SNOW_CORE_INFO("    Renderer: {0}", glGetString(GL_RENDERER));
@@ -81,7 +85,17 @@ namespace Snow {
             GLenum error = glGetError();
 
             SwapChainSpecification swapchainSpec = {};
-            m_OpenGLSwapChain = static_cast<OpenGLSwapChain*>(SwapChain::Create(swapchainSpec));
+            m_OpenGLSwapChain = static_cast<OpenGLSwapChain*>(SwapChain::CreateSwapChain(swapchainSpec));
+        }
+
+        void OpenGLContext::FindExtensions() {
+            if (GLAD_GL_ARB_compute_shader) {
+                SNOW_CORE_TRACE("Supports Compute shaders");
+                GLint64 computeMemorySize;
+                glGetInteger64v(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &computeMemorySize);
+
+                SNOW_CORE_TRACE("Max compute shader size : {0}", computeMemorySize);
+            }
         }
     }
 }

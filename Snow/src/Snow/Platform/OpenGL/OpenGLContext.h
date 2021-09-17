@@ -14,6 +14,8 @@ namespace Snow {
 
             OpenGLSwapChain& GetSwapChain() { return *m_OpenGLSwapChain; }
         private:
+            void FindExtensions();
+
             ContextSpecification m_Specification;
 
             OpenGLSwapChain* m_OpenGLSwapChain;

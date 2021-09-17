@@ -1,11 +1,11 @@
 #pragma once
-#include "Snow/Render/API/Buffer.h"
+#include "Snow/Render/Buffer.h"
 
 #include "Snow/Core/Buffer.h"
 
 namespace Snow {
     namespace Render {
-        class OpenGLVertexBuffer : public API::VertexBuffer {
+        class OpenGLVertexBuffer : public VertexBuffer {
         public:
             OpenGLVertexBuffer(void* data, uint32_t size);
 
@@ -21,7 +21,7 @@ namespace Snow {
             uint32_t m_Size;
         };
 
-        class OpenGLIndexBuffer : public API::IndexBuffer {
+        class OpenGLIndexBuffer : public IndexBuffer {
         public:
             OpenGLIndexBuffer(void* data, uint32_t size);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Snow/Render/API/Framebuffer.h"
+#include "Snow/Render/Framebuffer.h"
 
 namespace Snow {
 	class OpenGLFramebuffer : public Render::Framebuffer {

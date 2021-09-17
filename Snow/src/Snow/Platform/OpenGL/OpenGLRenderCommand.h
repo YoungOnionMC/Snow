@@ -21,6 +21,9 @@ namespace Snow {
             void SetBlending(bool blend) override;
             void SetDepthTesting(bool depthTest) override;
 
+            void SetImagePacking(uint32_t size) override;
+            void DispatchComputeShader(Ref<Shader>& computeShader, uint32_t xGroup, uint32_t yGroup, uint32_t zGroup) override;
+
             //void ClearColorAttachment(const glm::vec4& color) override;
 
             void SetViewport(uint32_t width, uint32_t height) override;

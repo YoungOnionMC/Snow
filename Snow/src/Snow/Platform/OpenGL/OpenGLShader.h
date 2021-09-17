@@ -1,13 +1,15 @@
 #pragma once
 
-#include "Snow/Render/Shader/Shader.h"
-#include "Snow/Render/Shader/ShaderUniform.h"
+#include "Snow/Render/Shader.h"
+#include "Snow/Render/ShaderUniform.h"
 
 #include <glad/glad.h>
 
 #include <shaderc/shaderc.hpp>
 
 #include <glm/glm.hpp>
+
+#include <tuple>
 
 namespace Snow {
     namespace Render {
@@ -19,17 +21,38 @@ namespace Snow {
             void Reload() override;
 
             virtual const ShaderUniformBuffer& GetUniformBuffer(const std::string& name) const override;
-            virtual const std::unordered_map<std::string, ShaderResource>& GetResources() const override { return m_Resources; }
+            
 
             virtual void SetUniformBufferData(const std::string& uniformBufferName, void* data, uint32_t size) override;
             virtual void SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) override;
 
-            uint32_t GetShaderID() const { return m_RendererID; }
+            const uint32_t GetModuleCount() const { return m_ShaderModules.size(); }
 
-            //const ShaderType GetType() const override { return m_Type; }
+            uint32_t GetShaderID(uint32_t index) const { return m_ShaderIDs[index]; }
+
+            const std::vector<ShaderType>& GetTypes() const { return m_ShaderTypes; }
 
             const std::string& GetPath() const override { return m_Paths[0]; }
             const std::string& GetName() const override { return m_Name; }
+
+            void SetUniform(const std::string& name, int value) override;
+            void SetUniform(const std::string& name, uint32_t value);
+            void SetUniform(const std::string& name, float value) override;
+            void SetUniform(const std::string& name, const glm::vec2& value);
+            void SetUniform(const std::string& name, const glm::vec3& value);
+            void SetUniform(const std::string& name, const glm::vec4& value);
+
+            void SetUniformIntArray(const std::string& name, int* values, uint32_t size);
+
+            void UploadUniformInt(uint32_t location, int32_t value);
+            void UploadUniformIntArray(uint32_t location, int32_t* values, uint32_t count);
+            void UploadUniformFloat(uint32_t location, float value);
+            void UploadUniformFloat2(uint32_t location, const glm::vec2& value);
+            void UploadUniformFloat3(uint32_t location, const glm::vec3& value);
+            void UploadUniformFloat4(uint32_t location, const glm::vec4& value);
+
+            virtual const std::unordered_map<std::string, Render::ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
+            virtual const std::unordered_map<std::string, ShaderResource>& GetResources() const override { return m_Resources; }
 
             //const std::vector<uint32_t>& GetSPIRVBinaryData() const { return m_SPIRVBinaryData; }
             //const std::vector<uint32_t>& GetGLSLBinaryData() const { return m_GLSLBinaryData; }
@@ -45,38 +68,19 @@ namespace Snow {
 
             void LinkShaders();
 
-            void SPIRVReflection();
+            void SPIRVReflection(std::vector<uint32_t>& data, ShaderType type);
             void OpenGLReflection();
             void GLSLReflect();
 
             GLenum GetShaderType(ShaderType type);
-            ShaderType ShaderTypeFromString(const std::string& type);
-            std::string ShaderTypeToString(ShaderType type);
 
             void Load();
-            void PreProcess(const std::string& source);
+            using ShaderModulePair = std::pair<std::vector<std::string>, std::vector<ShaderType>>;
+            ShaderModulePair PreProcess(const std::string& source);
 
             std::string ReadShaderFromFile(const std::string& path);
 
             uint32_t GetUniformLocation(const std::string& name);
-
-            void SetUniform(const std::string& name, int value);
-            void SetUniform(const std::string& name, uint32_t value);
-            void SetUniform(const std::string& name, float value);
-            void SetUniform(const std::string& name, const glm::vec2& value);
-            void SetUniform(const std::string& name, const glm::vec3& value);
-            void SetUniform(const std::string& name, const glm::vec4& value);
-
-            void SetUniformIntArray(const std::string& name, int* values, uint32_t size);
-
-            void UploadUniformInt(uint32_t location, int32_t value);
-            void UploadUniformIntArray(uint32_t location, int32_t* values, uint32_t count);
-            void UploadUniformFloat(uint32_t location, float value);
-            void UploadUniformFloat2(uint32_t location, const glm::vec2& value);
-            void UploadUniformFloat3(uint32_t location, const glm::vec3& value);
-            void UploadUniformFloat4(uint32_t location, const glm::vec4& value);
-
-            
 
             std::vector<ShaderModule> m_ShaderModules;
             std::string m_Name;
@@ -87,7 +91,7 @@ namespace Snow {
             uint32_t m_RendererID = 0;
             std::vector<uint32_t> m_ShaderIDs;
 
-            bool m_Reloaded = false;
+            bool m_Reload = false;
 
             std::vector<std::vector<uint32_t>> m_SPIRVBinaryData; // vector of uint32_t is the spirv module, vector of modules
             std::vector<std::vector<uint32_t>> m_GLSLBinaryData; // vector of uint32_t is the glsl module, vector of those
