@@ -111,6 +111,26 @@ namespace Snow {
 		}
 #endif
 
+		void Input::SetCursorMode(CursorMode mode) {
+#if defined(SNOW_WINDOW_WIN32)
+			
+#elif defined(SNOW_WINDOW_GLFW)
+
+			auto win = static_cast<GLFWwindow*>(Application::Get().GetWindow()->GetWindowHandle());
+			glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL + (int)mode);
+#endif
+		}
+
+		CursorMode Input::GetCursorMode() {
+#if defined(SNOW_WINDOW_WIN32)
+
+#elif defined(SNOW_WINDOW_GLFW)
+
+			auto win = static_cast<GLFWwindow*>(Application::Get().GetWindow()->GetWindowHandle());
+			return (CursorMode)(glfwGetInputMode(win, GLFW_CURSOR) - GLFW_CURSOR_NORMAL);
+#endif
+		}
+
 		bool Input::PlatformInit() {
 
 #if defined(SNOW_WINDOW_WIN32)
@@ -123,6 +143,7 @@ namespace Snow {
 			glfwSetMouseButtonCallback(win, MouseButtonCallback);
 			glfwSetCursorPosCallback(win, MouseMoveCallback);
 			glfwSetScrollCallback(win, MouseScrollCallback);
+			
 #endif
 			return true;
 		}

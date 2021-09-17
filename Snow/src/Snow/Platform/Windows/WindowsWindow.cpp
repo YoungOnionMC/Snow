@@ -109,6 +109,7 @@ namespace Snow {
         }
 #endif
 
+        void* WindowHandle;
         
 
         bool Window::PlatformInit() {
@@ -152,17 +153,22 @@ namespace Snow {
 
             ShowWindow(Win32WindowHandle, SW_SHOW);
             SetFocus(Win32WindowHandle);
+
+            WindowHandle = Win32WindowHandle;
 #elif defined(SNOW_WINDOW_GLFW)
             GLFWResult = glfwInit();
-            if (!GLFWResult)
+            if (!GLFWResult) {
                 SNOW_CORE_ERROR("GLFW initilization failed");
+                return false;
+            }
             else {
                 SNOW_CORE_INFO("GLFW initialized");
             }
 
-            if (Render::Renderer::GetRenderAPI() != Render::RenderAPIType::OpenGL)
+            if (Render::RendererAPI::Current() != Render::RendererAPIType::OpenGL)
                 glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             GLFWWindowHandle = glfwCreateWindow(WindowWidth, WindowHeight, "Test Window", nullptr, nullptr);
+            
             SNOW_CORE_INFO("Using GLFW window");
 
             glfwSetWindowCloseCallback(GLFWWindowHandle, WindowCloseCallback);
@@ -171,7 +177,27 @@ namespace Snow {
             glfwSetWindowMaximizeCallback(GLFWWindowHandle, WindowMaximizedCallback);
             glfwSetWindowPosCallback(GLFWWindowHandle, WindowMovedCallback);
             glfwSetWindowFocusCallback(GLFWWindowHandle, WindowFocusCallback);
+
+            WindowHandle = GLFWWindowHandle;
 #endif
+            Render::ContextSpecification contextSpec = { WindowHandle };
+            m_RendererContext = Render::Context::Create(contextSpec);
+            m_RendererContext->Create();
+            //m_RendererContext->Init();
+
+            /*
+            m_SwapChain.Init(s_VulkanInstance, m_Device);
+            m_SwapChain.InitSurface();
+            uint32_t width = 1080, height = 720;
+            m_SwapChain.Create(&width, &height);
+            */
+            m_SwapChain = Render::SwapChain::CreateSwapChain({});
+            m_SwapChain->Init();
+            m_SwapChain->InitSurface(WindowHandle);
+
+            Render::SwapChainSpecification swapChainSpecs = { WindowWidth, WindowHeight, false };
+            m_SwapChain->Create(swapChainSpecs);
+
             return true;
         }
 
@@ -186,7 +212,7 @@ namespace Snow {
             return true;
         }
 
-        void Window::PlatformUpdate() {
+        void Window::ProcessEventsInternal() {
 #if defined(SNOW_WINDOW_WIN32)
             MSG message;
             while (PeekMessage(&message, NULL, NULL, NULL, PM_REMOVE) > 0) {
@@ -202,7 +228,11 @@ namespace Snow {
             glfwPollEvents();
 #endif
 
-            Render::RenderCommand::SwapBuffers();
+            
+        }
+
+        void Window::SwapBuffersInternal() {
+            m_SwapChain->SwapBuffers();
         }
 
         void* Window::GetWindowHandle() {
@@ -232,6 +262,14 @@ namespace Snow {
 
         uint32_t Window::GetHeight() {
             return WindowHeight;
+        }
+
+        Ref<Render::Context> Window::GetRenderContext() {
+            return m_RendererContext;
+        }
+
+        Ref<Render::SwapChain> Window::GetSwapChain() {
+            return m_SwapChain;
         }
 
 #if defined(SNOW_WINDOW_WIN32)
