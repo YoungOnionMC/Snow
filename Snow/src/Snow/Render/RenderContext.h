@@ -3,24 +3,23 @@
 namespace Snow {
     namespace Render {
 
-        enum class RenderAPIType {
-            None = 0,
-            OpenGL, DirectX, Vulkan
-        };
 
         struct ContextSpecification {
-            static RenderAPIType s_RenderAPIType;
             void* WindowHandle;
         };
 
-        class Context {
+        class Context : public RefCounted {
         public:
 
             ~Context() = default;
 
+            virtual void Create() = 0;
+            virtual void BeginFrame() = 0;
+            virtual void SwapBuffers() = 0;
+
             virtual const ContextSpecification& GetSpecification() const = 0;
 
-            static Context* Create(const ContextSpecification& spec);
+            static Ref<Context> Create(const ContextSpecification& spec);
         private:
             static bool s_Created;
         };

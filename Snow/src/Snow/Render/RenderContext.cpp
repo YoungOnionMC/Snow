@@ -2,29 +2,30 @@
 
 #include "Snow/Render/RenderContext.h"
 
+#include "Snow/Render/RendererAPI.h"
+
 #include "Snow/Platform/OpenGL/OpenGLContext.h"
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 
 #if defined SNOW_PLATFORM_WINDOWS
-    #include "Snow/Platform/DirectX11/DirectXContext.h"
+    //#include "Snow/Platform/DirectX11/DirectXContext.h"
 #endif
 
 namespace Snow {
     namespace Render {
-        RenderAPIType ContextSpecification::s_RenderAPIType = RenderAPIType::None;
         bool Context::s_Created = false;
 
-        Context* Context::Create(const ContextSpecification& spec) {
+        Ref<Context> Context::Create(const ContextSpecification& spec) {
             if(s_Created) {
                 SNOW_CORE_ERROR("Graphics Context already created");
             }
 
-            switch(spec.s_RenderAPIType) {
-            case RenderAPIType::None:   return nullptr;
-            case RenderAPIType::OpenGL: return new OpenGLContext(spec);
-            case RenderAPIType::Vulkan: return new VulkanContext(spec);
+            switch(RendererAPI::Current()) {
+            case RendererAPIType::None:   return nullptr;
+            //case RenderAPIType::OpenGL: return new OpenGLContext(spec);
+            case RendererAPIType::Vulkan: return Ref<VulkanContext>::Create(spec);
 #ifdef SNOW_PLATFORM_WINDOWS
-            case RenderAPIType::DirectX:    return new DirectX11RenderContext(spec);
+            //case RenderAPIType::DirectX:    return new DirectX11RenderContext(spec);
 #endif
             }
             s_Created = true;

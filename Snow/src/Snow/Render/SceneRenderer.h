@@ -6,36 +6,100 @@
 
 #include "Snow/Scene/SceneCamera.h"
 
+#include "Snow/Render/ComputePipeline.h"
+#include "Snow/Render/RenderPass.h"
+#include "Snow/Render/RenderCommandBuffer.h"
+#include "Snow/Render/StorageBufferSet.h"
+#include "Snow/Render/UniformBufferSet.h"
+
 namespace Snow {
 	namespace Render {
 		struct SceneRendererCamera {
 			Camera Camera;
 			glm::mat4 ViewMatrix;
+			float Near, Far;
+			float FOV;
 		};
 
-		class SceneRenderer {
+		struct SceneRendererSpecification {
+			bool SwapChainTarget = false;
+		};
+
+		class SceneRenderer : public RefCounted {
 		public:
-			static void Init();
+			SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification = SceneRendererSpecification());
 
-			static void OnViewportResize(uint32_t width, uint32_t height);
+			void Init();
 
-			static void BeginScene(const Ref<Scene> scene, const SceneRendererCamera& camera);
-			static void BeginScene(const Ref<Scene> scene, const EditorCamera& camera);
-			static void EndScene();
+			void SetScene(Ref<Scene> scene);
 
-			static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), const Ref<MaterialInstance> overrideMaterial = nullptr);
-			static void Submit2DQuad(const glm::mat4& transform, const glm::vec4& color);
+			void OnViewportResize(uint32_t width, uint32_t height);
 
-			static void* GetFinalColorAttachment();
-			static void OnImGuiRender();
+			void BeginScene(const SceneRendererCamera& camera);
+			void BeginScene(const Editor::EditorCamera& camera);
+			void EndScene();
+
+			void SubmitMesh(Ref<Mesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform = glm::mat4(1.0f), Ref<Material> overrideMaterial = nullptr);//, const Ref<MaterialInstance> overrideMaterial = nullptr);
+			void Submit2DQuad(const glm::mat4& transform, const glm::vec4& color);
+
+			static std::pair<Ref<TextureCube>, Ref<TextureCube>> CreateEnvironmentMap(const std::string& filepath);
+
+			Ref<Image2D> GetFinalPassImage();
+
+			Ref<RenderPass> GetCompositeRenderPass() { return m_CompositePipeline->GetSpecification().BindedRenderPass; }
+
+			void OnImGuiRender();
 		private:
-			static void FlushDrawList();
+			void FlushDrawList();
 
-			static void GeometryPass();
-			static void CompositePass();
+			void ClearPass();
+			void GeometryPass();
 
 
-			
+			void CompositePass();
+
+
+			Ref<Scene> m_Scene;
+			SceneRendererSpecification m_Specification;
+			Ref<RenderCommandBuffer> m_CommandBuffer;
+
+			Ref<UniformBufferSet> m_UniformBufferSet;
+			Ref<StorageBufferSet> m_StorageBufferSet;
+
+			struct SceneInfo {
+				SceneRendererCamera SceneCamera;
+			} m_SceneData;
+
+			struct UBCamera {
+				glm::mat4 ViewProjection;
+				glm::mat4 InvViewProjection;
+				glm::mat4 View;
+				glm::mat4 Projection;
+			} CameraDataUB;
+
+			struct DrawCommand {
+				Ref<Mesh> Mesh;
+				Ref<MaterialTable> MaterialTable;
+				glm::mat4 Transform;
+				Ref<Material> OverrideMaterial;
+			};
+			std::vector<DrawCommand> m_DrawList;
+
+
+			Ref<Shader> m_CompositeShader;
+			Ref<Material> m_CompositeMaterial;
+
+			Ref<Shader> m_GridShader;
+			Ref<Material> m_GridMaterial;
+
+			Ref<RenderPass> m_ExternalCompositeRenderPass;
+
+			Ref<Pipeline> m_GridPipeline;
+
+			Ref<Pipeline> m_GeometryPipeline;
+			Ref<Pipeline> m_CompositePipeline;
+
+			bool m_ResourcesCreated = false;
 		};
 	}
 }

@@ -9,7 +9,7 @@ namespace Snow {
 	namespace Render {
 		class Renderer3D {
 		public:
-			static void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<MaterialInstance>& materialInstance);
+			static void DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform);// , Ref<MaterialInstance>& materialInstance);
 		};
 	}
 }

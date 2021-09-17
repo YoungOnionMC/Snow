@@ -4,8 +4,9 @@
 #include "Snow/Render/Renderer.h"
 
 #include "Snow/Platform/OpenGL/OpenGLRenderCommand.h"
+//#include "Snow/Platform/Vulkan/VulkanRenderCommand.h"
 
-#include "Snow/Platform/DirectX11/DirectXRenderCommand.h"
+//#include "Snow/Platform/DirectX11/DirectXRenderCommand.h"
 
 namespace Snow {
     namespace Render {
@@ -15,7 +16,8 @@ namespace Snow {
             switch (Renderer::GetRenderAPI()) {
             case RenderAPIType::None:   return nullptr;
             case RenderAPIType::OpenGL: return Core::CreateScope<OpenGLRenderCommand>();
-            case RenderAPIType::DirectX:    return Core::CreateScope<DirectX11RenderCommand>();
+            //case RenderAPIType::Vulkan: return Core::CreateScope<VulkanRenderCommand>();
+            //case RenderAPIType::DirectX:    return Core::CreateScope<DirectX11RenderCommand>();
             }
         }
     }

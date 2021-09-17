@@ -4,77 +4,109 @@
 #include "Snow/Render/Renderer.h"
 #include "Snow/Core/Application.h"
 
-#include "Snow/Render/Renderer2D.h"
+#include "Snow/Render/RendererAPI.h"
 #include "Snow/Render/SceneRenderer.h"
+#include "Snow/Render/Renderer2D.h"
+#include "Snow/Render/TextRenderer.h"
 
-#include "Snow/Render/Shader/ShaderLibrary.h"
+#include "Snow/Render/ShaderLibrary.h"
+
+#include "Snow/Platform/Vulkan/VulkanRenderer.h"
 
 namespace Snow {
     namespace Render {
 
         
 
-        RenderAPIType Renderer::s_RenderAPI = RenderAPIType::None;
+        static RendererAPI* s_RendererAPI = nullptr;
+
+        void RendererAPI::SetAPI(RendererAPIType api) {
+            s_CurrentRendererAPI = api;
+        }
 
         struct RendererData {
-            Ref<RenderPass> m_ActiveRenderPass;
-
             Ref<ShaderLibrary> m_ShaderLibrary;
+            Ref<FontManager> m_FontManager;
 
-            Ref<API::VertexBuffer> FullscreenQuadVertexBuffer;
-            Ref<API::IndexBuffer> FullscreenQuadIndexBuffer;
-            Ref<Pipeline> FullscreenQuadPipeline;
-            Ref<Shader> FullscreenShader;
+            Ref<Texture2D> WhiteTexture;
+            Ref<Texture2D> BlackTexture;
+            Ref<Texture2D> BRDFLutTexture;
+            Ref<TextureCube> BlackCubeTexture;
         };
 
         static RendererData s_Data;
 
-        Renderer* Renderer::s_Instance = nullptr;
-        Context* Renderer::s_Context = nullptr;
+        static RenderCommandQueue* s_CommandQueue = nullptr;
+        static std::vector<RenderCommandQueue> s_ResourceFreeQueue;
 
-        static void CreateFullscreenData() {
-            float x = -1;
-            float y = -1;
-            float width = 2, height = 2;
-            struct QuadVertex {
-                glm::vec3 Position;
-                glm::vec2 TexCoord;
-            };
+        static std::unordered_map<size_t, Ref<Pipeline>> s_PipelineCache;
 
-            QuadVertex* data = new QuadVertex[4];
+        struct ShaderDependencies {
+            std::vector<Ref<ComputePipeline>> ComputePipelines;
+            std::vector<Ref<Pipeline>> Pipelines;
+            std::vector<Ref<Material>> Materials;
+        };
 
-            data[0].Position = glm::vec3(x, y, 0.1f);
-            data[0].TexCoord = glm::vec2(0, 0);
+        static std::unordered_map<size_t, ShaderDependencies> s_ShaderDependencies;
 
-            data[1].Position = glm::vec3(x + width, y, 0.1f);
-            data[1].TexCoord = glm::vec2(1, 0);
+        void Renderer::RegisterShaderDependency(Ref<Shader> shader, Ref<ComputePipeline> computePipeline) {
+            s_ShaderDependencies[shader->GetHash()].ComputePipelines.push_back(computePipeline);
+        }
 
-            data[2].Position = glm::vec3(x + width, y + height, 0.1f);
-            data[2].TexCoord = glm::vec2(1, 1);
+        void Renderer::RegisterShaderDependency(Ref<Shader> shader, Ref<Pipeline> pipeline) {
+            s_ShaderDependencies[shader->GetHash()].Pipelines.push_back(pipeline);
+        }
 
-            data[3].Position = glm::vec3(x, y + height, 0.1f);
-            data[3].TexCoord = glm::vec2(0, 1);
+        void Renderer::RegisterShaderDependency(Ref<Shader> shader, Ref<Material> material) {
+            s_ShaderDependencies[shader->GetHash()].Materials.push_back(material);
+        }
 
-            s_Data.FullscreenQuadVertexBuffer = API::VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-            uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-            s_Data.FullscreenQuadIndexBuffer = API::IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+        void Renderer::OnShaderReloaded(size_t hash) {
+            if (s_ShaderDependencies.find(hash) != s_ShaderDependencies.end()) {
+                auto& dependencies = s_ShaderDependencies.at(hash);
+                for (auto& pipeline : dependencies.Pipelines) {
+                    pipeline->Invalidate();
+                }
+                for (auto& pipeline : dependencies.ComputePipelines) {
+                    //pipeline->Invalidate();
+                }
+                for (auto& material : dependencies.Materials) {
+                    material->Invalidate();
+                }
+            }
+        }
 
-
-            
+        static RendererAPI* InitRendererAPI() {
+            switch (RendererAPI::Current()) {
+                case RendererAPIType::Vulkan: return new VulkanRenderer();
+            }
+            SNOW_CORE_ASSERT(false, "unknown rendererAPI");
+            return nullptr;
         }
 
         void Renderer::Init() {
             SNOW_CORE_INFO("Initializing Renderer");
-            ContextSpecification contextSpec;
-            contextSpec.s_RenderAPIType = GetRenderAPI();
-            contextSpec.WindowHandle = Core::Application::Get().GetWindow()->GetWindowHandle();
+            s_CommandQueue = new RenderCommandQueue();
 
-            
-            s_Context = Context::Create(contextSpec);
+            s_ResourceFreeQueue.resize(GetConfig().FramesInFlight);
+            for (auto& queue : s_ResourceFreeQueue)
+                queue = RenderCommandQueue();
+
+            s_RendererAPI = InitRendererAPI();
+
 
             s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
 
-            if (s_RenderAPI == RenderAPIType::OpenGL) {
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/SceneComposite.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Texture2D.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Grid.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/PBR.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Renderer2D-Quad.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Renderer2D-Circle.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Renderer2D-Line.glsl" } });
+
+            /*
+            if (s_RendererAPI->Current() == RendererAPIType::OpenGL || s_RendererAPI->Current() == RendererAPIType::Vulkan) {
                 Renderer::GetShaderLibrary()->Load({
                     { ShaderType::Vertex, "assets/shaders/glsl/QuadBatchRender.vert.glsl" },
                     { ShaderType::Pixel, "assets/shaders/glsl/QuadBatchRender.frag.glsl" } });
@@ -90,8 +122,11 @@ namespace Snow {
                 Renderer::GetShaderLibrary()->Load({
                     { ShaderType::Vertex, "assets/shaders/glsl/PBR.vert.glsl" },
                     { ShaderType::Pixel, "assets/shaders/glsl/PBR.frag.glsl" } });
+
+                //Renderer::GetShaderLibrary()->Load({
+                //    { ShaderType::None, "assets/shaders/glsl/PBR.glsl" } });
             }
-            else if (s_RenderAPI == RenderAPIType::DirectX) {
+            else if (s_RendererAPI->Current() == RendererAPIType::OpenGL) {
                 //Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/QuadBatchRenderVert.hlsl");
                 //Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/QuadBatchRenderFrag.hlsl");
                 //Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/SceneCompositeVert.hlsl");
@@ -99,61 +134,119 @@ namespace Snow {
                 //Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/LineBatchRenderVert.hlsl");
                 //Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/LineBatchRenderFrag.hlsl");
             }
+            */
+
+            // Compile Shaders
+            Renderer::WaitAndRender();
+
+            uint32_t whiteTextureData = 0xffffffff;
+            s_Data.WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
+
+            uint32_t blackTextureData = 0xff000000;
+            s_Data.BlackTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &blackTextureData);
+
+            {
+                TextureProperties props;
+                props.SamplerWrap = TextureWrap::Clamp;
+                s_Data.BRDFLutTexture = Texture2D::Create("assets/textures/BRDF_LUT.tga", props);
+            }
+
+
+            s_RendererAPI->Init();
+
+            Renderer::WaitAndRender();
+            //Renderer2D::Init();
             /*
             Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/PBRVert.hlsl");
             Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/PBRFrag.hlsl");
             */
-            RenderCommand::Init();
+            //RenderCommand::Init();
 
-            Renderer2D::Init();
-            SceneRenderer::Init();
+            //
+            //SceneRenderer::Init();
 
-            CreateFullscreenData();
-            PipelineSpecification fullscreenPipelineSpec;
-            fullscreenPipelineSpec.Type = PrimitiveType::Triangle;
-            fullscreenPipelineSpec.Layout = {
-                {AttribType::Float3, "a_Position"},
-                {AttribType::Float2, "a_TexCoord"}
-            };
-            //fullscreenPipelineSpec.Shader = { GetShaderLibrary()->Get("SceneComposite"), GetShaderLibrary()->Get("SceneCompositeFrag") };
-            s_Data.FullscreenShader = GetShaderLibrary()->Get("SceneComposite");
-
-            s_Data.FullscreenQuadPipeline = Pipeline::Create(fullscreenPipelineSpec);
+            //TextRenderer::Init();
+            //Renderer::GetFontManager()->Load("assets/fonts/comic.ttf");
         }
 
         Ref<ShaderLibrary> Renderer::GetShaderLibrary() {
             return s_Data.m_ShaderLibrary;
         }
 
-        void Renderer::BeginRenderPass(Ref<RenderPass> renderPass, bool clear) {
-            s_Data.m_ActiveRenderPass = renderPass;
-
-            renderPass->GetSpecification().TargetFramebuffer->Bind();
-            renderPass->BeginPass();
+        Ref<FontManager> Renderer::GetFontManager() {
+            return s_Data.m_FontManager;
         }
 
-        void Renderer::EndRenderPass() {
-            if (!s_Data.m_ActiveRenderPass) SNOW_CORE_ERROR("No active render pass!");
-            s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-            s_Data.m_ActiveRenderPass->EndPass();
-            s_Data.m_ActiveRenderPass = nullptr;
+        void Renderer::WaitAndRender() {
+            s_CommandQueue->Execute();
         }
 
-        void Renderer::SubmitFullscreenQuad(Ref<MaterialInstance> material) {
+        void Renderer::BeginFrame() {
+            s_RendererAPI->BeginFrame();
+        }
 
-            if (material) {
-                material->Bind();
-            }
+        void Renderer::EndFrame() {
+            s_RendererAPI->EndFrame();
+        }
 
-            s_Data.FullscreenQuadVertexBuffer->Bind();
-            s_Data.FullscreenShader->Bind();
-            s_Data.FullscreenQuadPipeline->Bind();
-            s_Data.FullscreenQuadIndexBuffer->Bind();
+        void Renderer::BeginRenderPass(Ref<RenderCommandBuffer> commandBuffer, Ref<RenderPass> renderPass, bool clear) {
+            s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, clear);
+        }
 
-            RenderCommand::DrawIndexed(6, s_Data.FullscreenQuadPipeline->GetSpecification().Type);
+        void Renderer::EndRenderPass(Ref<RenderCommandBuffer> commandBuffer) {
+            s_RendererAPI->EndRenderPass(commandBuffer);
+        }
 
-            s_Data.FullscreenQuadIndexBuffer->Unbind();
-            s_Data.FullscreenQuadVertexBuffer->Unbind();
+        void Renderer::ClearImage(Ref<RenderCommandBuffer> commandBuffer, Ref<Image2D> image) {
+            s_RendererAPI->ClearImage(commandBuffer, image);
+        }
+
+        void Renderer::RenderMesh(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform) {
+            s_RendererAPI->RenderMesh(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, mesh, materialTable, transform);
+        }
+
+        void Renderer::RenderQuad(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::mat4& transform) {
+            s_RendererAPI->RenderQuad(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, material, transform);
+        }
+
+        void Renderer::RenderGeometry(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount) {
+            s_RendererAPI->RenderGeometry(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, material, vertexBuffer, indexBuffer, transform, indexCount);
+        }
+
+        void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material) {
+            s_RendererAPI->SubmitFullscreenQuad(commandBuffer, pipeline, uniformBufferSet, material);
+        }
+
+        void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) {
+            s_RendererAPI->SubmitFullscreenQuad(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, material); 
+        }
+
+        Ref<Texture2D> Renderer::GetWhiteTexture() {
+            return s_Data.WhiteTexture;
+        }
+
+        Ref<Texture2D> Renderer::GetBlackTexture() {
+            return s_Data.BlackTexture;
+        }
+
+        Ref<Texture2D> Renderer::GetBRDFLutTexture() {
+            return s_Data.BRDFLutTexture;
+        }
+
+        RenderCommandQueue& Renderer::GetRenderCommandQueue() {
+            return *s_CommandQueue;
+        }
+        RenderCommandQueue& Renderer::GetRenderResourceReleaseQueue(uint32_t index) {
+            return s_ResourceFreeQueue[index];
+        }
+
+        uint32_t Renderer::GetCurrentFrameIndex() {
+            return Core::Application::Get().GetWindow()->GetSwapChain()->GetCurrentBufferIndex();
+        }
+
+        RendererConfig& Renderer::GetConfig() {
+            static RendererConfig config;
+            return config;
         }
         
     }
