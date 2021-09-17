@@ -4,30 +4,24 @@
 
 #include "Snow/Platform/Vulkan/VulkanCommon.h"
 
-#include "Snow/Render/Shader/ShaderUniform.h"
+#include "Snow/Render/ShaderUniform.h"
 
 #include <spirv_cross.hpp>
 
 namespace Snow {
-
-	struct VulkanUniformBuffer {
-		VkDeviceMemory Memory; // Vulkan specific buffer stuff
-		VkBuffer VKBuffer;
-		VkDescriptorBufferInfo DescriptorInfo;
-
-		Render::ShaderUniformBuffer Buffer;
-	};
-
 	class VulkanPipeline : public Render::Pipeline {
 	public:
 		VulkanPipeline(const Render::PipelineSpecification& spec);
 
 		void Bind() const override;
 
-		void SetUniformBufferData(const std::string& name, void* data, uint32_t size) override {}
-		void SetUniformBufferData(uint32_t bindingPoint, void* data, uint32_t size) override {}
-
+		Render::PipelineSpecification& GetSpecification() override { return m_Specification; }
 		const Render::PipelineSpecification& GetSpecification() const override { return m_Specification; }
+
+		virtual void SetUniformBuffer(Ref<Render::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set) override {}
+
+		VkPipeline GetVulkanPipeline() { return m_VulkanPipeline; }
+		VkPipelineLayout GetVulkanPipelineLayout() { return m_PipelineLayout; }
 	private:
 		void Invalidate();
 
@@ -38,13 +32,7 @@ namespace Snow {
 
 		Render::PipelineSpecification m_Specification;
 
-		VkGraphicsPipelineCreateInfo m_GraphicsPipelineCreateInfo;
+		VkPipelineLayout m_PipelineLayout;
 		VkPipeline m_VulkanPipeline;
-
-
-
-		void AllocateUniformBuffer(VulkanUniformBuffer& buffer);
-
-		std::unordered_map<uint32_t, VulkanUniformBuffer> m_UniformBuffers;
 	};
 }

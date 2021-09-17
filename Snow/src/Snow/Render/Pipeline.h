@@ -2,9 +2,10 @@
 
 #include "Snow/Core/Ref.h"
 
-#include "Snow/Render/Shader/Shader.h"
+#include "Snow/Render/Shader.h"
 
 #include "Snow/Render/RenderPass.h"
+#include "Snow/Render/UniformBuffer.h"
 
 #include <string>
 #include <vector>
@@ -100,24 +101,44 @@ namespace Snow {
             uint32_t m_Stride = 0;
         };
 
-        enum class PrimitiveType {
-            None = -1, Line, Triangle
+        enum class PrimitiveTopology {
+            None = -1,
+            Points,
+            Line, 
+            Triangle,
+            LineStrip,
+            TriangleStrip,
+            TriangleFan
         };
 
         struct PipelineSpecification {
             Ref<Shader> Shader;
             VertexBufferLayout Layout;
-            PrimitiveType Type;
-            //Ref<RenderPass> BindedRenderPass;
+            PrimitiveTopology Topology = PrimitiveTopology::Triangle;
+            Ref<RenderPass> BindedRenderPass;
+            bool BackfaceCulling = true;
+            bool DepthTest = true;
+            bool DepthWrite = true;
+            bool Wireframe = false;
+            float LineWidth = 1.0f;
+
+            std::string DebugName;
         };
 
         class Pipeline : public RefCounted {
         public:
             ~Pipeline() = default;
 
+            virtual void Invalidate() = 0;
+
+            virtual PipelineSpecification& GetSpecification() = 0;
+            virtual const PipelineSpecification& GetSpecification() const = 0;
+
+            virtual void SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
+
             virtual void Bind() const = 0; 
 
-            virtual const PipelineSpecification& GetSpecification() const = 0;
+            
 
             static Ref<Pipeline> Create(const PipelineSpecification& spec);
         private:
