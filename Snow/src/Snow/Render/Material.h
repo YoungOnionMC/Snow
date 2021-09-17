@@ -1,149 +1,80 @@
 #pragma once
 
-#include "Snow/Render/Shader/Shader.h"
-#include "Snow/Render/Shader/ShaderUniform.h"
+#include "Snow/Render/Shader.h"
+#include "Snow/Render/ShaderUniform.h"
 
 #include "Snow/Core/Ref.h"
 
 
-#include "Snow/Render/API/Texture.h"
+#include "Snow/Render/Texture.h"
 
+#include <glm/glm.hpp>
 #include <unordered_set>
+#include <string>
 
 namespace Snow {
 	namespace Render {
-		class Material : public RefCounted {
-			friend class MaterialInstance;
-		public:
-			Material(const Ref<Shader>& shader);
 
-			void Bind();
-
-			template<typename T>
-			void Set(const std::string name, const T& value) {
-				auto u = FindUniformDecl(name);
-				auto& buffer = m_UniformStorageBuffer;
-				buffer.Write((byte*)&value, u->GetSize(), u->GetOffset());
-
-				for (auto mi : m_MaterialInstances)
-					mi->OnMaterialValueUpdated(*u);
-			}
-
-			void Set(const std::string& name, const Ref<API::Texture>& texture) {
-				auto tex = FindResourceDecl(name);
-				uint32_t slot = tex->GetRegister();
-				if (m_Textures.size() <= slot)
-					m_Textures.resize((size_t)slot + 1);
-				m_Textures[slot] = texture;
-			}
-
-			void Set(const std::string& name, const Ref<API::Texture2D>& texture) {
-				Set(name, (const Ref<API::Texture>&)texture);
-			}
-
-			template<typename T>
-			T& Get(const std::string& name) {
-				auto u = FindUniformDecl(name);
-				auto& buffer = m_UniformStorageBuffer;
-				return buffer.Read<T>(u->GetOffset());
-			}
-
-			template<typename T>
-			Ref<T> GetResource(const std::string& name) {
-				auto tex = FindResourceDecl(name);
-				uint32_t slot = tex->GetRegister();
-				return m_Textures[slot];
-			}
-
-			Ref<Shader> GetShader() { return m_Shader; }
-
-			static Ref<Material> Create(const Ref<Shader>& shader);
-		private:
-			void AllocateStorage();
-			void BindTextures();
-
-			const ShaderUniform* FindUniformDecl(const std::string& name);
-			const ShaderResource* FindResourceDecl(const std::string& name);
-
-			Ref<Shader> m_Shader;
-
-			std::unordered_set<MaterialInstance*> m_MaterialInstances;
-
-			Buffer m_UniformStorageBuffer;
-			std::vector<Ref<API::Texture>> m_Textures;
+		enum class MaterialFlag {
+			None = BIT(0),
+			DepthTest = BIT(1),
+			Blend = BIT(2),
+			TwoSided = BIT(3),
 		};
 
-		class MaterialInstance : public RefCounted {
+		using VariableMap = std::unordered_map<std::string, UniformType>;
+
+		class Material : public RefCounted {
 			friend class Material;
 		public:
-			MaterialInstance(const Ref<Material>& material, const std::string& name = "");
-			virtual ~MaterialInstance();
+			static Ref<Material> Create(const Ref<Shader>& shader, const std::string& name = "");
+			static Ref<Material> Copy(const Ref<Material>& other, const std::string& name = "");
+			virtual ~Material() {}
 
-			void Bind();
+			virtual void Invalidate() = 0;
 
-			template<typename T>
-			void Set(const std::string& name, const T& value) {
-				auto u = m_Material->FindUniformDecl(name);
-				if (!u)
-					return;
+			virtual void Set(const std::string& name, float value) = 0;
+			virtual void Set(const std::string& name, double value) = 0;
+			virtual void Set(const std::string& name, int value) = 0;
+			virtual void Set(const std::string& name, uint32_t value) = 0;
+			virtual void Set(const std::string& name, bool value) = 0;
+			virtual void Set(const std::string& name, const glm::vec2& value) = 0;
+			virtual void Set(const std::string& name, const glm::vec3& value) = 0;
+			virtual void Set(const std::string& name, const glm::vec4& value) = 0;
+			virtual void Set(const std::string& name, const glm::mat3& value) = 0;
+			virtual void Set(const std::string& name, const glm::mat4& value) = 0;
 
-				auto& buffer = m_UniformStorageBuffer;
-				buffer.Write((byte*)&value, u->GetSize(), u->GetOffset());
+			virtual void Set(const std::string& name, const Ref<Texture2D>& texture) = 0;
+			virtual void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex) = 0;
+			virtual void Set(const std::string& name, const Ref<TextureCube>& texture) = 0;
+			virtual void Set(const std::string& name, const Ref<Image2D>& texture) = 0;
 
-				m_OverriddenValues.insert(name);
-			}
+			
 
-			void Set(const std::string& name, const Ref<API::Texture>& texture) {
-				auto tex = m_Material->FindResourceDecl(name);
-				if (!tex) {
-					SNOW_CORE_WARN("Could not find material property: {0}", name);
-					return;
-				}
-				uint32_t slot = tex->GetRegister();
-				if (m_Textures.size() <= slot)
-					m_Textures.resize((size_t)slot + 1);
-				m_Textures[slot] = texture;
-			}
+			virtual float& GetFloat(const std::string& name) = 0;
+			virtual int32_t& GetInt(const std::string& name) = 0;
+			virtual uint32_t& GetUInt(const std::string& name) = 0;
+			virtual bool& GetBool(const std::string& name) = 0;
+			virtual glm::vec2& GetVector2(const std::string& name) = 0;
+			virtual glm::vec3& GetVector3(const std::string& name) = 0;
+			virtual glm::vec4& GetVector4(const std::string& name) = 0;
+			virtual glm::mat3& GetMatrix3(const std::string& name) = 0;
+			virtual glm::mat4& GetMatrix4(const std::string& name) = 0;
 
-			void Set(const std::string& name, const Ref<API::Texture2D>& texture) {
-				Set(name, (const Ref<API::Texture>&)texture);
-			}
+			virtual Ref<Texture2D> GetTexture2D(const std::string& name) = 0;
+			virtual Ref<TextureCube> GetTextureCube(const std::string& name) = 0;
 
-			void Set(const std::string& name, const Ref<API::TextureCube>& texture) {
-				Set(name, (const Ref<API::Texture>&)texture);
-			}
+			virtual Ref<Texture2D> TryGetTexture2D(const std::string& name) = 0;
+			virtual Ref<TextureCube> TryGetTextureCube(const std::string& name) = 0;
 
-			template<typename T>
-			T& Get(const std::string& name) {
-				auto u = m_Material->FindUniformDecl(name);
+			virtual uint32_t GetFlags() const = 0;
+			virtual bool GetFlag(MaterialFlag flag) const = 0;
+			virtual void SetFlag(MaterialFlag flag, bool value = true) = 0;
 
-				auto& buffer = m_UniformStorageBuffer;
-				return buffer.Read<T>(u->GetOffset());
-			}
+			virtual Ref<Shader> GetShader() = 0;
+			virtual const std::string& GetName() const = 0;
 
-			template<typename T>
-			Ref<T> GetResource(const std::string& name) {
-				auto tex = m_Material->FindResourceDecl(name);
-
-				uint32_t slot = tex->GetRegister();
-				return Ref<T>(m_Textures[slot]);
-			}
-
-			static Ref<MaterialInstance> Create(const Ref<Material>& material);
-
-			Ref<Material> GetMaterial() { return m_Material; }
-
-		private:
-			void AllocateStorage();
-			void OnMaterialValueUpdated(const ShaderUniform& uniform);
-
-			Ref<Material> m_Material;
-			std::string m_Name;
-
-			Buffer m_UniformStorageBuffer;
-			std::vector<Ref<API::Texture>> m_Textures;
-
-			std::unordered_set<std::string> m_OverriddenValues;
+			virtual VariableMap GetVariables() const = 0;
 		};
 	}
 }
