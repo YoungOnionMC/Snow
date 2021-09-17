@@ -1,22 +1,27 @@
 #pragma once
 
-#include "Snow/Render/API/Texture.h"
+#include "Snow/Render/Texture.h"
 
 #include "Snow/Platform/DirectX11/DirectXCommon.h"
 
 namespace Snow {
-	class DirectX11Texture2D : public Render::API::Texture2D {
+	class DirectX11Texture2D : public Render::Texture2D {
 	public:
-		DirectX11Texture2D(Render::API::TextureFormat format, uint32_t width, uint32_t height, Render::API::TextureWrap wrap);
+		DirectX11Texture2D(Render::ImageFormat format, uint32_t width, uint32_t height, Render::TextureWrap wrap);
 		DirectX11Texture2D(const std::string& path, bool srgb);
 
 		void Bind(uint32_t slot) const override;
-		Render::API::TextureFormat GetFormat() const override { return m_Format; }
+		Render::ImageFormat GetFormat() const override { return m_Format; }
 
 		uint32_t GetWidth() const override { return m_Width; }
 		uint32_t GetHeight() const override { return m_Height; }
 
 		void ResizeBuffer(uint32_t width, uint32_t height) override;
+
+		virtual void CopyImageData(Ref<Texture>& otherTex) override {}
+		uint32_t GetMipLevelCount() const { return 0; }
+
+		void GenerateMips() override {}
 
 		void Lock() override;
 		void Unlock() override;
@@ -44,6 +49,6 @@ namespace Snow {
 		D3D11_SAMPLER_DESC m_SamplerDesc;
 		ID3D11SamplerState* m_SamplerState;
 
-		Render::API::TextureFormat m_Format;
+		Render::ImageFormat m_Format;
 	};
 }

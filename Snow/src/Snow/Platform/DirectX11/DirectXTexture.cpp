@@ -6,11 +6,11 @@
 #include <stb_image.h>
 
 namespace Snow {
-	static DXGI_FORMAT SnowTextureFormatToDXGI(Render::API::TextureFormat format) {
+	static DXGI_FORMAT SnowTextureFormatToDXGI(Render::ImageFormat format) {
 		switch (format) {
-		case Render::API::TextureFormat::RGB:	return DXGI_FORMAT_R8G8B8A8_UNORM;
-		case Render::API::TextureFormat::RGBA:	return DXGI_FORMAT_R8G8B8A8_UNORM;
-		case Render::API::TextureFormat::Float16:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
+		case Render::ImageFormat::RGB:	return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case Render::ImageFormat::RGBA:	return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case Render::ImageFormat::Float16:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
 		}
 		return DXGI_FORMAT_UNKNOWN;
 	}
@@ -22,7 +22,7 @@ namespace Snow {
 		return levels;
 	}
 
-	DirectX11Texture2D::DirectX11Texture2D(Render::API::TextureFormat format, uint32_t width, uint32_t height, Render::API::TextureWrap wrap) {
+	DirectX11Texture2D::DirectX11Texture2D(Render::ImageFormat format, uint32_t width, uint32_t height, Render::TextureWrap wrap) {
 		auto dxDevice = DirectX11RenderContext::Get()->GetDevice();
 
 		m_Width = width;
@@ -77,7 +77,7 @@ namespace Snow {
 
 		m_Width = width;
 		m_Height = height;
-		m_Format = channels == 4 ? Render::API::TextureFormat::RGBA : Render::API::TextureFormat::RGB;
+		m_Format = channels == 4 ? Render::ImageFormat::RGBA : Render::ImageFormat::RGB;
 
 		if (!m_ImageData.Data)
 			return;
@@ -124,7 +124,7 @@ namespace Snow {
 
 	void DirectX11Texture2D::ResizeBuffer(uint32_t width, uint32_t height) {
 		SNOW_CORE_ASSERT(m_Locked, "Trying to write to texture without it being locked");
-		m_ImageData.Allocate(width * height * Render::API::Texture::GetBPP(m_Format));
+		m_ImageData.Allocate(width * height * Render::Utils::GetFormatSize(m_Format));
 		m_ImageData.ZeroInitialize();
 	}
 

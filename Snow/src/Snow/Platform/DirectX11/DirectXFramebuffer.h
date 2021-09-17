@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Snow/Render/API/Framebuffer.h"
+#include "Snow/Render/Framebuffer.h"
 
 #include "Snow/Platform/DirectX11/DirectXCommon.h"
 
@@ -38,7 +38,7 @@ namespace Snow {
 
 		const std::vector<FramebufferColorAttachment>& GetColorAttachments() const { return m_ColorAttachments; }
 		const FramebufferDepthStencilAttachment& GetDepthStencilAttachment() const { return m_DepthStencilAttachment; }
-		Render::FramebufferTextureFormat GetDepthStencilFormat() { return m_DepthStencilAttachmentSpecification.TextureFormat; }
+		Render::ImageFormat GetDepthStencilFormat() { return m_DepthStencilAttachmentSpecification.Format; }
 
 	private:
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Snow/Render/RenderCommand.h"
+#include "Snow/Render/Renderer.h"
 
 namespace Snow {
 	class DirectX11RenderCommand : public Render::RenderAPI {
@@ -17,6 +17,8 @@ namespace Snow {
 
 		void SetBlending(bool blend) override {}
 		void SetDepthTesting(bool depthTest) override {}
+
+		void SetImagePacking(uint32_t size) override {}
 
 		void SetViewport(uint32_t width, uint32_t height) override {}
 

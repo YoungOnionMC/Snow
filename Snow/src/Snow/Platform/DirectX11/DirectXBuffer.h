@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Snow/Render/API/Buffer.h"
+#include "Snow/Render/Buffer.h"
 
 #include "Snow/Platform/DirectX11/DirectXCommon.h"
 
 #include "Snow/Core/Buffer.h"
 
 namespace Snow {
-	class DirectX11VertexBuffer : public Render::API::VertexBuffer {
+	class DirectX11VertexBuffer : public Render::VertexBuffer {
 	public:
 		DirectX11VertexBuffer(void* data, uint32_t size);
 
@@ -32,7 +32,7 @@ namespace Snow {
 		bool m_Mapped = false;
 	};
 
-	class DirectX11IndexBuffer : public Render::API::IndexBuffer {
+	class DirectX11IndexBuffer : public Render::IndexBuffer {
 	public:
 		DirectX11IndexBuffer(void* data, uint32_t size);
 

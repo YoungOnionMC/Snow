@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Snow/Render/Shader/Shader.h"
+#include "Snow/Render/Shader.h"
 
 #include "Snow/Platform/DirectX11/DirectXCommon.h"
 
 #include <d3dcompiler.h>
+
+#include <glm/glm.hpp>
 
 namespace Snow {
 	class DirectX11Shader : public Render::Shader {
@@ -44,6 +46,22 @@ namespace Snow {
 		
 		const ShaderStages& GetShaderStage() const { return m_Stages; }
 		ID3D10Blob* GetBlob(Render::ShaderType type);
+
+		void SetUniform(const std::string& name, int value) override {}
+		void SetUniform(const std::string& name, uint32_t value) {}
+		void SetUniform(const std::string& name, float value) override {}
+		void SetUniform(const std::string& name, const glm::vec2& value) {}
+		void SetUniform(const std::string& name, const glm::vec3& value) {}
+		void SetUniform(const std::string& name, const glm::vec4& value) {}
+
+		void SetUniformIntArray(const std::string& name, int* values, uint32_t size);
+
+		void UploadUniformInt(uint32_t location, int32_t value);
+		void UploadUniformIntArray(uint32_t location, int32_t* values, uint32_t count);
+		void UploadUniformFloat(uint32_t location, float value);
+		void UploadUniformFloat2(uint32_t location, const glm::vec2& value);
+		void UploadUniformFloat3(uint32_t location, const glm::vec3& value);
+		void UploadUniformFloat4(uint32_t location, const glm::vec4& value);
 
 	private:
 

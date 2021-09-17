@@ -17,7 +17,7 @@ namespace Snow {
 		const Ref<DirectX11Device>& GetDevice() { return m_Device; }
 		const DirectX11SwapChain& GetSwapChain() { return m_SwapChain; }
 
-		static DirectX11RenderContext* Get() { return static_cast<DirectX11RenderContext*>(Render::Renderer::GetContext()); }
+		static Ref<DirectX11RenderContext> Get() { return Ref<DirectX11RenderContext>(Render::Renderer::GetContext()); }
 		static Ref<DirectX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
 
 		const Render::ContextSpecification& GetSpecification() const { return m_Specification; }

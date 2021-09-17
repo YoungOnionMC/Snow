@@ -6,7 +6,7 @@
 
 #include <d3d11shader.h>
 
-#include "Snow/Render/Shader/ShaderUniform.h"
+#include "Snow/Render/ShaderUniform.h"
 
 namespace Snow {
 
