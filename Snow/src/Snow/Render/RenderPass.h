@@ -2,12 +2,13 @@
 
 #include "Snow/Core/Ref.h"
 
-#include "Snow/Render/API/Framebuffer.h"
+#include "Snow/Render/Framebuffer.h"
 
 namespace Snow {
     namespace Render {
         struct RenderPassSpecification {
             Ref<Framebuffer> TargetFramebuffer;
+            std::string DebugName = "RenderPass";
         };
 
         class RenderPass : public RefCounted {

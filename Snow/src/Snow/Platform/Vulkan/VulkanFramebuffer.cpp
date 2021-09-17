@@ -3,285 +3,334 @@
 
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 
+#include "Snow/Platform/Vulkan/VulkanImage.h"
+
 namespace Snow {
-	namespace Render {
 
-		namespace Utils {
-			static VkSampleCountFlagBits GetVulkanSampleCount(uint32_t samples) {
-				switch (samples) {
-				case 1:
-					return VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
-				case 2:
-					return VkSampleCountFlagBits::VK_SAMPLE_COUNT_2_BIT;
-				case 4:
-					return VkSampleCountFlagBits::VK_SAMPLE_COUNT_4_BIT;
-				case 8:
-					return VkSampleCountFlagBits::VK_SAMPLE_COUNT_8_BIT;
-				case 16:
-					return VkSampleCountFlagBits::VK_SAMPLE_COUNT_16_BIT;
-				case 32:
-					return VkSampleCountFlagBits::VK_SAMPLE_COUNT_32_BIT;
-				case 64:
-					return VkSampleCountFlagBits::VK_SAMPLE_COUNT_64_BIT;
-
-				}
-
-				return VkSampleCountFlagBits::VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
-			}
-
-			static VkFormat GetVulkanFormat(FramebufferTextureFormat format) {
-				switch (format) {
-				case FramebufferTextureFormat::RGBA8:
-					return VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
-				case FramebufferTextureFormat::RGBA16F:
-					return VkFormat::VK_FORMAT_R16G16B16A16_SFLOAT;
-				case FramebufferTextureFormat::RGBA32F:
-					return VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
-				case FramebufferTextureFormat::RG32F:
-					return VkFormat::VK_FORMAT_R32G32_SFLOAT;
-				case FramebufferTextureFormat::Depth32F:
-					return VkFormat::VK_FORMAT_D32_SFLOAT;
-				case FramebufferTextureFormat::Depth24Stencil8:
-					return VkFormat::VK_FORMAT_D24_UNORM_S8_UINT;
-				}
-
-				return VkFormat::VK_FORMAT_UNDEFINED;
-			}
-
-			static void CreateColorAttachment(ImageAttachment& imageAttachment, uint32_t index, uint32_t samples, FramebufferTextureFormat format, uint32_t width, uint32_t height, VulkanAllocator& allocator, VkAttachmentDescription& attachmentDesc, VkAttachmentReference& attachmentRef) {
-				auto vkDevice = VulkanContext::GetCurrentDevice();
-
-				
-				const VkFormat imageFormat = GetVulkanFormat(format);
-
-				VkImageCreateInfo imageCI;
-				ZeroInitVulkanStruct(imageCI, VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO);
-				imageCI.imageType = VK_IMAGE_TYPE_2D;
-				imageCI.format = imageFormat;
-				imageCI.extent.width = width;
-				imageCI.extent.height = height;
-				imageCI.extent.depth = 1;
-				imageCI.mipLevels = 1;
-				imageCI.arrayLayers = 1;
-				imageCI.samples = GetVulkanSampleCount(samples);
-				imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
-				imageCI.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-
-				VKCheckError(vkCreateImage(vkDevice->GetVulkanDevice(), &imageCI, nullptr, &(imageAttachment.Image)));
-
-				VkMemoryRequirements memReqs;
-				vkGetImageMemoryRequirements(vkDevice->GetVulkanDevice(), imageAttachment.Image, &memReqs);
-
-				allocator.Allocate(memReqs, &imageAttachment.Memory);
-
-				VKCheckError(vkBindImageMemory(vkDevice->GetVulkanDevice(), imageAttachment.Image, imageAttachment.Memory, 0));
-
-				VkImageViewCreateInfo imageViewCI;
-				ZeroInitVulkanStruct(imageViewCI, VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO);
-				imageViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
-				imageViewCI.format = imageFormat;
-				imageViewCI.image = imageAttachment.Image;
-				imageViewCI.subresourceRange = {};
-				imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				imageViewCI.subresourceRange.baseMipLevel = 0;
-				imageViewCI.subresourceRange.levelCount = 1;
-				imageViewCI.subresourceRange.baseArrayLayer = 0;
-				imageViewCI.subresourceRange.layerCount = 1;
-
-				VKCheckError(vkCreateImageView(vkDevice->GetVulkanDevice(), &imageViewCI, nullptr, &imageAttachment.ImageView));
-
-				attachmentDesc.flags = 0;
-				attachmentDesc.format = imageFormat;
-				attachmentDesc.samples = GetVulkanSampleCount(samples);
-				attachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-				attachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				attachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-				attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-				attachmentRef = { index, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-			}
-
-			static void CreateDepthAttachment(ImageAttachment& imageAttachment, uint32_t samples, FramebufferTextureFormat format, uint32_t width, uint32_t height, VulkanAllocator& allocator, VkAttachmentDescription& attachmentDesc) {
-				auto vkDevice = VulkanContext::GetCurrentDevice();
-
-
-				const VkFormat imageFormat = GetVulkanFormat(format);
-
-				VkImageCreateInfo imageCI = {};
-				ZeroInitVulkanStruct(imageCI, VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO);
-				imageCI.imageType = VK_IMAGE_TYPE_2D;
-				imageCI.format = imageFormat;
-				imageCI.extent.width = width;
-				imageCI.extent.height = height;
-				imageCI.extent.depth = 1;
-				imageCI.mipLevels = 1;
-				imageCI.arrayLayers = 1;
-				imageCI.samples = GetVulkanSampleCount(samples);
-				imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
-				imageCI.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-
-				VKCheckError(vkCreateImage(vkDevice->GetVulkanDevice(), &imageCI, nullptr, &imageAttachment.Image));
-
-				VkMemoryRequirements memReqs;
-				vkGetImageMemoryRequirements(vkDevice->GetVulkanDevice(), imageAttachment.Image, &memReqs);
-
-				allocator.Allocate(memReqs, &imageAttachment.Memory);
-
-				VKCheckError(vkBindImageMemory(vkDevice->GetVulkanDevice(), imageAttachment.Image, imageAttachment.Memory, 0));
-
-				VkImageViewCreateInfo imageViewCI;
-				ZeroInitVulkanStruct(imageViewCI, VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO);
-				imageViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
-				imageViewCI.format = imageFormat;
-				imageViewCI.image = imageAttachment.Image;
-				imageViewCI.subresourceRange = {};
-				imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				if (format == FramebufferTextureFormat::Depth24Stencil8)
-					imageViewCI.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-				imageViewCI.subresourceRange.baseMipLevel = 0;
-				imageViewCI.subresourceRange.levelCount = 1;
-				imageViewCI.subresourceRange.baseArrayLayer = 0;
-				imageViewCI.subresourceRange.layerCount = 1;
-
-				VKCheckError(vkCreateImageView(vkDevice->GetVulkanDevice(), &imageViewCI, nullptr, &imageAttachment.ImageView));
-
-				attachmentDesc.flags = 0;
-				attachmentDesc.format = imageFormat;
-				attachmentDesc.samples = GetVulkanSampleCount(samples);
-				attachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-				attachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				attachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-				attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-			}
-
-			static bool IsDepthFormat(Render::FramebufferTextureFormat format) {
-				switch (format) {
-				case Render::FramebufferTextureFormat::Depth24Stencil8:
-				case Render::FramebufferTextureFormat::Depth32F:
-					return true;
-				}
-				return false;
-			}
-		}
-
-		VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification& spec) :
+		VulkanFramebuffer::VulkanFramebuffer(const Render::FramebufferSpecification& spec) :
 			m_Specification(spec) {
 
-			for (auto format : m_Specification.AttachmentList.Attachments) {
-				if (!Utils::IsDepthFormat(format.TextureFormat)) 
-					m_ColorAttachmentFormats.emplace_back(format.TextureFormat);
-				else
-					m_DepthAttachmentFormat = format.TextureFormat;
+			if (spec.Width == 0) {
+				m_Width = Core::Application::Get().GetWindow()->GetWidth();
+				m_Height = Core::Application::Get().GetWindow()->GetHeight();
+			}
+			else {
+				m_Width = spec.Width;
+				m_Height = spec.Height;
 			}
 
-			Resize(spec.Width, spec.Height);
+
+			uint32_t attachmentIndex = 0;
+			if (!m_Specification.ExistingFramebuffer) {
+				for (auto& attachmentSpec : m_Specification.AttachmentList.Attachments) {
+					if (m_Specification.ExistingImage && m_Specification.ExistingImage->GetSpecification().Deinterleaved) {
+						SNOW_CORE_ASSERT(!Render::Utils::IsDepthFormat(attachmentSpec.Format), "Only supported for color attachments");
+						m_ColorAttachmentImages.emplace_back(m_Specification.ExistingImage);
+					}
+					else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end()) {
+						if (!Render::Utils::IsDepthFormat(attachmentSpec.Format))
+							m_ColorAttachmentImages.emplace_back();
+					}
+					else if (Render::Utils::IsDepthFormat(attachmentSpec.Format)) {
+						Render::ImageSpecification imageSpec;
+						imageSpec.Format = attachmentSpec.Format;
+						imageSpec.Usage = Render::ImageUsage::Attachment;
+						imageSpec.Width = m_Width;
+						imageSpec.Height = m_Height;
+						imageSpec.DebugName = fmt::format("{0}-DepthAttachment{1}", m_Specification.DebugName.empty() ? "Unnamed FB" : m_Specification.DebugName, attachmentIndex);
+						m_DepthAttachmentImage = Render::Image2D::Create(imageSpec);
+					}
+					else {
+						Render::ImageSpecification imageSpec;
+						imageSpec.Format = attachmentSpec.Format;
+						imageSpec.Usage = Render::ImageUsage::Attachment;
+						imageSpec.Width = m_Width;
+						imageSpec.Height = m_Height;
+						imageSpec.DebugName = fmt::format("{0}-ColorAttachment{1}", m_Specification.DebugName.empty() ? "Unnamed FB" : m_Specification.DebugName, attachmentIndex);
+						m_ColorAttachmentImages.emplace_back(Render::Image2D::Create(imageSpec));
+					}
+					attachmentIndex++;
+				}
+			}
+			SNOW_CORE_ASSERT(spec.AttachmentList.Attachments.size())
+			Resize(m_Width, m_Height, true);
 		}
 
 		VulkanFramebuffer::~VulkanFramebuffer() {
 
 		}
 
-		void VulkanFramebuffer::Resize(uint32_t width, uint32_t height) {
+		void VulkanFramebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate) {
+			if (!forceRecreate && (m_Width == width && m_Height == height))
+				return;
+
 			m_Width = width;
 			m_Height = height;
 
 			if (!m_Specification.SwapChainTarget) {
-				auto vkDevice = VulkanContext::GetCurrentDevice();
-
-				if (m_VulkanFramebufferHandle) {
-					vkDestroyFramebuffer(vkDevice->GetVulkanDevice(), m_VulkanFramebufferHandle, nullptr);
-					
-				}
-
-				VulkanAllocator allocator("Framebuffer");
-
-				if (m_ColorAttachmentFormats.size()) {
-					m_ColorAttachments.resize(m_ColorAttachmentFormats.size());
-					m_ColorAttachmentDescriptions.resize(m_ColorAttachmentFormats.size());
-					m_ColorAttachmentReferences.resize(m_ColorAttachmentFormats.size());
-					
-					for (uint32_t i = 0; i < m_ColorAttachments.size(); i++) {
-						m_ColorAttachments[i] = ImageAttachment();
-						Utils::CreateColorAttachment(m_ColorAttachments[i], i, m_Specification.Samples, m_ColorAttachmentFormats[i], width, height, allocator, m_ColorAttachmentDescriptions[i], m_ColorAttachmentReferences[i]);
-						m_ColorAttachments[i].ClearColor = m_Specification.ClearColor;
-					}
-
-				}
-
-				if (m_DepthAttachmentFormat != FramebufferTextureFormat::None) {
-					Utils::CreateDepthAttachment(m_DepthAttachment, m_Specification.Samples, m_DepthAttachmentFormat, width, height, allocator, m_DepthAttachmentDescription);
-					m_DepthAttachmentReference = { (uint32_t)m_ColorAttachmentReferences.size(), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
-				}
-
-				
-
-				VkSubpassDescription subpassDesc = {};
-				subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-				subpassDesc.colorAttachmentCount = m_ColorAttachments.size();
-				subpassDesc.pColorAttachments = m_ColorAttachmentReferences.data();
-				if(m_DepthAttachmentFormat!=FramebufferTextureFormat::None)
-					subpassDesc.pDepthStencilAttachment = &m_DepthAttachmentReference;
-
-				std::array<VkSubpassDependency, 2> dependencies;
-
-				dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-				dependencies[0].dstSubpass = 0;
-				dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-				dependencies[1].srcSubpass = 0;
-				dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-				dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-				std::vector<VkAttachmentDescription> descriptions = m_ColorAttachmentDescriptions;
-				if(m_DepthAttachmentFormat != FramebufferTextureFormat::None)
-					descriptions.push_back(m_DepthAttachmentDescription);
-
-				VkRenderPassCreateInfo renderpassCI;
-				ZeroInitVulkanStruct(renderpassCI, VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
-				renderpassCI.attachmentCount = descriptions.size();
-				renderpassCI.pAttachments = descriptions.data();
-				renderpassCI.subpassCount = 1;
-				renderpassCI.pSubpasses = &subpassDesc;
-				renderpassCI.dependencyCount = dependencies.size();
-				renderpassCI.pDependencies = dependencies.data();
-				
-				VKCheckError(vkCreateRenderPass(vkDevice->GetVulkanDevice(), &renderpassCI, nullptr, &m_RenderPass));
-
-				std::vector<VkImageView> attachments;
-				attachments.resize(m_ColorAttachments.size());
-				for (uint32_t i = 0; i < m_ColorAttachments.size(); i++)
-					attachments[i] = m_ColorAttachments[i].ImageView;
-
-				if (m_DepthAttachmentFormat != FramebufferTextureFormat::None)
-					attachments.push_back(m_DepthAttachment.ImageView);
-
-				VkFramebufferCreateInfo framebufferCI;
-				ZeroInitVulkanStruct(framebufferCI, VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO);
-				framebufferCI.renderPass = m_RenderPass;
-				framebufferCI.attachmentCount = attachments.size();
-				framebufferCI.pAttachments = attachments.data();
-				framebufferCI.width = width;
-				framebufferCI.height = height;
-				framebufferCI.layers = 1;
-
-				VKCheckError(vkCreateFramebuffer(vkDevice->GetVulkanDevice(), &framebufferCI, nullptr, &m_VulkanFramebufferHandle));
+				Invalidate();
 			}
 			else {
-				VulkanSwapChain& vkSwapChain = VulkanContext::Get()->GetSwapChain();
-				m_RenderPass = vkSwapChain.GetRenderPass();
+				Ref<VulkanSwapChain> vkSwapChain = Core::Application::Get().GetWindow()->GetSwapChain().As<VulkanSwapChain>();
+				m_RenderPass = vkSwapChain->GetRenderPass();
+
+				m_ClearValues.clear();
+				m_ClearValues.emplace_back().color = { 0.0f, 1.0f, 0.5f ,1.0f };
 			}
 		}
-	}
+
+		void VulkanFramebuffer::Invalidate() {
+			Ref<VulkanFramebuffer> instance = this;
+			Render::Renderer::Submit([instance]() mutable {
+				instance->RTInvalidate();
+			});
+		}
+
+		void VulkanFramebuffer::RTInvalidate() {
+			auto vkDevice = VulkanContext::GetCurrentDevice();
+
+			if (m_Framebuffer) {
+				VkFramebuffer framebuffer = m_Framebuffer;
+				Render::Renderer::SubmitResourceFree([framebuffer]() {
+					auto device = VulkanContext::GetCurrentDevice();
+					vkDestroyFramebuffer(device->GetVulkanDevice(), framebuffer, nullptr);
+				});
+
+				if (!m_Specification.ExistingFramebuffer) {
+					uint32_t attachmentIndex = 0;
+					for (Ref<VulkanImage2D> image : m_ColorAttachmentImages) {
+						if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end())
+							continue;
+						if (!image->GetSpecification().Deinterleaved || attachmentIndex == 0 && !image->GetLayerImageView(0))
+							image->Release();
+						attachmentIndex++;
+					}
+					if (m_DepthAttachmentImage) {
+						if (m_Specification.ExistingImages.find((uint32_t)m_Specification.AttachmentList.Attachments.size() - 1) == m_Specification.ExistingImages.end())
+							m_DepthAttachmentImage->Release();
+					}
+				}
+			}
+
+			VulkanAllocator allocator("Framebuffer");
+
+			std::vector<VkAttachmentDescription> attachmentDescriptions;
+
+			std::vector<VkAttachmentReference> colorAttachmentRefs;
+			VkAttachmentReference depthAttachmentRef;
+
+			m_ClearValues.resize(m_Specification.AttachmentList.Attachments.size());
+
+			bool createImages = m_ColorAttachmentImages.empty();
+
+			if (m_Specification.ExistingFramebuffer)
+				m_ColorAttachmentImages.clear();
+
+			uint32_t attachmentIndex = 0;
+			for (auto attachmentSpec : m_Specification.AttachmentList.Attachments) {
+				if (Render::Utils::IsDepthFormat(attachmentSpec.Format)) {
+					if (m_Specification.ExistingImage) {
+						m_DepthAttachmentImage = m_Specification.ExistingImage;
+					}
+					else if (m_Specification.ExistingFramebuffer) {
+						Ref<VulkanFramebuffer> existingFramebuffer = m_Specification.ExistingFramebuffer.As<VulkanFramebuffer>();
+						m_DepthAttachmentImage = existingFramebuffer->GetDepthImage();
+					}
+					else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end()) {
+						Ref<Render::Image2D> existingImage = m_Specification.ExistingImages.at(attachmentIndex);
+						SNOW_CORE_ASSERT(Render::Utils::IsDepthFormat(existingImage->GetSpecification().Format), "Trying to attach non-depth image as depth attachment");
+						m_DepthAttachmentImage = existingImage;
+					}
+					else {
+						Ref<VulkanImage2D> depthAttachmentImage = m_DepthAttachmentImage.As<VulkanImage2D>();
+						auto& spec = depthAttachmentImage->GetSpecification();
+						spec.Width = m_Width;
+						spec.Height = m_Height;
+						depthAttachmentImage->RTInvalidate();
+					}
+
+					VkAttachmentDescription& attachmentDesc = attachmentDescriptions.emplace_back();
+					attachmentDesc.flags = 0;
+					attachmentDesc.format = Utils::GetVulkanFormat(attachmentSpec.Format);
+					attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+					attachmentDesc.loadOp = m_Specification.ClearOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+					attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+					attachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					attachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					attachmentDesc.initialLayout = m_Specification.ClearOnLoad ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+					if (attachmentSpec.Format == Render::ImageFormat::Depth24Stencil8 || true) {
+						// TODO: check if sampling
+						attachmentDesc.finalLayout = true ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+						depthAttachmentRef = { attachmentIndex, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+					}
+					else {
+						// TODO: check if sampling
+						attachmentDesc.finalLayout = true ? VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+						depthAttachmentRef = { attachmentIndex, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL };
+					}
+					m_ClearValues[attachmentIndex].depthStencil = { 1.0f, 0 };
+				}
+				else {
+					Ref<VulkanImage2D> colorAttachment;
+					if (m_Specification.ExistingFramebuffer) {
+						Ref<VulkanFramebuffer> existingFramebuffer = m_Specification.ExistingFramebuffer.As<VulkanFramebuffer>();
+						Ref<Render::Image2D> existingImage = existingFramebuffer->GetImage(attachmentIndex);
+						colorAttachment = m_ColorAttachmentImages.emplace_back(existingImage).As<VulkanImage2D>();
+					}
+					else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end()) {
+						Ref<Render::Image2D> existingImage = m_Specification.ExistingImages[attachmentIndex];
+						SNOW_CORE_ASSERT(!Render::Utils::IsDepthFormat(existingImage->GetSpecification().Format), "Trying to attach depth image as color attachment");
+						colorAttachment = existingImage.As<VulkanImage2D>();
+						m_ColorAttachmentImages[attachmentIndex] = colorAttachment;
+					}
+					else {
+						if (createImages) {
+							Render::ImageSpecification imageSpec;
+							imageSpec.Format = attachmentSpec.Format;
+							imageSpec.Usage = Render::ImageUsage::Attachment;
+							imageSpec.Width = m_Width;
+							imageSpec.Height = m_Height;
+							colorAttachment = m_ColorAttachmentImages.emplace_back(Render::Image2D::Create(imageSpec)).As<VulkanImage2D>();
+						}
+						else {
+							Ref<Render::Image2D> colorAttachmentImage = m_ColorAttachmentImages[attachmentIndex];
+							auto& spec = colorAttachmentImage->GetSpecification();
+							spec.Width = m_Width;
+							spec.Height = m_Height;
+							colorAttachment = colorAttachmentImage.As<VulkanImage2D>();
+							if (!colorAttachment->GetSpecification().Deinterleaved)
+								colorAttachment->RTInvalidate();
+							else if (attachmentIndex == 0 && m_Specification.ExistingImageLayers[0] == 0) {
+								colorAttachment->RTInvalidate();
+								colorAttachment->RTCreatePerSpecificLayerImageViews(m_Specification.ExistingImageLayers);
+							}
+							else if (attachmentIndex == 0) {
+								colorAttachment->RTCreatePerSpecificLayerImageViews(m_Specification.ExistingImageLayers);
+							}
+						}
+					}
+
+					VkAttachmentDescription& attachmentDesc = attachmentDescriptions.emplace_back();
+					attachmentDesc.flags = 0;
+					attachmentDesc.format = Utils::GetVulkanFormat(attachmentSpec.Format);
+					attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+					attachmentDesc.loadOp = m_Specification.ClearOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+					attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+					attachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					attachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					attachmentDesc.initialLayout = m_Specification.ClearOnLoad ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+					const auto& clearColor = m_Specification.ClearColor;
+					m_ClearValues[attachmentIndex].color = { {clearColor.r, clearColor.g, clearColor.b, clearColor.a} };
+					colorAttachmentRefs.emplace_back(VkAttachmentReference{ attachmentIndex, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+				}
+				attachmentIndex++;
+			}
+
+			VkSubpassDescription subpassDesc = {};
+			subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			subpassDesc.colorAttachmentCount = uint32_t(colorAttachmentRefs.size());
+			subpassDesc.pColorAttachments = colorAttachmentRefs.data();
+			if (m_DepthAttachmentImage)
+				subpassDesc.pDepthStencilAttachment = &depthAttachmentRef;
+
+
+			std::vector<VkSubpassDependency> dependencies;
+			if (m_ColorAttachmentImages.size()) {
+				{
+					VkSubpassDependency& dependency = dependencies.emplace_back();
+					dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+					dependency.dstSubpass = 0;
+					dependency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+					dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+					dependency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+					dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+					dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+				}
+				{
+					VkSubpassDependency& dependency = dependencies.emplace_back();
+					dependency.srcSubpass = 0;
+					dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+					dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+					dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+					dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+					dependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+					dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+				}
+
+			}
+
+			if (m_DepthAttachmentImage) {
+				{
+					VkSubpassDependency& dependency = dependencies.emplace_back();
+					dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+					dependency.dstSubpass = 0;
+					dependency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+					dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+					dependency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+					dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+					dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+				}
+				{
+					VkSubpassDependency& dependency = dependencies.emplace_back();
+					dependency.srcSubpass = 0;
+					dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+					dependency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+					dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+					dependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+					dependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+					dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+				}
+			}
+
+			VkRenderPassCreateInfo renderPassCI = {};
+			renderPassCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassCI.attachmentCount = attachmentDescriptions.size();
+			renderPassCI.pAttachments = attachmentDescriptions.data();
+			renderPassCI.subpassCount = 1;
+			renderPassCI.pSubpasses = &subpassDesc;
+			renderPassCI.dependencyCount = dependencies.size();
+			renderPassCI.pDependencies = dependencies.data();
+
+			VKCheckError(vkCreateRenderPass(vkDevice->GetVulkanDevice(), &renderPassCI, nullptr, &m_RenderPass));
+
+			std::vector<VkImageView> attachments(m_ColorAttachmentImages.size());
+			for (uint32_t i = 0; i < m_ColorAttachmentImages.size(); i++) {
+				Ref<VulkanImage2D> image = m_ColorAttachmentImages[i].As<VulkanImage2D>();
+				if (image->GetSpecification().Deinterleaved) {
+					attachments[i] = image->GetLayerImageView(m_Specification.ExistingImageLayers[i]);
+					SNOW_CORE_ASSERT(attachments[i]);
+				}
+				else {
+					attachments[i] = image->GetImageInfo().ImageView;
+					SNOW_CORE_ASSERT(attachments[i]);
+				}
+			}
+
+			if (m_DepthAttachmentImage) {
+				Ref<VulkanImage2D> image = m_DepthAttachmentImage.As<VulkanImage2D>();
+				if (m_Specification.ExistingImage) {
+					SNOW_CORE_ASSERT(m_Specification.ExistingImageLayers.size() == 1, "Depth attachments do not support deinterleaving");
+					attachments.emplace_back(image->GetLayerImageView(m_Specification.ExistingImageLayers[0]));
+					SNOW_CORE_ASSERT(attachments.back());
+				}
+				else {
+					attachments.emplace_back(image->GetImageInfo().ImageView);
+					SNOW_CORE_ASSERT(attachments.back());
+				}
+			}
+
+			VkFramebufferCreateInfo framebufferCI = {};
+			framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferCI.renderPass = m_RenderPass;
+			framebufferCI.attachmentCount = uint32_t(attachments.size());
+			framebufferCI.pAttachments = attachments.data();
+			framebufferCI.width = m_Width;
+			framebufferCI.height = m_Height;
+			framebufferCI.layers = 1;
+
+			VKCheckError(vkCreateFramebuffer(vkDevice->GetVulkanDevice(), &framebufferCI, nullptr, &m_Framebuffer));
+
+		}
 }
