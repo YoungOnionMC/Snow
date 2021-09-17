@@ -11,7 +11,12 @@ layout (location = 0) out VertexOutput {
     vec4 Color;
 } vsOutput;
 
-layout (std140, binding = 0) uniform Camera {
+#if VULKAN
+layout (std140, set = 0, binding = 0) uniform Camera
+#else
+layout (std140, binding = 0) uniform Camera
+#endif
+{
     mat4 ViewProjection;
 } mainCamera;
 

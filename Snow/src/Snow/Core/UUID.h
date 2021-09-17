@@ -11,7 +11,7 @@ namespace Snow {
 		UUID(const UUID& other);
 
 		operator uint64_t () { return m_UUID; }
-		operator const uint64_t() const { return m_UUID; }
+		operator const uint64_t () const { return m_UUID; }
 
 	private:
 		uint64_t m_UUID;

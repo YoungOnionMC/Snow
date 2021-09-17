@@ -6,6 +6,9 @@
 
 #include "Snow/Core/Input.h"
 
+#include "Snow/Render/RenderContext.h"
+#include "Snow/Render/SwapChain.h"
+
 
 namespace Snow {
     namespace Core {
@@ -15,7 +18,10 @@ namespace Snow {
             Window();
             ~Window();
 
-            void OnUpdate();
+            bool PlatformInit();
+
+            void ProcessEvents();
+            void SwapBuffers();
 
             uint32_t GetWidth();
             uint32_t GetHeight();
@@ -23,15 +29,22 @@ namespace Snow {
             void* GetWindowHandle();
             float GetSystemTime();
 
+            virtual Ref<Render::SwapChain> GetSwapChain();
+            virtual Ref<Render::Context> GetRenderContext();
+
             using EventCallbackFn = std::function<void(Event::Event&)>;
             void SetEventCallback(const EventCallbackFn& callback);
         private:
 
 
-            bool PlatformInit();
+            
             bool PlatformShutdown();
 
-            void PlatformUpdate();
+            void ProcessEventsInternal();
+            void SwapBuffersInternal();
+
+            Ref<Render::Context> m_RendererContext;
+            Ref<Render::SwapChain> m_SwapChain;
         };
 
         

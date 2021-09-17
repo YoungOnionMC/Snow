@@ -17,6 +17,7 @@ project "Snow"
         "src/Snow.h",
         "src/Snow/EntryPoint.h",
 
+        "src/Snow/Asset/**.*",
         "src/Snow/Core/**.*",
         "src/Snow/ImGui/**.*",
         "src/Snow/Render/**.*",
@@ -43,6 +44,9 @@ project "Snow"
         "vendor/ImGuizmo/ImGuizmo.cpp",
         "vendor/ImGuizmo/ImGuizmo.h",
 
+        "vendor/VulkanMemoryAllocator/**.h",
+        "vendor/VulkanMemoryAllocator/**.cpp",
+
         "vendor/ENTT/include/entt.hpp"
         
     }
@@ -53,6 +57,7 @@ project "Snow"
         "%{VendorIncludeDir.Assimp}",
         "%{VendorIncludeDir.box2d}",
         "%{VendorIncludeDir.ENTT}",
+        "%{VendorIncludeDir.freetype}",
         "%{VendorIncludeDir.Glad}",
         "%{VendorIncludeDir.GLFW}",
         "%{VendorIncludeDir.glm}",
@@ -61,6 +66,7 @@ project "Snow"
         "%{VendorIncludeDir.mono}",
         "%{VendorIncludeDir.stb}",
         "%{VendorIncludeDir.SPIRVCross}",
+        "%{VendorIncludeDir.VMA}",
         "%{VendorIncludeDir.yaml_cpp}",
         
     }
@@ -96,6 +102,7 @@ project "Snow"
 
         includedirs {
             "%{VendorIncludeDir.Vulkan}/Windows", 
+            
             "%{VendorIncludeDir.shaderc}",
         }
         
@@ -107,6 +114,7 @@ project "Snow"
             "%{VendorLibraryDir.glslang}/Windows",
             "%{VendorLibraryDir.SPIRVTools}/Windows",
             "%{VendorLibraryDir.mono}/Windows",
+             
         }
 
         links {
@@ -135,7 +143,7 @@ project "Snow"
                 "%{VendorLibraryDir.Assimp}/Windows/Debug",
                 "%{VendorLibraryDir.glslang}/Windows/Debug",
                 "%{VendorLibraryDir.SPIRVTools}/Windows/Debug",
-
+                "%{VendorLibraryDir.freetype}/Windows",
             }
 
             links {
@@ -150,6 +158,8 @@ project "Snow"
                 "SPIRV-Tools-opt.lib",
                 
                 "assimp-vc142-mtd.lib",
+
+                "freetyped.lib",
             }
 
         filter "configurations:Release"

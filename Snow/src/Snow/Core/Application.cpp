@@ -19,8 +19,13 @@ namespace Snow {
             SNOW_CORE_INFO("Creating Application...");
             s_Instance = this;
 
-            Render::Renderer::SetRenderAPI(Render::RenderAPIType::OpenGL);
+            //Render::Renderer(Render::RendererAPIType::Vulkan);
             m_Window = new Window();
+            if (!m_Window->PlatformInit()) {
+                SNOW_CORE_ERROR("Window creation failed");
+            }
+            SNOW_CORE_INFO("Window Created");
+
             m_Window->SetEventCallback(SNOW_BIND_EVENT_FN(Application::OnEvent));
             Input::Init();
             Input::SetEventCallback(SNOW_BIND_EVENT_FN(Application::OnEvent));
@@ -30,6 +35,7 @@ namespace Snow {
             Render::Renderer::Init();
             m_ImGuiLayer = ImGuiLayer::Create();
             m_LayerStack.PushOverlay(m_ImGuiLayer);
+
 
             Script::ScriptEngine::Init("assets/scripts/ExampleScriptApp.dll");
         }
@@ -41,36 +47,48 @@ namespace Snow {
 
         void Application::OnImGuiRender() {
             m_ImGuiLayer->BeginImGuiFrame();
+            ImGui::Begin("RendererStats");
+            ImGui::Text("Frame Time: %.2fms\n", m_Timestep.GetMilliseconds());
+
+            ImGui::End();
 
             for(Layer* layer : m_LayerStack)
                 layer->OnImGuiRender();
-
-            m_ImGuiLayer->EndImGuiFrame();
         }
 
         void Application::Run() {
             while(m_Running) {
-                float time = m_Window->GetSystemTime();
-                Timestep timestep = time - m_LastFrameTime;
-                m_LastFrameTime = time;
-                
-                //Render::Renderer::BeginScene();
-                OnUpdate(timestep);
-                
 
-                OnImGuiRender();
+                m_Window->ProcessEvents();
+                Render::Renderer::BeginFrame();
+               
+
+                OnUpdate(m_Timestep);
+                
+                Application* app = this;
+                Render::Renderer::Submit([app]() {app->OnImGuiRender(); });
+                Render::Renderer::Submit([=]() {m_ImGuiLayer->EndImGuiFrame(); });
+                Render::Renderer::EndFrame();
+                // End Frame
+
+                m_Window->GetSwapChain()->BeginFrame();
+                Render::Renderer::WaitAndRender();
+                m_Window->SwapBuffers();
 
                 //Render::Renderer::SwapBuffers();
                 //Render::Renderer::EndScene();
 
+                float time = m_Window->GetSystemTime();
+                m_Timestep = time - m_LastFrameTime;
+                m_LastFrameTime = time;
             }
         }
 
         void Application::OnUpdate(Timestep ts) {
-            m_Window->OnUpdate();
-
             for(Layer* layer : m_LayerStack)
                 layer->OnUpdate(ts);
+
+            
         }
 
         void Application::OnEvent(Event::Event& e) {
@@ -91,7 +109,10 @@ namespace Snow {
         }
 
         bool Application::OnApplicationResize(Event::WindowResizeEvent& e) {
-            Render::RenderCommand::SetViewport(e.GetWidth(), e.GetHeight());
+            const uint32_t width = e.GetWidth(), height = e.GetHeight();
+            //Render::RenderCommand::SetViewport(e.GetWidth(), e.GetHeight());
+
+            m_Window->GetSwapChain()->OnResize(width, height);
 
             return false;
         }

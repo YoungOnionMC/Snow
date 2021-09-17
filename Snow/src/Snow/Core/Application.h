@@ -15,6 +15,7 @@
 #include "Snow/Core/Timestep.h"
 
 
+
 namespace Snow {
     namespace Core {
 
@@ -28,7 +29,7 @@ namespace Snow {
             void OnEvent(Event::Event& event);
 
 
-            static Application& Get() { return *s_Instance; }
+            static inline Application& Get() { return *s_Instance; }
             Ref<Window> GetWindow() { return Get().m_Window; }
 
             void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }
@@ -49,11 +50,13 @@ namespace Snow {
 
             Ref<Window> m_Window;
 
+
             LayerStack m_LayerStack;
             ImGuiLayer* m_ImGuiLayer;
 
             bool m_Running = true;
             float m_LastFrameTime = 0.0f;
+            Timestep m_Timestep;
         };
 
         Application* CreateApplication();

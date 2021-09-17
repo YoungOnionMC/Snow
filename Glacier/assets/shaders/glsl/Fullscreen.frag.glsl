@@ -7,7 +7,12 @@ struct PixelInput {
 };
 
 layout(location = 0) in PixelInput psInput;
+
+#if VULKAN
+layout(set = 1, binding = 0) uniform sampler2D u_Texture;
+#else
 layout(binding = 0) uniform sampler2D u_Texture;
+#endif
 
 void main() {
 	Color = texture(u_Texture, psInput.TexCoord);

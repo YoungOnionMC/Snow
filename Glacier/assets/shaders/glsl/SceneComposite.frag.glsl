@@ -6,9 +6,18 @@ layout(location = 0) in PixelInput {
 	vec2 TexCoord;
 } psInput;
 
-layout(binding = 0) uniform sampler2DMS u_Texture;
+#if VULKAN
+layout(set = 1, binding = 0) uniform sampler2DMS u_Texture;
+#else
+layout (binding = 0) uniform sampler2DMS u_Texture;
+#endif
 
-layout(std140, binding = 4) uniform CompositeBuffer {
+#if VULKAN
+layout(std140, set = 0, binding = 4) uniform CompositeBuffer
+#else
+layout(std140, binding = 4) uniform CompositeBuffer
+#endif
+{
 	float Exposure;
 	int Samples;
 	bool BloomEnable;

@@ -12,11 +12,9 @@ namespace Snow {
         Window::Window() {
             SNOW_CORE_INFO("Creating Window...");
 
-            if(!PlatformInit()) {
-                SNOW_CORE_ERROR("Window creation failed");
-            }
+            
 
-            SNOW_CORE_INFO("Window Created");
+            
         }
 
         Window::~Window() {
@@ -27,8 +25,12 @@ namespace Snow {
             SNOW_CORE_INFO("Window destroyed");
         }
 
-        void Window::OnUpdate() {
-            PlatformUpdate();
+        void Window::ProcessEvents() {
+            ProcessEventsInternal();
+        }
+
+        void Window::SwapBuffers() {
+            SwapBuffersInternal();
         }
     }
 }

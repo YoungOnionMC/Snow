@@ -6,11 +6,13 @@ layout(location = 2) in vec3 a_Tangent;
 layout(location = 3) in vec3 a_Binormal;
 layout(location = 4) in vec2 a_TexCoord;
 
-layout(std140, binding = 0) uniform Camera {
+layout(std140, binding = 0) uniform Camera
+{
 	mat4 ViewProjection;
 } mainCamera;
 
-layout(std140, binding = 1) uniform ObjectTransform {
+layout(std140, binding = 1) uniform ObjectTransform
+{
 	mat4 Transform;
 } transform;
 

@@ -8,6 +8,13 @@
 
 namespace Snow {
     namespace Core {
+
+        enum class CursorMode {
+            Normal = 0,
+            Hidden = 1,
+            Locked = 2
+        };
+
         class Input {
         public:
 
@@ -21,6 +28,8 @@ namespace Snow {
             static void SetKeyState(KeyCode key, bool pressed) { m_KeyState[static_cast<uint16_t>(key)] = pressed; }
             static void SetMouseState(MouseCode button, bool pressed) { m_MouseState[static_cast<uint8_t>(button)] = pressed; }
 
+            static void SetCursorMode(CursorMode mode);
+            static CursorMode GetCursorMode();
 
             static const glm::vec2& GetMousePos() { return m_MousePosition; }
             static const glm::vec2& GetMouseScrollOffset() { return m_MouseScroll; }

@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <utility>
 
-#include "Base.h"
 
 namespace Snow {
 
@@ -21,6 +20,12 @@ namespace Snow {
 	private:
 		mutable uint32_t m_RefCount = 0;
 	};
+
+	namespace RefUtils {
+		void AddToLiveReferences(void* instance);
+		void RemoveFromLiveReferences(void* instance);
+		bool IsLive(void* instance);
+	}
 
 	template<typename T>
 	class Ref {
@@ -106,7 +111,7 @@ namespace Snow {
 		}
 
 		template<typename T2>
-		Ref<T2> As() {
+		Ref<T2> As() const {
 			return Ref<T2>(*this);
 		}
 
@@ -136,5 +141,23 @@ namespace Snow {
 		T* m_Instance;
 	};
 
+	template<typename T>
+	class WeakRef {
+	public:
+		WeakRef() = default;
 
+		WeakRef(Ref<T> ref) {
+			m_Instance = ref.Raw();
+		}
+
+		WeakRef(T* instance) {
+			m_Instance = instance;
+		}
+
+		bool IsValid() const { return m_Instance ? RefUtils::IsLive(m_Instance) : false; }
+		operator bool() const { return IsValid(); }
+
+	private:
+		T* m_Instance = nullptr;
+	};
 }

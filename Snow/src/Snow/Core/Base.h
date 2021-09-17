@@ -3,6 +3,9 @@
 #include <memory>
 #include <stdint.h>
 
+#include "Assert.h"
+#include "Ref.h"
+
 #if defined SNOW_DEBUG
 	#if defined(SNOW_PLATFORM_WINDOWS)
 		#define SNOW_DEBUGBREAK() __debugbreak()
@@ -39,4 +42,5 @@ namespace Snow {
 		}
 	}
 
+	using byte = uint8_t;
 }

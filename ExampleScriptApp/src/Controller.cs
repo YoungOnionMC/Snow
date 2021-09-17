@@ -40,6 +40,7 @@ namespace ExampleScriptApp
             transform.Translation = translation;
             SetTransform(transform);
 
+
             Console.WriteLine("Mouse Pos {0}, {1}", Input.GetMousePosition().X, Input.GetMousePosition().Y);
         }
     }

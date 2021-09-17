@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Snow.h>
-#include "Panels/SceneHierarchyPanel.h"
+#include "Snow/Editor/SceneHierarchyPanel.h"
 
 #include <glm/glm.hpp>
 
@@ -32,13 +32,14 @@ namespace Snow {
         void SaveSceneAs();
 
         Ref<Snow::Scene> m_RuntimeScene, m_EditorScene;
+        Ref<Render::SceneRenderer> m_SceneRenderer;
 
         enum class SceneState {
             Editor = 0, Play = 1, Pause = 2
         };
         SceneState m_SceneState = SceneState::Editor;
 
-        Render::EditorCamera m_EditorCamera;
+        Editor::EditorCamera m_EditorCamera;
         Entity m_CameraEntity;
         Entity m_Square1;
 
@@ -49,7 +50,7 @@ namespace Snow {
 
         bool m_Running = false;
 
-        Ref<Render::API::Texture2D> m_PlayButtonTex;
+        Ref<Render::Texture2D> m_PlayButtonTex;
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
 

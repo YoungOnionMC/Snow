@@ -1,6 +1,7 @@
 #version 450
 
 layout (location = 0) out vec4 Color;
+layout (location = 1) out vec4 Color2;
 
 layout (location = 0) in VertexOutput {
     vec2 TexCoord;
@@ -8,7 +9,11 @@ layout (location = 0) in VertexOutput {
     vec4 Color;
 } psInput;
 
+#if VULKAN
+layout (set = 1, binding = 0) uniform sampler2D u_Textures[32];
+#else
 layout (binding = 0) uniform sampler2D u_Textures[32];
+#endif
 
 void main() {
     vec4 texColor = psInput.Color;
@@ -48,5 +53,5 @@ void main() {
     }
 
     Color = texColor;
-    //Color = vec4(0.0f);
+    Color2 = vec4(0.0f);
 }

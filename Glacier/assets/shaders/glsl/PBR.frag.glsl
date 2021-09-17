@@ -11,7 +11,12 @@ struct Light {
 	float Multiplier;
 };
 
-layout(std140, binding = 2) uniform Environment {
+#if VULKAN
+layout(std140, set = 0, binding = 2) uniform Environment
+#else
+layout(std140, binding = 2) uniform Environment
+#endif
+{
 	Light lights;
 	vec3 u_CameraPosition;
 
@@ -29,17 +34,57 @@ layout(location = 0) in PixelInput {
 
 layout(location = 0) out vec4 Color;
 
+#if VULKAN
+layout (set = 1, binding = 0) uniform sampler2D u_AlbedoTexture;
+#else
 layout(binding = 0) uniform sampler2D u_AlbedoTexture;
+#endif
+
+#if VULKAN
+layout (set = 1, binding = 1) uniform sampler2D u_NormalTexture;
+#else
 layout(binding = 1) uniform sampler2D u_NormalTexture;
+#endif
+
+#if VULKAN
+layout (set = 1, binding = 2) uniform sampler2D u_MetalnessTexture;
+#else
 layout(binding = 2) uniform sampler2D u_MetalnessTexture;
+#endif
+
+#if VULKAN
+layout (set = 1, binding = 3) uniform sampler2D u_RoughnessTexture;
+#else
 layout(binding = 3) uniform sampler2D u_RoughnessTexture;
+#endif
 
+// Environment maps
+#if VULKAN
+layout (set = 1, binding = 4) uniform samplerCube u_EnvRadianceTexture;
+#else
 layout(binding = 4) uniform samplerCube u_EnvRadianceTexture;
+#endif
+
+#if VULKAN
+layout (set = 1, binding = 5) uniform samplerCube u_EnvIrradianceTexture;
+#else
 layout(binding = 5) uniform samplerCube u_EnvIrradianceTexture;
+#endif
 
+// BRDF LUT
+
+#if VULKAN
+layout (set = 1, binding = 6) uniform sampler2D u_BRDFLUTTexture;
+#else
 layout(binding = 6) uniform sampler2D u_BRDFLUTTexture;
+#endif
 
-layout (std140, binding = 3) uniform Material {
+#if VULKAN
+layout (std140, set = 0, binding = 3) uniform Material
+#else
+layout (std140, binding = 3) uniform Material
+#endif
+{
 	vec3 AlbedoColor;
 	float Metalness;
 	float Roughness;
@@ -175,6 +220,9 @@ vec3 IBL(vec3 F0, vec3 Lr) {
 	vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y);
 
 	return diffuseIBL + specularIBL;
+
+	//return texture(u_BRDFLUTTexture, m_Params.Normal.xz).rgb;
+	//return vec3(1.0, 0.0, 0.0);
 }
 
 void main() {
@@ -201,5 +249,5 @@ void main() {
 
 	Color = vec4(lightContribution + iblContribution, 1.0f);
 
-	//Color = vec4(lightContribution, 1.0);
+	//Color = vec4((m_Params.View), 1.0);
 }
