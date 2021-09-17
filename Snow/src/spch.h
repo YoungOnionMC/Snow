@@ -14,7 +14,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "Snow/Core/Assert.h"
 #include "Snow/Core/Base.h"
 #include "Snow/Core/Log.h"
 #include "Snow/Core/Ref.h"
