@@ -24,25 +24,25 @@ namespace Snow {
 	public:
 		VulkanSwapChain() = default;
 
+		void Init() override;
 		void Init(VkInstance instance, Ref<VulkanDevice>& device);
 
-		void InitSurface();
+		virtual void InitSurface(void* windowHandle) override;
 
+		void Create(const Render::SwapChainSpecification& spec);
 
-		void Create(uint32_t* width, uint32_t* height, bool vsync = false);
-
-		void OnResize(uint32_t width, uint32_t height);
-		void BeginFrame();
+		virtual void OnResize(uint32_t width, uint32_t height) override;
+		virtual void BeginFrame() override;
 
 		VkRenderPass GetRenderPass() { return m_RenderPass; }
 
 		VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentBufferIndex); }
 		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentBufferIndex); }
 
-		uint32_t GetCurrentBufferIndex() { return m_CurrentBufferIndex; }
+		uint32_t GetCurrentBufferIndex() override { return m_CurrentBufferIndex; }
 
-		VkFramebuffer GetFramebuffer(uint32_t index) { return m_Framebuffers[index]; }
-		VkCommandBuffer GetDrawCommandBuffer(uint32_t index) { return m_DrawCommandBuffers[index]; }
+		VkFramebuffer GetFramebuffer(uint32_t index) { SNOW_CORE_ASSERT(index < m_ImageCount); return m_Framebuffers[index]; }
+		VkCommandBuffer GetDrawCommandBuffer(uint32_t index) { SNOW_CORE_ASSERT(index < m_ImageCount);  return m_DrawCommandBuffers[index]; }
 
 		uint32_t GetImageCount() { return m_ImageCount; }
 		uint32_t GetMinimumImageCount() { return m_MinimumImageCount; }
@@ -66,10 +66,10 @@ namespace Snow {
 
 		VkInstance m_Instance;
 		Ref<VulkanDevice> m_Device;
-
-		VkSwapchainKHR m_VulkanSwapchain;
-
 		VulkanAllocator m_Allocator;
+
+		VkSwapchainKHR m_VulkanSwapchain = nullptr;
+
 
 		uint32_t m_QueueNodeIndex = UINT32_MAX;
 
@@ -89,7 +89,7 @@ namespace Snow {
 		VkFormat m_DepthBufferFormat;
 		struct DepthStencil {
 			VkImage Image;
-			VkDeviceMemory DeviceMemory;
+			VmaAllocation MemoryAlloc;
 			VkImageView ImageView;
 		} m_DepthStencil;
 
@@ -108,7 +108,10 @@ namespace Snow {
 		VkRenderPass m_RenderPass;
 		uint32_t m_CurrentBufferIndex = 0;
 
-		uint32_t m_Width, m_Height;
+		uint32_t m_Width = 0, m_Height = 0;
+		bool m_VSync;
+
+		Render::SwapChainSpecification m_Specification;
 
 		VkSurfaceKHR m_VulkanSurface;
 

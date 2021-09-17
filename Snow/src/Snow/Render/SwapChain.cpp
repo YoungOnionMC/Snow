@@ -5,15 +5,16 @@
 
 #include "Snow/Render/Renderer.h"
 
-#include "Snow/Platform/OpenGL/OpenGLSwapChain.h"
-//#include "Snow/Platform/Vulkan/VulkanSwapChain.h"
+//#include "Snow/Platform/OpenGL/OpenGLSwapChain.h"
+#include "Snow/Platform/Vulkan/VulkanSwapChain.h"
 
 namespace Snow {
     namespace Render {
-        SwapChain* SwapChain::Create(const SwapChainSpecification& spec) {
-            switch(Renderer::GetRenderAPI()) {
-            case RenderAPIType::None: return nullptr;
-            case RenderAPIType::OpenGL: return new OpenGLSwapChain(spec);
+        SwapChain* SwapChain::CreateSwapChain(const SwapChainSpecification& spec) {
+            switch(Render::RendererAPI::Current()) {
+            case RendererAPIType::None: return nullptr;
+            //case RendererAPIType::OpenGL: return new OpenGLSwapChain(spec);
+            case RendererAPIType::Vulkan: return new VulkanSwapChain();
             }
 
             return nullptr;
