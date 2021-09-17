@@ -5,14 +5,14 @@
 namespace Snow {
 	namespace Core {
 		struct AABB {
-			glm::vec3 MinBounds, MaxBounds;
+			glm::vec3 Min, Max;
+
+			AABB() : Min(0.0f), Max(0.0f) {}
 
 			AABB(const glm::vec3& min, const glm::vec3& max) :
-				MinBounds(min), MaxBounds(max) {}
+				Min(min), Max(max) {}
 
-			bool Intersects(const AABB& other) {
-				if(other.)
-			}
+			
 		};
 	}
 }
