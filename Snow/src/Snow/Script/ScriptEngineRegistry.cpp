@@ -35,7 +35,6 @@ namespace Snow {
 			Component_RegisterType(CameraComponent);
 			Component_RegisterType(MeshComponent);
 			Component_RegisterType(ScriptComponent);
-			Component_RegisterType(NativeScriptComponent);
 			Component_RegisterType(RigidBody2DComponent);
 		}
 

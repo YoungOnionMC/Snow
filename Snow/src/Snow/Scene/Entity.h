@@ -3,7 +3,7 @@
 #include <entt.hpp>
 
 #include "Snow/Scene/Scene.h"
-//#include "Snow/Scene/Components.h"
+#include "Snow/Scene/Components.h"
 
 
 namespace Snow {
@@ -20,7 +20,14 @@ namespace Snow {
 
         template<typename T, typename... Args>
         T& AddComponent(Args&&... args) {
-            return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+            T& comp = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+            return comp;
+        }
+
+        template<typename T, typename... Args>
+        T& AddOrReplaceComponent(Args&&... args) {
+            T& comp = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+            return comp;
         }
 
         template<typename T>
@@ -43,8 +50,8 @@ namespace Snow {
             m_Scene->m_Registry.remove<T>(m_EntityHandle);
         }
 
-        glm::mat4& GetTransform();
-        const glm::mat4& GetTransform() const;
+        TransformComponent Transform() { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle); }
+        const glm::mat4& Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
 
         operator bool() const { return m_EntityHandle != entt::null; }
         operator entt::entity() const { return m_EntityHandle; }
@@ -58,7 +65,7 @@ namespace Snow {
             return !(*this == other);
         }
 
-        UUID GetUUID();
+        UUID GetUUID() { return GetComponent<IDComponent>().ID; }
         UUID GetSceneUUID() { return m_Scene->GetUUID(); }
     private:
         entt::entity m_EntityHandle{entt::null};

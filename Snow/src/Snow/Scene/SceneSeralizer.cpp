@@ -103,12 +103,12 @@ namespace Snow {
 					deserializedEntity.AddComponent<SpriteRendererComponent>(spriteRendererComp);
 				}
 
-				RigidBody2DComponent rb2dComp;
-				rb2dComp = RigidBody2DComponent(RigidBody2D(m_Scene->GetPhysicsWorld(), transformComp.GetTransform()));
-				if (RigidBody2DComponent::Deserialize(entity, rb2dComp)) {
-					deserializedEntity.AddComponent<RigidBody2DComponent>(rb2dComp);
+				//RigidBody2DComponent rb2dComp;
+				//rb2dComp = RigidBody2DComponent(RigidBody2D(m_Scene->GetPhysicsWorld(), transformComp.GetTransform()));
+				//if (RigidBody2DComponent::Deserialize(entity, rb2dComp)) {
+				//	deserializedEntity.AddComponent<RigidBody2DComponent>(rb2dComp);
 					
-				}
+				//}
 
 				ScriptComponent sComp;
 				if (ScriptComponent::Deserialize(entity, sComp, deserializedEntity)) {

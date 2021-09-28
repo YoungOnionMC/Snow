@@ -108,7 +108,7 @@ namespace Snow {
 					if (Core::Input::IsKeyPressed(KeyCode::A))
 						m_PositionDelta -= ts.GetMilliseconds() * m_Speed * m_RightDirection;
 					if (Core::Input::IsKeyPressed(KeyCode::D))
-						m_PositionDelta -= ts.GetMilliseconds() * m_Speed * m_RightDirection;
+						m_PositionDelta += ts.GetMilliseconds() * m_Speed * m_RightDirection;
 
 					constexpr float maxRate{ 0.12f };
 					m_YawDelta += glm::clamp(yawSign * delta.x * RotationSpeed(), -maxRate, maxRate);

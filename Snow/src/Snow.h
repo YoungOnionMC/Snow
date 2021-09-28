@@ -1,5 +1,8 @@
 #include <spch.h>
 
+#include "Snow/Asset/Asset.h"
+#include "Snow/Asset/AssetManager.h"
+
 #include "Snow/Core/Application.h"
 #include "Snow/Core/Base.h"
 #include "Snow/Core/Input.h"
@@ -12,8 +15,13 @@
 
 #include "Snow/ImGui/ImGui.h"
 #include "Snow/ImGui/ImGuiLayer.h"
+#include "Snow/ImGui/ImGuiUtilities.h"
 
+#include "Snow/Math/AABB.h"
 #include "Snow/Math/Mat4.h"
+
+#include "Snow/Project/Project.h"
+#include "Snow/Project/ProjectSerializer.h"
 
 #include "Snow/Render/Buffer.h"
 #include "Snow/Render/Framebuffer.h"

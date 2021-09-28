@@ -8,6 +8,7 @@ namespace Snow {
 		class FileDialogs {
 		public:
 			static std::optional<std::string> OpenFile(const char* filter);
+			static std::optional<std::string> OpenFolder(const char* initialFolder = "");
 			static std::optional<std::string> SaveFile(const char* filter);
 		};
 	}

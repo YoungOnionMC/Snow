@@ -1,7 +1,18 @@
 #pragma once
 #include <ostream>
 
+#include "Snow/Core/Base.h"
+
 namespace Snow {
+    typedef enum class KeyModifiers : uint16_t {
+        Shift = BIT(0),
+        Control = BIT(1),
+        Alt = BIT(2),
+        Super = BIT(3),
+        CapsLock = BIT(4),
+        NumLock = BIT(5)
+    };
+ 
     typedef enum class KeyCode : uint16_t {
 
         Space           = 32,

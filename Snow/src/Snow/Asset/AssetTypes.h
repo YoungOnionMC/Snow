@@ -15,10 +15,11 @@ namespace Snow {
 		Scene = 1,
 		MeshAsset = 2,
 		Mesh = 3,
-		Texture = 4,
-		EnvMap = 5,
-		Audio = 6,
-		PhysicsMat = 7,
+		Material = 4,
+		Texture = 5,
+		EnvMap = 6,
+		Audio = 7,
+		PhysicsMat = 8,
 
 	};
 
@@ -37,7 +38,7 @@ namespace Snow {
 			return AssetType::None;
 		}
 
-		inline const char* AssetTypeFromString(AssetType assetType) {
+		inline const char* AssetTypeToString(AssetType assetType) {
 			switch (assetType) {
 			case AssetType::None:	return "None";
 			case AssetType::Scene:	return "Scene";

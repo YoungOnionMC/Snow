@@ -77,7 +77,7 @@ namespace Snow {
             static void BeginFrame();
             static void EndFrame();
 
-            static void BeginRenderPass(Ref<RenderCommandBuffer> commandBuffer, Ref<RenderPass> renderPass, bool clear = true);
+            static void BeginRenderPass(Ref<RenderCommandBuffer> commandBuffer, Ref<RenderPass> renderPass, bool clear = false);
             static void EndRenderPass(Ref<RenderCommandBuffer> commandBuffer);
 
             static void ClearImage(Ref<RenderCommandBuffer> commandBuffer, Ref<Image2D> image);

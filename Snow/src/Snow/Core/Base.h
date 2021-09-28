@@ -5,6 +5,7 @@
 
 #include "Assert.h"
 #include "Ref.h"
+#include "Scope.h"
 
 #if defined SNOW_DEBUG
 	#if defined(SNOW_PLATFORM_WINDOWS)
@@ -13,7 +14,9 @@
 		#include <signal.h>
 		#define SNOW_DEBUGBREAK() raise(SIGTRAP)
 	#endif
-	#define SNOW_ENABLE_ASSERTS
+	#ifndef SNOW_ENABLE_ASSERTS
+		#define SNOW_ENABLE_ASSERTS
+	#endif
 	//#define SNOW_DEBUGBREAK()
 #else
 	#define SNOW_DEBUGBREAK()

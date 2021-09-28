@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Snow/Core/Timestep.h"
-#include "Snow/Scene/Entity.h"
+//#include "Snow/Scene/Entity.h"
 
-namespace Snow {
 	class Entity;
+namespace Snow {
 	class ScriptableEntity {
 	public:
 		virtual ~ScriptableEntity() {}

@@ -38,7 +38,7 @@ namespace Snow {
 
 		Ref(T* instance) :
 			m_Instance(instance) {
-			//assert(std::is_base_of<RefCounted, T>::value, "Class is not RefCounted!");
+			static_assert(std::is_base_of<RefCounted, T>::value, "Class is not RefCounted!");
 			IncRef();
 		}
 
@@ -52,6 +52,12 @@ namespace Snow {
 		Ref(Ref<T2>&& other) {
 			m_Instance = (T*)other.m_Instance;
 			other.m_Instance = nullptr;
+		}
+
+		static Ref<T> CopyWithoutIncrement(const Ref<T>& other) {
+			Ref<T> result = nullptr;
+			result->m_Instance = other.m_Instance;
+			return result;
 		}
 
 		~Ref() {
@@ -120,25 +126,45 @@ namespace Snow {
 			return Ref<T>(new T(std::forward<Args>(args)...));
 		}
 
+		bool operator==(const Ref<T>& other) const {
+			return m_Instance == other.m_Instance;
+		}
+
+		bool operator!=(const Ref<T>& other) const {
+			return !(*this == other);
+		}
+
+		bool EqualsObject(const Ref<T>& other) {
+			if (!m_Instance || !other.m_Instance)
+				return false;
+
+			return *m_Instance == *other.m_Instance;
+		}
+
 	private:
 
 		void IncRef() const {
-			if (m_Instance)
+			if (m_Instance) {
 				m_Instance->IncRefCount();
+				RefUtils::AddToLiveReferences((void*)m_Instance);
+			}
 		}
 
 		void DecRef() const {
 			if (m_Instance) {
 				m_Instance->DecRefCount();
-				if (m_Instance->GetRefCount() == 0)
+				if (m_Instance->GetRefCount() == 0) {
 					delete m_Instance;
+					RefUtils::RemoveFromLiveReferences((void*)m_Instance);
+					m_Instance = nullptr;
+				}
 			}
 		}
 
 		template<class T2>
 		friend class Ref;
 
-		T* m_Instance;
+		mutable T* m_Instance;
 	};
 
 	template<typename T>

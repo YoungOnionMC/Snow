@@ -1,12 +1,12 @@
 #pragma once
 
+#include <imgui.h>
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 
 #include <imgui_internal.h>
 
-#include <imgui.h>
 
 #include "Snow/Render/Texture.h"
 #include "Snow/ImGui/Colors.h"
@@ -18,6 +18,7 @@
 
 namespace Snow {
 	namespace UI {
+		ImTextureID GetTextureID(Ref<Render::Texture2D> texture);
 
 		class ScopedStyle {
 		public:
@@ -203,5 +204,27 @@ namespace Snow {
 			ImGui::EndPopup();
 		}
 
+
+		static void DrawButtonImage(const Ref<Render::Texture2D>& imageN, const Ref<Render::Texture2D>& imageH, const Ref<Render::Texture2D>& imageP, ImU32 tintN, ImU32 tintH, ImU32 tintP, ImVec2 rectMin, ImVec2 rectMax) {
+			auto* drawList = ImGui::GetWindowDrawList();
+			if (ImGui::IsItemActive())
+				drawList->AddImage(GetTextureID(imageP), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintP);
+			else if (ImGui::IsItemHovered())
+				drawList->AddImage(GetTextureID(imageH), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintH);
+			else
+				drawList->AddImage(GetTextureID(imageN), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintN);
+		}
+
+		static void DrawButtonImage(const Ref<Render::Texture2D>& imageN, const Ref<Render::Texture2D>& imageH, const Ref<Render::Texture2D>& imageP, ImU32 tintN, ImU32 tintH, ImU32 tintP, ImRect rect) {
+			DrawButtonImage(imageN, imageH, imageP, tintN, tintH, tintP, rect.Min, rect.Max);
+		}
+
+		static void DrawButtonImage(const Ref<Render::Texture2D>& image, ImU32 tintN, ImU32 tintH, ImU32 tintP, ImVec2 rectMin, ImVec2 rectMax) {
+			DrawButtonImage(image, image, image, tintN, tintH, tintP, rectMin, rectMax);
+		}
+
+		static void DrawButtonImage(const Ref<Render::Texture2D>& image, ImU32 tintN, ImU32 tintH, ImU32 tintP, ImRect rect) {
+			DrawButtonImage(image, image, image, tintN, tintH, tintP, rect.Min, rect.Max);
+		}
 	}
 }

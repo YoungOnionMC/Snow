@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Snow {
-	namespace Utils {
+	namespace Utils::String {
 		std::string GetFilename(const std::string& filepath);
 		std::string GetExtension(const std::string& filepath);
 		std::string RemoveExtension(const std::string& filepath);

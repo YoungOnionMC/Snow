@@ -4,6 +4,10 @@
 #include "Snow/Render/Texture.h"
 
 #include <imgui.h>
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+#include <imgui_internal.h>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -452,6 +456,77 @@ namespace Snow {
 			return modified;
 		}
 
+		enum class PropertyAssetReferenceError {
+			None = 0, InvalidMetadata = 1
+		};
+
+		static AssetHandle s_PropertyAssetReferenceAssetHandle;
+
+		struct PropertyAssetReferenceSettings {
+			bool AdvanceToNextColumn = true;
+			bool NoItemSpacing = false;
+			float WidthOffset = 0.0f;
+		};
+
+		template<typename T, typename Fn>
+		static bool PropertyAssetReferenceTarget(const char* label, const char* assetName, Ref<T> source, Fn&& targetFunc, const PropertyAssetReferenceSettings& settings = PropertyAssetReferenceSettings()) {
+			bool modified = true;
+
+			ImGui::Text(label);
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			if (settings.NoItemSpacing)
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 0.0f });
+
+			ImVec2 originalButtonTextAlign = ImGui::GetStyle().ButtonTextAlign;
+			ImGui::GetStyle().ButtonTextAlign = { 0.0f, 0.5f };
+			float width = ImGui::GetContentRegionAvail().x - settings.WidthOffset;
+			UI::PushID();
+
+			float lineHeight = 28.0f;
+
+			if (source) {
+				if (!source->IsFlagSet(AssetFlag::Missing)) {
+					if (assetName)
+						ImGui::Button((char*)assetName, { width, lineHeight });
+					else {
+						assetName = "testAssetname";
+						ImGui::Button((char*)assetName, { width, lineHeight });
+					}
+				}
+				else
+					ImGui::Button("Missing", { width, lineHeight });
+			}
+			else {
+				ImGui::Button("Null", { width, lineHeight });
+			}
+			UI::PopID();
+			ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
+
+			if (ImGui::BeginDragDropTarget()) {
+				auto data = ImGui::AcceptDragDropPayload("assetPayload");
+
+				if (data) {
+					AssetHandle assetHandle = *(AssetHandle*)data->Data;
+					s_PropertyAssetReferenceAssetHandle = assetHandle;
+					//Ref<Asset> asset = AssetManager::GetAsset<Asset>(assetHandle);
+					//if (asset && asset->GetAssetType() == T::GetStaticType()) {
+					//	targetFunc(asset.As<T>());
+					//	modified = true;
+					//}
+				}
+			}
+
+			ImGui::PopItemWidth();
+			if (settings.AdvanceToNextColumn)
+				ImGui::NextColumn();
+			if (settings.NoItemSpacing)
+				ImGui::PopStyleVar();
+
+			return modified;
+		}
+
 		static bool PropertyColor(const char* label, glm::vec3& value) {
 			bool modified = false;
 
@@ -542,6 +617,10 @@ namespace Snow {
 		void Image(const Ref<Render::Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
 		void Image(const Ref<Render::Image2D>& image, uint32_t layer, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
 		void ImageMip(const Ref<Render::Image2D>& image, uint32_t mip, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
-		void Image(const Ref<Render::Texture2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+		void Image(const Ref<Render::Texture2D>& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+		bool ImageButton(const Ref<Render::Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& background_col = ImVec4(1, 1, 1, 1), const ImVec4& tint_col = ImVec4(0, 0, 0, 0));
+		bool ImageButton(const char* stringID, const Ref<Render::Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& background_col = ImVec4(1, 1, 1, 1), const ImVec4& tint_col = ImVec4(0, 0, 0, 0));
+		bool ImageButton(const Ref<Render::Texture2D>& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& background_col = ImVec4(1, 1, 1, 1), const ImVec4& tint_col = ImVec4(0, 0, 0, 0));
+		bool ImageButton(const char* stringID, const Ref<Render::Texture2D>& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& background_col = ImVec4(1, 1, 1, 1), const ImVec4& tint_col = ImVec4(0, 0, 0, 0));
 	}
 }

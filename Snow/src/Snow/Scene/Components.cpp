@@ -280,12 +280,12 @@ namespace Snow {
         out << YAML::Key << "RigidBody2DComponent";
         out << YAML::BeginMap;
 
-        out << YAML::Key << "Type" << YAML::Value << RigidBody.GetType();
-        out << YAML::Key << "Position" << YAML::Value << RigidBody.GetPosition();
-        out << YAML::Key << "Rotation" << YAML::Value << RigidBody.GetRotation();
-        out << YAML::Key << "Size" << YAML::Value << RigidBody.GetSize();
-        out << YAML::Key << "Density" << YAML::Value << RigidBody.GetDensity();
-        out << YAML::Key << "Friction" << YAML::Value << RigidBody.GetFriction();
+        //out << YAML::Key << "Type" << YAML::Value << RigidBody.GetType();
+        //out << YAML::Key << "Position" << YAML::Value << RigidBody.GetPosition();
+       // out << YAML::Key << "Rotation" << YAML::Value << RigidBody.GetRotation();
+        //out << YAML::Key << "Size" << YAML::Value << RigidBody.GetSize();
+        //out << YAML::Key << "Density" << YAML::Value << RigidBody.GetDensity();
+        //out << YAML::Key << "Friction" << YAML::Value << RigidBody.GetFriction();
 
         out << YAML::EndMap;
         
@@ -300,12 +300,12 @@ namespace Snow {
                 * glm::scale(glm::mat4(1.0f), glm::vec3(src["Size"].as<glm::vec2>(), 1.0f));
 
 
-            outRB2D.RigidBody.SetType((RigidBodyType)src["Type"].as<uint32_t>());
+            //outRB2D.RigidBody.SetType((RigidBodyType)src["Type"].as<uint32_t>());
             
 
-            outRB2D.RigidBody.SetTransform(transform);
-            outRB2D.RigidBody.SetDensity(src["Density"].as<float>());
-            outRB2D.RigidBody.SetFriction(src["Friction"].as<float>());
+            //outRB2D.RigidBody.SetTransform(transform);
+            //outRB2D.RigidBody.SetDensity(src["Density"].as<float>());
+            //outRB2D.RigidBody.SetFriction(src["Friction"].as<float>());
 
             return true;
         }

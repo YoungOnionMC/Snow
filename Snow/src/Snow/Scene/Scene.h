@@ -12,6 +12,7 @@
 
 #include <glm/glm.hpp>
 
+//#define B2_USER_SETTINGS
 #include <box2d/b2_world.h>
 
 namespace Snow {
@@ -44,10 +45,6 @@ namespace Snow {
 
         void Init();
 
-        Entity CreateEntity(const std::string& name = std::string());
-        Entity CreateEntityWithID(UUID uuid, const std::string& name = std::string(), bool runtimeMap = false);
-        void DestroyEntity(Entity entity);
-
         template<typename T>
         auto GetAllEntitiesWith() {
             return m_Registry.view<T>();
@@ -63,12 +60,18 @@ namespace Snow {
         void OnViewportResize(uint32_t width, uint32_t height);
 
         Entity FindEntityByTag(const std::string& tag);
-        void CopyScene(Ref<Scene> scene);
+        static Ref<Scene> CopyScene(Ref<Scene> scene);
 
         Light& GetLight() { return m_Light; }
         const Light& GetLight() const { return m_Light; }
 
         b2World* GetPhysicsWorld() const { return m_PhysicsWorld; }
+
+        Entity CreateEntity(const std::string& name = std::string());
+        Entity CreateEntityWithID(UUID uuid, const std::string& name = std::string(), bool runtimeMap = false);
+        void DestroyEntity(Entity entity);
+
+        Entity DuplicateEntity(Entity entity);
         
         Entity GetMainCamera();
 
@@ -89,6 +92,8 @@ namespace Snow {
 
         Ref<Render::TextureCube> m_EnvMap;
         Ref<Render::Texture2D> m_BRDFLUT;
+
+        Entity* m_Physics2DBodyEntityBuffer = nullptr;
 
         Ref<Render::Renderer2D> m_SceneRenderer2D;
 

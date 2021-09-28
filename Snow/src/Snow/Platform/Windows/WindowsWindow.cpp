@@ -253,7 +253,6 @@ namespace Snow {
 
         void Window::SetEventCallback(const std::function<void(Event::Event&)>& callback) {
             WindowEventCallback = callback;
-            
         }
 
         uint32_t Window::GetWidth() {

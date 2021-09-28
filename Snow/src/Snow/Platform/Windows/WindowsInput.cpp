@@ -53,12 +53,31 @@ namespace Snow {
 			Core::Event::EventSystem::AddEvent(event);
 		}
 #elif defined(SNOW_WINDOW_GLFW)
+		static int GLFWToSnowKeyMods(int mods) {
+			int result = 0;
+			if (mods & GLFW_MOD_SHIFT)
+				result |= (int)KeyModifiers::Shift;
+			if (mods & GLFW_MOD_ALT)
+				result |= (int)KeyModifiers::Alt;
+			if (mods & GLFW_MOD_CONTROL)
+				result |= (int)KeyModifiers::Control;
+			if (mods & GLFW_MOD_CAPS_LOCK)
+				result |= (int)KeyModifiers::CapsLock;
+			if (mods & GLFW_MOD_SUPER)
+				result |= (int)KeyModifiers::Super;
+			if (mods & GLFW_MOD_NUM_LOCK)
+				result |= (int)KeyModifiers::NumLock;
+
+			return result;
+		}
+
 		void KeyCallback(GLFWwindow* window, int keycode, int scan, int action, int mods) {
 
 			
 			bool repeat = (scan >> 30) & 1;
 
-			int mod = 0;
+
+			int mod = GLFWToSnowKeyMods(mods);
 
 			switch (action) {
 			case GLFW_PRESS: {

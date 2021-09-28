@@ -27,8 +27,8 @@ namespace Snow {
             FramebufferSpecification fbSpec;
             fbSpec.AttachmentList = { ImageFormat::RGBA32F, ImageFormat::DepthStencil };
             fbSpec.Samples = 1;
-            //fbSpec.ClearOnLoad = false;
-            fbSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+            fbSpec.ClearOnLoad = false;
+            fbSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 0.0f };
             fbSpec.DebugName = "Renderer2D Framebuffer";
 
             Ref<Framebuffer> framebuffer = Framebuffer::Create(fbSpec);

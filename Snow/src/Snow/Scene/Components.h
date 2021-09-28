@@ -3,7 +3,7 @@
 #include <string>
 
 #include "Snow/Scene/SceneCamera.h"
-#include "Snow/Scene/ScriptableEntity.h"
+//#include "Snow/Scene/ScriptableEntity.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -40,6 +40,9 @@ namespace Snow {
         TagComponent(const TagComponent&) = default;
         TagComponent(const std::string& tag) :
             Tag(tag) {}
+
+        operator std::string& () { return Tag; }
+        operator const std::string& () const { return Tag; }
 
         void Serialize(YAML::Emitter& out);
         bool Deserialize(YAML::Node node);
@@ -165,14 +168,17 @@ namespace Snow {
 
     struct MeshComponent {
         Ref<Render::Mesh> Mesh;
-        Ref<MaterialTable> MaterialTable;
+        Ref<Snow::MaterialTable> MaterialTable = Ref<Snow::MaterialTable>::Create(0);
 
         MeshComponent() = default;
+        MeshComponent(Ref<Render::Mesh> mesh) :
+            Mesh(mesh) {}
         MeshComponent(const std::string& filePath) {
             Mesh = Ref<Render::Mesh>::Create(Ref<Render::MeshAsset>::Create(filePath));
         }
     };
 
+    class Entity;
     struct ScriptComponent {
         std::string ModuleName;
         Script::ScriptModuleFieldMap ModuleFieldMap;
@@ -186,26 +192,33 @@ namespace Snow {
         static bool Deserialize(YAML::Node node, ScriptComponent& outRB2D, Entity entity);
     };
 
-    struct NativeScriptComponent {
-        ScriptableEntity* Instance = nullptr;
-
-        ScriptableEntity* (*InstantiateScript)();
-        void (*DestroyScript)(NativeScriptComponent*);
-
-        template<typename T>
-        void Bind() {
-            InstantiateScript = []() {return static_cast<ScriptableEntity*>(new T()); };
-            DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
-        }
-    };
-
     struct RigidBody2DComponent {
-        RigidBody2D RigidBody;
+        enum class BodyType {Static = 0, Dynamic, Kinematic};
+        BodyType Type = BodyType::Static;
+        bool FixedRotation = false;
+
+        void* RuntimeBody = nullptr;
 
         RigidBody2DComponent() = default;
-        RigidBody2DComponent(const RigidBody2D& rigidBody) : RigidBody(rigidBody) {}
+        RigidBody2DComponent(const RigidBody2DComponent&) = default;
 
         void Serialize(YAML::Emitter& out);
         static bool Deserialize(YAML::Node node, RigidBody2DComponent& outRB2D);
+    };
+
+    struct BoxCollider2DComponent {
+        glm::vec2 Offset = { 0.0f, 0.0f };
+        glm::vec2 Size = { 0.5f, 0.5f };
+
+        float Density = 1.0f;
+        float Friction = 0.4f;
+        float Restitution = 0.0f;
+        float RestitutionThreshold = 0.6f;
+
+        BoxCollider2DComponent() = default;
+        BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
+
+        void Serialize(YAML::Emitter& out) {}
+        static bool Deserialize(YAML::Node node, BoxCollider2DComponent& outbc2d) {}
     };
 }

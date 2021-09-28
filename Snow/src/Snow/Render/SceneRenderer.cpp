@@ -81,12 +81,10 @@ namespace Snow {
 			// Geometry Pipeline
 			
 			{
-#define pbr 0
-#if pbr
 				FramebufferSpecification framebufferSpec;
 				framebufferSpec.AttachmentList = { ImageFormat::RGBA32F, ImageFormat::RGBA32F, ImageFormat::RGBA16F, ImageFormat::DepthStencil };
 				framebufferSpec.Samples = 1;
-				framebufferSpec.ClearColor = { 0.1f, 0.6f, 0.1f, 1.0f };
+				framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 				framebufferSpec.DebugName = "Geometry";
 
 				Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
@@ -109,33 +107,7 @@ namespace Snow {
 				pipelineSpec.BindedRenderPass = RenderPass::Create(renderPassSpec);
 				pipelineSpec.DebugName = "PBR";
 				m_GeometryPipeline = Pipeline::Create(pipelineSpec);
-#else
-				FramebufferSpecification framebufferSpec;
-				framebufferSpec.AttachmentList = { ImageFormat::RGBA32F, ImageFormat::Depth32F };
-				framebufferSpec.Samples = 1;
-				framebufferSpec.ClearColor = { 0.1f, 0.6f, 0.1f, 1.0f };
-				framebufferSpec.DebugName = "Geometry";
 
-				Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
-
-
-				RenderPassSpecification renderPassSpec;
-				renderPassSpec.TargetFramebuffer = framebuffer;
-				renderPassSpec.DebugName = "Geometry";
-
-				PipelineSpecification pipelineSpec;
-				pipelineSpec.LineWidth = 1.0f;
-				pipelineSpec.Layout = {
-					{AttribType::Float3, "a_Position"},
-					{AttribType::Float2, "a_TexCoord"},
-					{AttribType::Float, "a_TexID"},
-					{AttribType::Float4, "a_Color"},
-				};
-				pipelineSpec.Shader = Renderer::GetShaderLibrary()->Get("Texture2D");
-				pipelineSpec.BindedRenderPass = RenderPass::Create(renderPassSpec);
-				pipelineSpec.DebugName = "Texture2D";
-				m_GeometryPipeline = Pipeline::Create(pipelineSpec);
-#endif
 				//s_SceneRendererData.GeometryPass = RenderPass::Create(geoRenderPassSpec);
 			}
 
@@ -165,7 +137,7 @@ namespace Snow {
 				FramebufferSpecification compFramebufferSpec;
 
 				compFramebufferSpec.DebugName = "SceneComposite";
-				compFramebufferSpec.ClearColor = { 0.2f, 0.2f, 0.2f, 1.0f };
+				compFramebufferSpec.ClearColor = { 0.15f, 0.15f, 0.15f, 1.0f };
 				compFramebufferSpec.SwapChainTarget = m_Specification.SwapChainTarget;
 				if(m_Specification.SwapChainTarget)
 					compFramebufferSpec.AttachmentList = { ImageFormat::RGBA };
@@ -201,8 +173,8 @@ namespace Snow {
 
 			if(!m_Specification.SwapChainTarget) {
 				FramebufferSpecification framebufferSpec;
-				framebufferSpec.AttachmentList = { ImageFormat::RGBA, ImageFormat::Depth32F };
-				framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+				framebufferSpec.AttachmentList = { ImageFormat::RGBA, ImageFormat::DepthStencil };
+				framebufferSpec.ClearColor = { 0.4f, 0.0f, 0.0f, 1.0f };
 				framebufferSpec.ClearOnLoad = false;
 				framebufferSpec.DebugName = "External Composite";
 
@@ -242,6 +214,8 @@ namespace Snow {
 
 			if (!m_ResourcesCreated)
 				return;
+
+			m_SceneData.SceneCamera = camera;
 
 			UBCamera& cameraData = CameraDataUB;
 
@@ -291,7 +265,7 @@ namespace Snow {
 				Renderer::RenderMesh(m_CommandBuffer, m_GeometryPipeline, m_UniformBufferSet, m_StorageBufferSet, dc.Mesh, dc.MaterialTable ? dc.MaterialTable : dc.Mesh->GetMaterials(), dc.Transform);
 			}
 
-			glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
+			glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
 			Renderer::RenderQuad(m_CommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial, transform);
 
 
@@ -355,8 +329,10 @@ namespace Snow {
 			auto framebuffer = m_GeometryPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer;
 			int textureSamples = framebuffer->GetSpecification().Samples;
 
+			float exposure = 1.0f;
+
 			//m_CompositeMaterial->Set("u_Uniforms.TextureSamples", textureSamples);
-			m_CompositeMaterial->Set("u_Uniforms.Exposure", 0.05f);
+			m_CompositeMaterial->Set("u_Uniforms.Exposure", exposure);
 			m_CompositeMaterial->Set("u_Texture", framebuffer->GetImage());
 
 			Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositePipeline, nullptr, m_CompositeMaterial);
@@ -370,7 +346,7 @@ namespace Snow {
 			if (!m_ResourcesCreated)
 				return nullptr;
 
-			return m_CompositePipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
+			return m_CompositePipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetImage();
 		}
 
 		void SceneRenderer::FlushDrawList() {

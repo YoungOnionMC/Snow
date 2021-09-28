@@ -1,0 +1,7 @@
+Project:
+  Name: FirstProject
+  AssetDirectory: Assets
+  AssetRegistry: Assets/AssetRegistry.sar
+  ScriptModulePath: ""
+  StartScene: ""
+  ReloadAssemblyOnPlay: true

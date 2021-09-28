@@ -46,7 +46,7 @@ namespace Snow {
 
 			Ref<Image2D> GetFinalPassImage();
 
-			Ref<RenderPass> GetCompositeRenderPass() { return m_CompositePipeline->GetSpecification().BindedRenderPass; }
+			Ref<RenderPass> GetCompositeRenderPass() { return m_ExternalCompositeRenderPass; }
 
 			void OnImGuiRender();
 		private:

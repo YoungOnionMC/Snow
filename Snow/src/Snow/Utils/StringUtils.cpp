@@ -7,7 +7,7 @@
 #include <chrono>
 
 namespace Snow {
-	namespace Utils {
+	namespace Utils::String {
 		std::string GetFilename(const std::string& filepath) {
 			std::vector<std::string> parts = SplitString(filepath, "/\\");
 
