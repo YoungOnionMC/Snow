@@ -2,6 +2,7 @@
 
 
 #include "Snow/Utils/FileDialogs.h"
+#include "Snow/Utils/FileSystem.h"
 #include "Snow/Scene/SceneSerializer.h"
 #include "Snow/Render/SceneRenderer.h"
 #include "Snow/Script/ScriptEngine.h"
@@ -45,6 +46,8 @@ namespace Snow {
         //m_Square1 = m_EditorScene->CreateEntity("Square");
 
         m_SceneHierarchyPanel = SceneHierarchyPanel(m_EditorScene);
+        m_Renderer2D = Ref<Renderer2D>::Create();
+        
         Script::ScriptEngine::SetSceneContext(m_EditorScene);
         //m_SceneHierarchyPanel.SetScene(m_ActiveScene);
 
@@ -77,7 +80,7 @@ namespace Snow {
     }
 
     void EditorLayer::OnDetach() {
-
+        FileSystem::StopWatching();
     }
 
     void EditorLayer::OnScenePlay() {
@@ -124,7 +127,7 @@ namespace Snow {
             //m_EditorScene->OnUpdate(ts);
             m_EditorScene->OnRenderEditor(m_SceneRenderer, ts, m_EditorCamera);
 
-            //m_Framebuffer->Unbind();
+            OnRender();
 
             break;
         }
@@ -148,6 +151,25 @@ namespace Snow {
         
     }
 
+    void EditorLayer::OnRender() {
+        if (!m_SceneRenderer->GetFinalPassImage())
+            return;
+
+        m_Renderer2D->BeginScene(m_EditorCamera.GetViewProjectionMatrix(), m_EditorCamera.GetViewMatrix());
+        m_Renderer2D->SetTargetRenderPass(m_SceneRenderer->GetCompositeRenderPass());
+        if (m_SceneHierarchyPanel.GetSelectedEntity()) {
+            auto& selection = m_SceneHierarchyPanel.GetSelectedEntity();
+            if (selection.HasComponent<MeshComponent>()) {
+                auto mesh = AssetManager::GetAsset<Mesh>(selection.GetComponent<MeshComponent>().Mesh);
+                if (mesh) {
+                    glm::mat4 transform = selection.GetComponent<TransformComponent>().GetTransform();
+                    const Core::AABB& aabb = mesh->GetMeshAsset()->GetBoundingBox();
+                    m_Renderer2D->DrawAABB(aabb, transform, glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
+                }
+            }
+        }
+    }
+
     static void ReplaceProjectName(std::string& str, const std::string& prjName) {
         static const char* s_ProjectNameToken = "$PROJECT_NAME$";
         size_t pos = 0;
@@ -159,7 +181,7 @@ namespace Snow {
 
     void EditorLayer::CreateProject(std::filesystem::path filePath) {
         if (!FileSystem::Exists(filePath))
-            FileSystem::CreateDirectory(filePath);
+            Snow::FileSystem::CreateDirectory(filePath);
 
         
         {
@@ -190,7 +212,7 @@ namespace Snow {
     }
 
     void EditorLayer::OpenProject() {
-        std::string filepath = Utils::FileDialogs::OpenFile("Snow Project (*.sproj)\0*.sproj\0").value();
+        std::string filepath = Snow::Utils::FileDialogs::OpenFile("Snow Project (*.sproj)\0*.sproj\0").value();
 
         if (filepath.empty())
             return;
@@ -220,6 +242,9 @@ namespace Snow {
         m_EditorScene = Ref<Scene>::Create();
         m_SceneRenderer = Ref<Render::SceneRenderer>::Create(m_EditorScene, Render::SceneRendererSpecification{ false });
 
+        m_ContentBrowserPanel = CreateScope<ContentBrowserPanel>(project);
+        FileSystem::StartWatching();
+
         m_EditorCamera = Editor::EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
 
         //auto& app = Core::Application::Get();
@@ -237,6 +262,8 @@ namespace Snow {
     }
 
     void EditorLayer::CloseProject(bool unload) {
+        FileSystem::StopWatching();
+
         SaveProject();
 
         m_SceneHierarchyPanel.SetScene(nullptr);
@@ -265,7 +292,7 @@ namespace Snow {
 
     void EditorLayer::OpenScene() {
         //auto& app = Core::Application::Get();
-        auto filepath = Utils::FileDialogs::OpenFile(SceneSerializer::FileFilter.data());
+        auto filepath = Snow::Utils::FileDialogs::OpenFile(SceneSerializer::FileFilter.data());
         if (filepath.has_value()) {
             OpenScene(filepath.value());
         }
@@ -309,7 +336,7 @@ namespace Snow {
     }
 
     void EditorLayer::SaveSceneAs() {
-        std::filesystem::path filepath = Utils::FileDialogs::SaveFile(SceneSerializer::FileFilter.data()).value();
+        std::filesystem::path filepath = Snow::Utils::FileDialogs::SaveFile(SceneSerializer::FileFilter.data()).value();
         if (!filepath.empty()) {
             if (!filepath.has_extension())
                 filepath += SceneSerializer::DefualtExtension;
@@ -405,6 +432,7 @@ namespace Snow {
         }
 
         m_SceneHierarchyPanel.OnImGuiRender();
+        m_ContentBrowserPanel->OnImGuiRender();
 
         ImGui::Begin("Shaders");
         if (ImGui::TreeNode("Shaders")) {
@@ -413,7 +441,7 @@ namespace Snow {
                 if (ImGui::TreeNode(shader->GetName().c_str())) {
                     std::string buttonName = "Reload##" + shader->GetName();
                     if (ImGui::Button(buttonName.c_str()))
-                        shader->Reload();
+                        shader->Reload(true);
                     ImGui::TreePop();
                 }
             }
@@ -485,7 +513,6 @@ namespace Snow {
 
             Ref<Snow::Render::Image2D> sceneImage = m_SceneRenderer->GetFinalPassImage();
             UI::Image(sceneImage, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-            //ImGui::Image(reinterpret_cast<void*>(imageID->), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 
             // Gizmos
@@ -552,7 +579,7 @@ namespace Snow {
                 ImGui::InputTextWithHint("##new_project_location", "Project Location", s_ProjectFilePathBuffer, MAX_PROJECT_FILE_LEN, ImGuiInputTextFlags_ReadOnly);
                 ImGui::SameLine();
                 if (ImGui::Button("...")) {
-                    std::string result = Utils::FileDialogs::OpenFolder().value();
+                    std::string result = Snow::Utils::FileDialogs::OpenFolder().value();
                     if (!result.empty()) {
                         std::replace(result.begin(), result.end(), '\\', '/');
                         memcpy(s_ProjectFilePathBuffer, result.data(), result.length());
@@ -594,6 +621,8 @@ namespace Snow {
 
         Core::Event::EventDispatcher dispatcher(e);
         dispatcher.Dispatch<Core::Event::KeyPressedEvent>(SNOW_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+
+        m_ContentBrowserPanel->OnEvent(e);
     }
 
     bool EditorLayer::OnKeyPressed(Core::Event::KeyPressedEvent& e) {

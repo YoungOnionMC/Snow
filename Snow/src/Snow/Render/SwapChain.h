@@ -22,6 +22,7 @@ namespace Snow {
 
             virtual void BeginFrame() = 0;
 
+            virtual uint32_t GetImageCount() = 0;
             virtual uint32_t GetCurrentBufferIndex() = 0;
 
             static SwapChain* CreateSwapChain(const SwapChainSpecification& spec);

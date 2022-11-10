@@ -59,7 +59,7 @@ namespace Snow {
 		static void EndPropertyGrid() {
 			ImGui::Columns(1);
 			ImGui::PopStyleVar(2);
-			ImGui::PopID();
+			PopID();
 		}
 
 		static bool BeginTreeNode(const char* name, bool defaultOpen = true) {
@@ -88,7 +88,7 @@ namespace Snow {
 			const float framePaddingY = 6.0f;
 
 			ImGui::PushID(name.c_str());
-			open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags);// , Utils::ToUpper(name).c_str());
+			open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, name.c_str());// , Utils::ToUpper(name).c_str());
 			ImGui::PopID();
 
 			return open;
@@ -132,7 +132,7 @@ namespace Snow {
 			s_IDBuffer[0] = '#';
 			s_IDBuffer[1] = '#';
 			memset(s_IDBuffer + 2, 0, 14);
-			itoa(s_Counter++, s_IDBuffer + 2, 14);
+			_itoa(s_Counter++, s_IDBuffer + 2, 14);
 
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 			ImGui::InputText(s_IDBuffer, (char*)value.c_str(), value.size(), ImGuiInputTextFlags_ReadOnly);
@@ -272,7 +272,30 @@ namespace Snow {
 			return modified;
 		}
 
-		static bool Property(const char* label, float& value, float min, float max) {
+		static bool PropertySlider(const char* label, int& value, int min, int max) {
+			bool modified = false;
+
+			ImGui::Text(label);
+			ImGui::NextColumn();
+			ImGui::PushItemWidth(-1);
+
+
+			s_IDBuffer[0] = '#';
+			s_IDBuffer[1] = '#';
+			memset(s_IDBuffer + 2, 0, 14);
+			sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
+
+			if (ImGui::SliderInt(s_IDBuffer, &value, min, max)) {
+				modified = true;
+			}
+
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+
+			return modified;
+		}
+
+		static bool PropertySlider(const char* label, float& value, float min, float max) {
 			bool modified = false;
 
 			ImGui::Text(label);
@@ -295,7 +318,7 @@ namespace Snow {
 			return modified;
 		}
 
-		static bool Property(const char* label, glm::vec2& value, float min, float max) {
+		static bool PropertySlider(const char* label, glm::vec2& value, float min, float max) {
 			bool modified = false;
 
 			ImGui::Text(label);
@@ -318,7 +341,7 @@ namespace Snow {
 			return modified;
 		}
 
-		static bool Property(const char* label, glm::vec3& value, float min, float max) {
+		static bool PropertySlider(const char* label, glm::vec3& value, float min, float max) {
 			bool modified = false;
 
 			ImGui::Text(label);
@@ -341,7 +364,7 @@ namespace Snow {
 			return modified;
 		}
 
-		static bool Property(const char* label, glm::vec4& value, float min, float max) {
+		static bool PropertySlider(const char* label, glm::vec4& value, float min, float max) {
 			bool modified = false;
 
 			ImGui::Text(label);
@@ -387,7 +410,7 @@ namespace Snow {
 			return modified;
 		}
 
-		static bool Property(const char* label, glm::vec2& value, float delta = 0.1f) {
+		static bool Property(const char* label, glm::vec2& value, float delta = 0.1f, float min = 0.0f, float max = 0.0f) {
 			bool modified = false;
 
 			ImGui::Text(label);
@@ -400,7 +423,7 @@ namespace Snow {
 			memset(s_IDBuffer + 2, 0, 14);
 			sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
 
-			if (ImGui::DragFloat2(s_IDBuffer, glm::value_ptr(value), delta)) {
+			if (ImGui::DragFloat2(s_IDBuffer, glm::value_ptr(value), delta, min, max)) {
 				modified = true;
 			}
 
@@ -612,7 +635,6 @@ namespace Snow {
 			ImGui::NextColumn();
 			return result;
 		}
-		
 
 		void Image(const Ref<Render::Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
 		void Image(const Ref<Render::Image2D>& image, uint32_t layer, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));

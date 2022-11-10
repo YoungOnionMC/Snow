@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "Snow/Render/Texture.h"
 
@@ -48,6 +49,14 @@ namespace Snow {
         bool Deserialize(YAML::Node node);
     };
 
+    struct KinComponent {
+        UUID Parent;
+        std::vector<UUID> Children;
+
+        void Serialize(YAML::Emitter& out);
+        bool Deserialize(YAML::Node node);
+    };
+
     struct TransformComponent {
         glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
         glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
@@ -58,35 +67,22 @@ namespace Snow {
         TransformComponent() = default;
         TransformComponent(const TransformComponent&) = default;
         TransformComponent(const glm::vec3& translation) :
-            Translation(translation) {
-            UpdateTransform();
-        }
+            Translation(translation) {}
 
         void SetTranslation(const glm::vec3& translation) {
             Translation = translation;
-            UpdateTransform();
         }
 
         void SetRotation(const glm::vec3& rotation) {
             Rotation = rotation;
-            UpdateTransform();
         }
 
         void SetScale(const glm::vec3& scale) {
             Scale = scale;
-            UpdateTransform();
-        }
-
-        void UpdateTransform() {
-            glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 })
-                * glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
-                * glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
-
-            Transform = glm::translate(glm::mat4(1.0f), Translation) *
-                rotation * glm::scale(glm::mat4(1.0f), Scale);
         }
 
         glm::mat4 GetTransform() {
+            Transform = glm::translate(glm::mat4(1.0f), Translation) * glm::toMat4(glm::quat(Rotation)) * glm::scale(glm::mat4(1.0f), Scale);
             return Transform;
         }
 
@@ -105,7 +101,7 @@ namespace Snow {
     struct SpriteRendererComponent {
         glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-        Ref<Render::Texture2D> Texture;
+        AssetHandle Texture;
 
         SpriteRendererComponent() = default;
         SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -167,14 +163,18 @@ namespace Snow {
     };
 
     struct MeshComponent {
-        Ref<Render::Mesh> Mesh;
+        AssetHandle Mesh;
         Ref<Snow::MaterialTable> MaterialTable = Ref<Snow::MaterialTable>::Create(0);
 
         MeshComponent() = default;
-        MeshComponent(Ref<Render::Mesh> mesh) :
+        MeshComponent(const MeshComponent& other) :
+            Mesh(other.Mesh), MaterialTable(Ref<Snow::MaterialTable>::Create(other.MaterialTable)) {}
+
+        MeshComponent(AssetHandle mesh) :
             Mesh(mesh) {}
-        MeshComponent(const std::string& filePath) {
-            Mesh = Ref<Render::Mesh>::Create(Ref<Render::MeshAsset>::Create(filePath));
+
+        ~MeshComponent() {
+        
         }
     };
 
@@ -221,4 +221,75 @@ namespace Snow {
         void Serialize(YAML::Emitter& out) {}
         static bool Deserialize(YAML::Node node, BoxCollider2DComponent& outbc2d) {}
     };
+
+    struct CircleCollider2DComponent {
+        float Radius = 1.0f;
+        glm::vec2 Offset = { 0.0f, 0.0f };
+
+        float Density = 1.0f;
+        float Friction = 0.4f;
+        float Restitution = 0.0f;
+        float RestitutionThreshold = 0.6f;
+    };
+
+    enum class LightType {
+        None = 0, Directional = 1, Point = 2, Spot = 3
+    };
+
+    struct DirectionalLightComponent {
+        glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+        float Intensity = 1.0f;
+
+        bool CastShadows = true;
+        bool SoftShadows = true;
+
+        DirectionalLightComponent() = default;
+        DirectionalLightComponent(const DirectionalLightComponent&) = default;
+    };
+
+    struct PointLightComponent {
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+        float Intensity = 1.0f;
+        glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+        float LightSize = 0.5;
+        float MinRadius = 1.0f;
+        float Radius = 10.0f;
+        float Falloff = 1.0f;
+
+        bool CastShadows = true;
+
+        PointLightComponent() = default;
+        PointLightComponent(const PointLightComponent&) = default;
+    };
+
+    struct SkyLightComponent {
+        AssetHandle SceneEnvironment;
+        float Intensity = 1.0f;
+        float Lod = 0.0f;
+
+        bool DynamicSky = false;
+        glm::vec3 TurbidityAzimuthInclination = { 2.0, 0.0, 0.0 };
+    };
+
+    template<typename... Component>
+    struct ComponentGroup {};
+    using AllComponents = ComponentGroup <
+        TransformComponent,
+
+        SpriteRendererComponent,
+        CameraComponent,
+
+        MeshComponent,
+
+        //DirectionalLightComponent,
+        //PointLightComponent,
+        SkyLightComponent,
+
+        RigidBody2DComponent,
+        BoxCollider2DComponent,
+        CircleCollider2DComponent,
+
+        ScriptComponent
+    >;
 }

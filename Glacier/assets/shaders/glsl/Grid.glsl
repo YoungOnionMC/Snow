@@ -27,6 +27,8 @@ void main() {
 #version 450 core
 
 layout(location = 0) out vec4 color;
+layout(location = 1) out vec4 unused0;
+layout(location = 2) out vec4 unused1;
 
 layout(push_constant) uniform Settings {
 	layout (offset = 64) float Scale;
@@ -42,7 +44,9 @@ float grid(vec2 st, float res) {
 
 void main() {
 	float x = grid(v_TexCoord * u_Settings.Scale, u_Settings.Size);
-	color = vec4(vec3(0.2), 0.5) * (1.0-x);
+	color = vec4(vec3(0.4), 1.0 * (1.0 - x));
+	unused0 = vec4(0.0f);
+	unused1 = vec4(0.0f);
 	if(color.a == 0.0)
 		discard;
 }

@@ -22,6 +22,9 @@ namespace Snow {
         void DrawEntityNode(Entity entity);
         void DrawComponents(Entity entity);
 
+        template<typename Component>
+        void DisplayAddComponentEntry(const std::string& entryName);
+
         void DrawEnvironment();
 
         //void DrawIconedImage(const std::string& label, Ref<Render::Texture2D>& texture);

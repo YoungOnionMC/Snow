@@ -3,6 +3,7 @@
 
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 #include "Snow/Platform/Vulkan/VulkanFramebuffer.h"
+#include "Snow/Platform/Vulkan/VulkanRenderer.h"
 
 #include "Snow/Platform/Vulkan/VulkanShader.h"
 
@@ -33,13 +34,7 @@ namespace Snow {
 
 	}
 
-	static VkShaderStageFlagBits ShaderTypeToVKShaderStage(Render::ShaderType type) {
-		switch (type) {
-		case Render::ShaderType::Vertex:	return VK_SHADER_STAGE_VERTEX_BIT;
-		case Render::ShaderType::Pixel:		return VK_SHADER_STAGE_FRAGMENT_BIT;
-		case Render::ShaderType::Geometry:	return VK_SHADER_STAGE_GEOMETRY_BIT;
-		}
-	}
+	
 
 	void VulkanPipeline::Invalidate() {
 		Ref<VulkanPipeline> instance = this;
@@ -51,6 +46,8 @@ namespace Snow {
 			VulkanSwapChain vkSwapChain = VulkanContext::Get()->GetSwapChain();
 
 			Ref<VulkanShader> vkShader = instance->m_Specification.Shader.As<VulkanShader>();
+
+			Ref<VulkanFramebuffer> vkFramebuffer = instance->m_Specification.BindedRenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
 
 			auto descriptorSetLayouts = vkShader->GetAllDescriptorSetLayouts();
 			auto pushConstantRanges = vkShader->GetPushConstantRanges();
@@ -84,7 +81,7 @@ namespace Snow {
 			rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 			rasterizationState.polygonMode = instance->m_Specification.Wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
 			rasterizationState.cullMode = instance->m_Specification.BackfaceCulling ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_NONE;
-			rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+			rasterizationState.frontFace = instance->m_Specification.CounterClockwiseWinding ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE;
 			rasterizationState.depthClampEnable = VK_FALSE;
 			rasterizationState.rasterizerDiscardEnable = VK_FALSE;
 			rasterizationState.depthBiasEnable = VK_FALSE;
@@ -94,14 +91,65 @@ namespace Snow {
 			rasterizationState.lineWidth = instance->m_Specification.LineWidth;
 
 			// Color Blending
-			VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
-			blendAttachmentState[0].colorWriteMask = 0xf;
-			blendAttachmentState[0].blendEnable = VK_FALSE;
+			size_t colorAttachmentCount = vkFramebuffer->GetSpecification().SwapChainTarget ? 1 : vkFramebuffer->GetColorAttachmentCount();
+			std::vector<VkPipelineColorBlendAttachmentState> blendAttachmentStates(colorAttachmentCount);
+
+			if (vkFramebuffer->GetSpecification().SwapChainTarget) {
+				blendAttachmentStates[0].colorWriteMask = 0xf;
+				blendAttachmentStates[0].blendEnable = VK_TRUE;
+				blendAttachmentStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+				blendAttachmentStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				blendAttachmentStates[0].colorBlendOp = VK_BLEND_OP_ADD;
+				blendAttachmentStates[0].alphaBlendOp = VK_BLEND_OP_ADD;
+				blendAttachmentStates[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+				blendAttachmentStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			}
+			else {
+				for (size_t i = 0; i < colorAttachmentCount; i++) {
+					if (!vkFramebuffer->GetSpecification().Blend)
+						break;
+
+					blendAttachmentStates[i].colorWriteMask = 0xf;
+					
+					const auto& attachmentSpec = vkFramebuffer->GetSpecification().AttachmentList.Attachments[i];
+					FramebufferBlendMode blendMode = vkFramebuffer->GetSpecification().BlendMode == FramebufferBlendMode::None
+						? attachmentSpec.BlendMode
+						: vkFramebuffer->GetSpecification().BlendMode;
+
+					blendAttachmentStates[i].blendEnable = attachmentSpec.Blend ? VK_TRUE : VK_FALSE;
+					if (blendMode == FramebufferBlendMode::SrcAlphaOneMinusSrcAlpha) {
+						blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+						blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+						blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+						blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+					}
+					else if (blendMode == FramebufferBlendMode::OneZero) {
+						blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+						blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+						blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+						blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+					}
+					else if (blendMode == FramebufferBlendMode::ZeroSrcColor) {
+						blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+						blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
+						blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+						blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
+					}
+					else
+					{
+						SNOW_CORE_VERIFY(false);
+					}
+					blendAttachmentStates[i].colorBlendOp = VK_BLEND_OP_ADD;
+					blendAttachmentStates[i].alphaBlendOp = VK_BLEND_OP_ADD;
+
+				}
+			}
+			
 
 			VkPipelineColorBlendStateCreateInfo colorBlendState = {};
 			colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-			colorBlendState.attachmentCount = 1;
-			colorBlendState.pAttachments = blendAttachmentState;
+			colorBlendState.attachmentCount = (uint32_t)blendAttachmentStates.size();
+			colorBlendState.pAttachments = blendAttachmentStates.data();
 
 			// Viewport Creation
 			VkViewport viewport = {};
@@ -177,7 +225,7 @@ namespace Snow {
 			for (uint32_t i = 0; i < instance->m_Specification.Shader->GetModuleCount(); i++) {
 				VkPipelineShaderStageCreateInfo shaderStage = {};
 				shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				shaderStage.stage = ShaderTypeToVKShaderStage(vkShader->GetShaderModuleType(i));
+				shaderStage.stage = Render::Utils::ShaderTypeToVKShaderStage(vkShader->GetShaderModuleType(i));
 				SNOW_CORE_ASSERT(vkShader->GetShaderModuleType(i) != Render::ShaderType::Compute, "Graphics pipeline is not compatible with compute shaders!");
 				shaderStage.module = vkShader->GetVulkanShaderModule(i);
 				shaderStage.pName = "main";
@@ -185,7 +233,7 @@ namespace Snow {
 				pipelineShaderStages.push_back(shaderStage);
 			}
 
-			Ref<VulkanFramebuffer> vkFramebuffer = instance->m_Specification.BindedRenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+			
 
 			VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
 			pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

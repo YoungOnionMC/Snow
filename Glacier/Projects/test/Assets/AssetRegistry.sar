@@ -1,0 +1,10 @@
+Assets:
+  - Handle: 3657248303236983055
+    FilePath: Scenes/New Scene.scene
+    Type: Scene
+  - Handle: 3734354121597445116
+    FilePath: Scenes/FirstScene.scene
+    Type: Scene
+  - Handle: 17867553956713175879
+    FilePath: Textures/drik.jpg
+    Type: Texture

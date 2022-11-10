@@ -32,12 +32,14 @@ namespace Snow {
             Ref<Texture2D> BlackTexture;
             Ref<Texture2D> BRDFLutTexture;
             Ref<TextureCube> BlackCubeTexture;
+
+            Ref<Environment> EmptyEnvironment;
         };
 
-        static RendererData s_Data;
+        static RendererData* s_Data = nullptr;
 
         static RenderCommandQueue* s_CommandQueue = nullptr;
-        static std::vector<RenderCommandQueue> s_ResourceFreeQueue;
+        static std::vector<RenderCommandQueue*> s_ResourceFreeQueue;
 
         static std::unordered_map<size_t, Ref<Pipeline>> s_PipelineCache;
 
@@ -68,6 +70,7 @@ namespace Snow {
                     pipeline->Invalidate();
                 }
                 for (auto& pipeline : dependencies.ComputePipelines) {
+                    
                     //pipeline->Invalidate();
                 }
                 for (auto& material : dependencies.Materials) {
@@ -86,16 +89,19 @@ namespace Snow {
 
         void Renderer::Init() {
             SNOW_CORE_INFO("Initializing Renderer");
+            s_Data = new RendererData();
             s_CommandQueue = new RenderCommandQueue();
 
             s_ResourceFreeQueue.resize(GetConfig().FramesInFlight);
             for (auto& queue : s_ResourceFreeQueue)
-                queue = RenderCommandQueue();
+                queue = new RenderCommandQueue();
+
+            GetConfig().FramesInFlight = std::min(GetConfig().FramesInFlight, Core::Application::Get().GetWindow()->GetSwapChain()->GetImageCount());
 
             s_RendererAPI = InitRendererAPI();
 
 
-            s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
+            s_Data->m_ShaderLibrary = Ref<ShaderLibrary>::Create();
 
             Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/SceneComposite.glsl" } });
             Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Texture2D.glsl" } });
@@ -104,7 +110,12 @@ namespace Snow {
             Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Renderer2D-Quad.glsl" } });
             Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Renderer2D-Circle.glsl" } });
             Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Renderer2D-Line.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::Compute, "assets/shaders/glsl/PreethamSky.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/PreDepth.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/ShadowMap.glsl" } });
+            Renderer::GetShaderLibrary()->Load({ { ShaderType::None, "assets/shaders/glsl/Skybox.glsl" } });
 
+            Renderer::WaitAndRender();
             /*
             if (s_RendererAPI->Current() == RendererAPIType::OpenGL || s_RendererAPI->Current() == RendererAPIType::Vulkan) {
                 Renderer::GetShaderLibrary()->Load({
@@ -140,26 +151,22 @@ namespace Snow {
             Renderer::WaitAndRender();
 
             uint32_t whiteTextureData = 0xffffffff;
-            s_Data.WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
+            s_Data->WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
 
             uint32_t blackTextureData = 0xff000000;
-            s_Data.BlackTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &blackTextureData);
+            s_Data->BlackTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &blackTextureData);
 
             {
                 TextureProperties props;
                 props.SamplerWrap = TextureWrap::Clamp;
-                s_Data.BRDFLutTexture = Texture2D::Create("assets/textures/BRDF_LUT.tga", props);
+                s_Data->BRDFLutTexture = Texture2D::Create("assets/textures/BRDF_LUT.tga", props);
             }
 
+            uint32_t blackCubeTextureData[6] = { 0xffff0000, 0xffffff00, 0xff00ff00, 0xff00ffff, 0xff0000ff, 0xffff00ff };
+            s_Data->BlackCubeTexture = TextureCube::Create(ImageFormat::RGBA, 1, 1, &blackCubeTextureData);
 
-            s_RendererAPI->Init();
-
-            Renderer::WaitAndRender();
+            s_Data->EmptyEnvironment = Ref<Environment>::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
             //Renderer2D::Init();
-            /*
-            Renderer::GetShaderLibrary()->Load(ShaderType::Vertex, "assets/shaders/hlsl/PBRVert.hlsl");
-            Renderer::GetShaderLibrary()->Load(ShaderType::Pixel, "assets/shaders/hlsl/PBRFrag.hlsl");
-            */
             //RenderCommand::Init();
 
             //
@@ -167,14 +174,26 @@ namespace Snow {
 
             //TextRenderer::Init();
             //Renderer::GetFontManager()->Load("assets/fonts/comic.ttf");
+
+            s_RendererAPI->Init();
+        }
+
+        void Renderer::Shutdown() {
+            //Renderer2D::Shutdown();
+
+            s_ShaderDependencies.clear();
+            s_RendererAPI->Shutdown();
+
+            delete s_Data;
+            delete s_CommandQueue;
         }
 
         Ref<ShaderLibrary> Renderer::GetShaderLibrary() {
-            return s_Data.m_ShaderLibrary;
+            return s_Data->m_ShaderLibrary;
         }
 
         Ref<FontManager> Renderer::GetFontManager() {
-            return s_Data.m_FontManager;
+            return s_Data->m_FontManager;
         }
 
         void Renderer::WaitAndRender() {
@@ -205,6 +224,10 @@ namespace Snow {
             s_RendererAPI->RenderMesh(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, mesh, materialTable, transform);
         }
 
+        void Renderer::RenderMeshWithMaterial(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material, Buffer additionalUniforms) {
+            s_RendererAPI->RenderMeshWithMaterial(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, mesh, transform, material, additionalUniforms);
+        }
+
         void Renderer::RenderQuad(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::mat4& transform) {
             s_RendererAPI->RenderQuad(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, material, transform);
         }
@@ -221,23 +244,43 @@ namespace Snow {
             s_RendererAPI->SubmitFullscreenQuad(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, material); 
         }
 
+        void Renderer::DispatchComputeShader(Ref<RenderCommandBuffer> commandBuffer, Ref<ComputePipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::ivec3& workGroups) {
+            s_RendererAPI->DispatchComputeShader(commandBuffer, pipeline, uniformBufferSet, storageBufferSet, material, workGroups);
+        }
+
+        void Renderer::SetSceneEnvironment(Ref<SceneRenderer> sceneRenderer, Ref<Environment> environment, Ref<Image2D> shadow) {
+            s_RendererAPI->SetSceneEnvironment(sceneRenderer, environment, shadow);
+        }
+
+        Ref<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination) {
+            return s_RendererAPI->CreatePreethamSky(turbidity, azimuth, inclination);
+        }
+
         Ref<Texture2D> Renderer::GetWhiteTexture() {
-            return s_Data.WhiteTexture;
+            return s_Data->WhiteTexture;
         }
 
         Ref<Texture2D> Renderer::GetBlackTexture() {
-            return s_Data.BlackTexture;
+            return s_Data->BlackTexture;
         }
 
         Ref<Texture2D> Renderer::GetBRDFLutTexture() {
-            return s_Data.BRDFLutTexture;
+            return s_Data->BRDFLutTexture;
+        }
+
+        Ref<TextureCube> Renderer::GetBlackCubeTexture() {
+            return s_Data->BlackCubeTexture;
+        }
+
+        Ref<Environment> Renderer::GetEmptyEnvironment() {
+            return s_Data->EmptyEnvironment;
         }
 
         RenderCommandQueue& Renderer::GetRenderCommandQueue() {
             return *s_CommandQueue;
         }
         RenderCommandQueue& Renderer::GetRenderResourceReleaseQueue(uint32_t index) {
-            return s_ResourceFreeQueue[index];
+            return *s_ResourceFreeQueue[index];
         }
 
         uint32_t Renderer::GetCurrentFrameIndex() {

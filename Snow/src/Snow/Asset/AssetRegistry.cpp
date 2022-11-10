@@ -22,8 +22,8 @@ namespace Snow {
 
 	AssetMetadata& AssetRegistry::operator[](const std::filesystem::path& path) {
 		auto key = GetKey(path);
-		ASSET_LOG("[Asset] Retrieving const {0} (path = {1})", key.string(), path.string());
-		SNOW_CORE_ASSERT(m_AssetRegistry.find(key) != m_AssetRegistry.end());
+		ASSET_LOG("[Asset] Retrieving key {0} (path = {1})", key.string(), path.string());
+		//SNOW_CORE_ASSERT(m_AssetRegistry.find(key) != m_AssetRegistry.end());
 		SNOW_CORE_ASSERT(!path.string().empty());
 		return m_AssetRegistry[key];
 	}

@@ -169,6 +169,28 @@ namespace Snow {
     inline std::ostream& operator<<(std::ostream& os, MouseCode mouseCode) {
         return os << static_cast<uint16_t>(mouseCode);
     }
+
+    typedef enum class GamePadButton : uint16_t {
+        GamePadButton0 = 0,
+        GamePadButton1 = 1,
+        GamePadButton2 = 2,
+        GamePadButton3 = 3,
+        GamePadButton4 = 4,
+        GamePadButton5 = 5,
+        GamePadButton6 = 6,
+        GamePadButton7 = 7,
+        GamePadButton8 = 8,
+        GamePadButton9 = 9,
+        GamePadButton10 = 10,
+        GamePadButton11 = 11,
+        GamePadButton12 = 12,
+        GamePadButton13 = 13,
+        GamePadButton14 = 14,
+        GamePadButton15 = 15,
+
+
+
+    };
 }
 
 #define SNOW_KEY_SPACE          ::Snow::KeyCode::Space

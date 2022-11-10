@@ -22,7 +22,12 @@ namespace Snow {
 			TwoSided = BIT(3),
 		};
 
-		using VariableMap = std::unordered_map<std::string, UniformType>;
+		struct MaterialVariable {
+			UniformType Type;
+			Buffer Data;
+		};
+
+		using VariableMap = std::unordered_map<std::string, MaterialVariable>;
 
 		class Material : public RefCounted {
 			friend class Material;
@@ -75,6 +80,7 @@ namespace Snow {
 			virtual const std::string& GetName() const = 0;
 
 			virtual VariableMap GetVariables() const = 0;
+			virtual std::map<std::string, std::pair<Render::ResourceType, Ref<Render::Texture>>> GetTextures() const = 0;
 		};
 	}
 }

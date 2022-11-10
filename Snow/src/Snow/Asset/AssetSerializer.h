@@ -15,9 +15,15 @@ namespace Snow {
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
-	class MeshAssetSerializer : public AssetSerializer {
+	class MeshSourceSerializer : public AssetSerializer {
 	public:
 		virtual bool Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override { return false; }
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
+	};
+
+	class SceneAssetSerializer : public AssetSerializer {
+	public:
+		virtual bool Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 }

@@ -3,15 +3,20 @@
 #include "Snow/Core/Ref.h"
 #include "Snow/Render/Shader.h"
 
+#include "Snow/Render/RenderCommandBuffer.h"
+
 namespace Snow {
 	namespace Render {
 		class ComputePipeline : public RefCounted {
 		public:
-			virtual void Execute(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) = 0;
+			virtual void Begin(Ref<RenderCommandBuffer> commandBuffer = nullptr) = 0;
+			virtual void End() = 0;
 
-			virtual Ref<Shader> GetShader() const = 0;
+			
 
-			Ref<ComputePipeline> Create(Ref<Shader> computeShader);
+			virtual Ref<Shader> GetShader() = 0;
+
+			static Ref<ComputePipeline> Create(Ref<Shader> computeShader);
 		};
 	}
 }

@@ -39,12 +39,13 @@ namespace Snow {
 		VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentBufferIndex); }
 		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentBufferIndex); }
 
+		uint32_t GetImageCount() override { return m_ImageCount; }
 		uint32_t GetCurrentBufferIndex() override { return m_CurrentBufferIndex; }
 
 		VkFramebuffer GetFramebuffer(uint32_t index) { SNOW_CORE_ASSERT(index < m_ImageCount); return m_Framebuffers[index]; }
 		VkCommandBuffer GetDrawCommandBuffer(uint32_t index) { SNOW_CORE_ASSERT(index < m_ImageCount);  return m_DrawCommandBuffers[index]; }
 
-		uint32_t GetImageCount() { return m_ImageCount; }
+		//uint32_t GetImageCount() { return m_ImageCount; }
 		uint32_t GetMinimumImageCount() { return m_MinimumImageCount; }
 
 		uint32_t GetWidth() { return m_Width; }

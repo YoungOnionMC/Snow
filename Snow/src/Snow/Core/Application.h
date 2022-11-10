@@ -3,7 +3,6 @@
 #include "Snow/Core/Ref.h"
 
 #include "Snow/Core/Window.h"
-#include "Snow/Core/Input.h"
 
 #include "Snow/Core/Base.h"
 #include "Snow/Core/Event/Event.h"
@@ -32,6 +31,8 @@ namespace Snow {
             static inline Application& Get() { return *s_Instance; }
             Ref<Window> GetWindow() { return Get().m_Window; }
 
+            Ref<ImGuiLayer> GetImGuiLayer() { return m_ImGuiLayer; }
+
             void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }
             void PopLayer(Layer* layer) { m_LayerStack.PopLayer(layer); }
 
@@ -52,7 +53,7 @@ namespace Snow {
 
 
             LayerStack m_LayerStack;
-            ImGuiLayer* m_ImGuiLayer;
+            Ref<ImGuiLayer> m_ImGuiLayer;
 
             bool m_Running = true;
             float m_LastFrameTime = 0.0f;

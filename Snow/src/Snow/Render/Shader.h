@@ -7,9 +7,9 @@
 
 namespace Snow {
     namespace Render {
-        struct ShaderUniformBuffer;
-        struct ShaderBuffer;
-        struct ShaderResource;
+        class ShaderUniformBuffer;
+        class ShaderBuffer;
+        class ShaderResource;
 
         enum class ShaderType {
             None = 0,
@@ -35,6 +35,8 @@ namespace Snow {
 
             virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const = 0;
             virtual const std::unordered_map<std::string, ShaderResource>& GetResources() const = 0;
+
+            virtual std::vector<ShaderType> GetModuleTypes() = 0;
 
             //virtual void SetUniformBufferData(const std::string& uniformBufferName, void* data = nullptr, uint32_t size = 0) = 0;
             //virtual void SetUniformBufferData(uint32_t bindingPoint, void* data = nullptr, uint32_t size = 0) = 0;

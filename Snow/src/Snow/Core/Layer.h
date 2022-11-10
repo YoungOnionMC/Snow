@@ -8,7 +8,7 @@
 
 namespace Snow {
     namespace Core {
-        class Layer {
+        class Layer : public RefCounted {
         public:
             Layer(const std::string& name = "Layer");
 

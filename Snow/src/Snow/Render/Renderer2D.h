@@ -4,7 +4,7 @@
 #include "Snow/Render/Buffer.h"
 #include "Snow/Render/Mesh.h"
 #include "Snow/Render/RenderCommandBuffer.h"
-#include "Snow/Render/Renderer.h"
+//#include "Snow/Render/Renderer.h"
 #include "Snow/Render/RenderPass.h"
 #include "Snow/Render/Pipeline.h"
 #include "Snow/Render/Texture.h"

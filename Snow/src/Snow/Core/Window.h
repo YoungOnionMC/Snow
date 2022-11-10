@@ -4,11 +4,10 @@
 
 #include "Snow/Core/Log.h"
 
-#include "Snow/Core/Input.h"
-
 #include "Snow/Render/RenderContext.h"
 #include "Snow/Render/SwapChain.h"
 
+#include "Snow/Core/Event/Event.h"
 
 namespace Snow {
     namespace Core {

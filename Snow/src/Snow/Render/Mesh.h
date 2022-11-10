@@ -25,6 +25,11 @@ namespace Assimp {
 }
 
 namespace Snow {
+	class VulkanRenderer;
+	class OpenGLRenderer;
+	class SceneHierarchyPanel;
+	class MeshViewerPanel;
+
 	namespace Render {
 		struct Vertex {
 			glm::vec3 Position;
@@ -49,11 +54,11 @@ namespace Snow {
 
 		class Submesh {
 		public:
-			uint32_t BaseVertex;
-			uint32_t BaseIndex;
-			uint32_t MaterialIndex;
-			uint32_t IndexCount;
-			uint32_t VertexCount;
+			uint32_t BaseVertex = 0;
+			uint32_t BaseIndex = 0;
+			uint32_t MaterialIndex = 0;
+			uint32_t IndexCount = 0;
+			uint32_t VertexCount = 0;
 
 			glm::mat4 Transform{ 1.0f };
 			Core::AABB BoundingBox;
@@ -61,17 +66,19 @@ namespace Snow {
 			std::string NodeName, MeshName;
 		};
 
-		class MeshAsset : public Asset {
+		class MeshSource : public Asset {
 		public:
-			MeshAsset(const std::string& filePath);
-			MeshAsset(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform);
-			virtual ~MeshAsset();
+			MeshSource(const std::string& filePath);
+			MeshSource(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform);
+			virtual ~MeshSource();
 
 			std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 			const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
 
 			const std::vector<Vertex>& GetVertices() const { return m_StaticVertices; }
 			const std::vector<Index>& GetIndices() const { return m_Indices; }
+
+			const Core::AABB& GetBoundingBox() const { return m_BoundingBox; }
 
 			Ref<Shader> GetMeshShader() { return m_MeshShader; }
 			std::vector<Ref<Material>>& GetMaterials() { return m_Materials; }
@@ -125,8 +132,8 @@ namespace Snow {
 
 		class Mesh : public Asset {
 		public:
-			explicit Mesh(Ref<MeshAsset> meshAsset);
-			Mesh(Ref<MeshAsset> meshAsset, const std::vector<uint32_t>& submeshes);
+			explicit Mesh(Ref<MeshSource> meshAsset);
+			Mesh(Ref<MeshSource> meshAsset, const std::vector<uint32_t>& submeshes);
 			Mesh(const Ref<Mesh>& other);
 			virtual ~Mesh();
 
@@ -135,9 +142,9 @@ namespace Snow {
 
 			void SetSubmeshes(const std::vector<uint32_t>& submeshes);
 
-			Ref<MeshAsset> GetMeshAsset() { return m_MeshAsset; }
-			Ref<MeshAsset> GetMeshAsset() const { return m_MeshAsset; }
-			void SetMeshAsset(Ref<MeshAsset> meshAsset) { m_MeshAsset = meshAsset; }
+			Ref<MeshSource> GetMeshAsset() { return m_MeshSource; }
+			Ref<MeshSource> GetMeshAsset() const { return m_MeshSource; }
+			void SetMeshAsset(Ref<MeshSource> meshSource) { m_MeshSource = meshSource; }
 
 			Ref<Shader> GetMeshShader() { return m_MeshShader; }
 			Ref<MaterialTable> GetMaterials() { return m_Materials; }
@@ -145,7 +152,7 @@ namespace Snow {
 			static AssetType GetStaticType() { return AssetType::Mesh; }
 			virtual AssetType GetAssetType() const override { return GetStaticType(); }
 		private:
-			Ref<MeshAsset> m_MeshAsset;
+			Ref<MeshSource> m_MeshSource;
 			std::vector<uint32_t> m_Submeshes;
 
 			Ref<Shader> m_MeshShader;

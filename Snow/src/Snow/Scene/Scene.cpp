@@ -1,11 +1,13 @@
 #include <spch.h>
 #include "Snow/Scene/Scene.h"
 
+#include "Snow/Render/Renderer.h"
 #include "Snow/Render/Renderer2D.h"
 #include "Snow/Render/Renderer3D.h"
 
 #include "Snow/Scene/Components.h"
 #include "Snow/Scene/Entity.h"
+#include "Snow/Asset/AssetManager.h"
 
 #include "Snow/Math/Mat4.h"
 
@@ -161,6 +163,34 @@ namespace Snow {
             }
         }
 
+        {
+            auto view = m_Registry.view<CircleCollider2DComponent>();
+            for (auto e : view) {
+                Entity entity = { e, this };
+
+                auto& transform = entity.GetComponent<TransformComponent>();
+                auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+
+                if (entity.HasComponent<CircleCollider2DComponent>()) {
+                    SNOW_CORE_TRACE(entity.HasComponent<RigidBody2DComponent>());
+                    auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
+
+                    b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
+
+                    b2CircleShape shape = b2CircleShape();
+                    shape.m_radius = transform.Scale.x * cc2d.Radius;
+
+                    b2FixtureDef fixtureDef;
+                    fixtureDef.shape = &shape;
+                    fixtureDef.density = cc2d.Density;
+                    fixtureDef.friction = cc2d.Friction;
+                    fixtureDef.restitution = cc2d.Restitution;
+                    fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
+                    body->CreateFixture(&fixtureDef);
+                }
+            }
+        }
+
         m_IsPlaying = true;
     }
 
@@ -211,9 +241,9 @@ namespace Snow {
                 transform.Transform = glm::translate(glm::mat4(1.0f), transform.Translation) *
                     glm::toMat4(glm::quat(transform.Rotation)) *
                     glm::scale(glm::mat4(1.0f), transform.Scale);
-                SNOW_CORE_TRACE("Entity: {0}", e.GetComponent<TagComponent>().Tag.c_str());
-                SNOW_CORE_TRACE("   Supposed Y: {0}", transform.Transform[3].y);
-                SNOW_CORE_TRACE("   Box2D Y: {0}", position.y);
+                //SNOW_CORE_TRACE("Entity: {0}", e.GetComponent<TagComponent>().Tag.c_str());
+                //SNOW_CORE_TRACE("   Supposed Y: {0}", transform.Transform[3].y);
+                //SNOW_CORE_TRACE("   Box2D Y: {0}", position.y);
             }
         }
 
@@ -235,16 +265,71 @@ namespace Snow {
         camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 
         glm::mat4 cameraViewProj = camera.GetProjection() * cameraViewMatrix;
+        
+        {
+            m_LightEnvironment = LightEnvironment();
 
+            {
+                auto lights = m_Registry.view<DirectionalLightComponent, TransformComponent>();
+                uint32_t directionLightIndex = 0;
+                for (auto entity : lights) {
+                    auto [lightComp, transform] = lights.get<DirectionalLightComponent, TransformComponent>(entity);
+                    //glm::vec3 direction = -glm::normalize(glm::mat3(transform.GetTransform()) * glm::vec3(1.0f));
+                    m_LightEnvironment.DirectionalLights[directionLightIndex++] = {
+                        transform.Rotation, lightComp.Radiance, lightComp.Intensity, 
+                        lightComp.CastShadows, lightComp.SoftShadows
+                    };
+                }
+
+                auto pointLights = m_Registry.view<TransformComponent, PointLightComponent>();
+                uint32_t pointLightIndex = 0;
+                for (auto entity : pointLights) {
+                    auto [transform, lightComp] = pointLights.get<TransformComponent, PointLightComponent>(entity);
+
+                    m_LightEnvironment.PointLights[pointLightIndex++] = {
+                        transform.Translation,
+                        lightComp.Intensity,
+                        lightComp.Radiance,
+                        lightComp.LightSize,
+                        lightComp.MinRadius,
+                        lightComp.Radius,
+                        lightComp.Falloff
+                    };
+                }
+            }
+        }
+        
+        {
+            auto lights = m_Registry.view<TransformComponent, SkyLightComponent>();
+            if (lights.empty())
+                m_Environment = Ref<Environment>::Create(Renderer::GetBlackCubeTexture(), Renderer::GetBlackCubeTexture());
+
+            for (auto entity : lights) {
+                auto [transform, skyLight] = lights.get<TransformComponent, SkyLightComponent>(entity);
+
+                if (!AssetManager::IsAssetHandleValid(skyLight.SceneEnvironment) && skyLight.DynamicSky) {
+                    Ref<TextureCube> preethamSky = Renderer::CreatePreethamSky(skyLight.TurbidityAzimuthInclination.x, skyLight.TurbidityAzimuthInclination.y, skyLight.TurbidityAzimuthInclination.z);
+
+                    skyLight.SceneEnvironment = AssetManager::CreateMemoryOnlyAsset<Environment>(preethamSky, preethamSky);
+                }
+                m_Environment = AssetManager::GetAsset<Environment>(skyLight.SceneEnvironment);
+                m_EnvironmentIntensity = skyLight.Intensity;
+                m_SkyboxLod = skyLight.Lod;
+                if (m_Environment) {
+                    //    SetSkybox(m_Environment->RadianceMap);
+                }
+            }
+        }
+        
         renderer->SetScene(this);
         renderer->BeginScene({ camera, cameraViewMatrix, 0.1f, 1000.0f, 45.0f });
         //Render::SceneRenderer::BeginScene( { camera, cameraViewMatrix });
         {
             auto group = m_Registry.view<TransformComponent, MeshComponent, BRDFMaterialComponent>();
             for (auto entity : group) {
-                auto [transform, mesh, material] = group.get<TransformComponent, MeshComponent, BRDFMaterialComponent>(entity);
+                //auto [transform, mesh, material] = group.get<TransformComponent, MeshComponent, BRDFMaterialComponent>(entity);
 
-                if (mesh.Mesh.Raw() != nullptr) {
+                //if (mesh.Mesh.Raw() != nullptr) {
                     //auto material = group.get<BRDFMaterialComponent>(entity);
                     /*
                     if (material.MaterialInstance) {
@@ -275,7 +360,7 @@ namespace Snow {
                     }
                     */
                     //Render::SceneRenderer::SubmitMesh(mesh.Mesh, transform.GetTransform(), material.MaterialInstance);
-                }
+                //}
             }
         }
         renderer->EndScene();
@@ -285,11 +370,12 @@ namespace Snow {
             auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
             for (auto entity : group) {
                 auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+                auto texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
 
                 if (!sprite.Texture)
                     m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Color);
                 else
-                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Color);
+                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), texture, sprite.Color);
             }
 
             m_SceneRenderer2D->EndScene();
@@ -301,6 +387,63 @@ namespace Snow {
 
     void Scene::OnRenderEditor(Ref<Render::SceneRenderer> renderer, Timestep ts, Editor::EditorCamera& editorCamera) {
         //Render::SceneRenderer::BeginScene(editorCamera);
+        
+        {
+            m_LightEnvironment = LightEnvironment();
+
+            {
+                auto lights = m_Registry.view<DirectionalLightComponent, TransformComponent>();
+                uint32_t directionLightIndex = 0;
+                for (auto entity : lights) {
+                    auto [lightComp, transform] = lights.get<DirectionalLightComponent, TransformComponent>(entity);
+                    glm::vec3 direction = -glm::normalize(glm::mat3(transform.GetTransform()) * glm::vec3(1.0f));
+                    m_LightEnvironment.DirectionalLights[directionLightIndex++] = {
+                        direction, lightComp.Radiance, lightComp.Intensity, lightComp.CastShadows, lightComp.SoftShadows
+                    };
+                }
+
+                auto pointLights = m_Registry.view<TransformComponent, PointLightComponent>();
+                uint32_t pointLightIndex = 0;
+                for (auto entity : pointLights) {
+                    auto [transform, lightComp] = pointLights.get<TransformComponent, PointLightComponent>(entity);
+
+                    m_LightEnvironment.PointLights[pointLightIndex++] = {
+                        transform.Translation,
+                        lightComp.Intensity,
+                        lightComp.Radiance,
+                        lightComp.LightSize,
+                        lightComp.MinRadius,
+                        lightComp.Radius,
+                        lightComp.Falloff,
+
+                        lightComp.CastShadows
+                    };
+                }
+            }
+        }
+        
+        {
+            auto lights = m_Registry.view<TransformComponent, SkyLightComponent>();
+            if (lights.empty())
+                m_Environment = Ref<Environment>::Create(Renderer::GetBlackCubeTexture(), Renderer::GetBlackCubeTexture());
+
+            for (auto entity : lights) {
+                auto [transform, skyLight] = lights.get<TransformComponent, SkyLightComponent>(entity);
+
+                if (!AssetManager::IsAssetHandleValid(skyLight.SceneEnvironment) && skyLight.DynamicSky) {
+                    Ref<TextureCube> preethamSky = Renderer::CreatePreethamSky(skyLight.TurbidityAzimuthInclination.x, skyLight.TurbidityAzimuthInclination.y, skyLight.TurbidityAzimuthInclination.z);
+
+                    skyLight.SceneEnvironment = AssetManager::CreateMemoryOnlyAsset<Environment>(preethamSky, preethamSky);
+                }
+                m_Environment = AssetManager::GetAsset<Environment>(skyLight.SceneEnvironment);
+                m_EnvironmentIntensity = skyLight.Intensity;
+                m_SkyboxLod = skyLight.Lod;
+                if (m_Environment) {
+                    //    SetSkybox(m_Environment->RadianceMap);
+                }
+            }
+        }
+
         renderer->SetScene(this);
         renderer->BeginScene({ editorCamera, editorCamera.GetViewMatrix(), 0.1f, 1000.0f, 45.0f });
         {
@@ -308,12 +451,12 @@ namespace Snow {
             for (auto entity : group) {
                 auto [transform, meshComp] = group.get<TransformComponent, MeshComponent>(entity);
 
-                if (false) {
-                    auto mesh = meshComp.Mesh;
+                if (AssetManager::IsAssetHandleValid(meshComp.Mesh)) {
+                    auto mesh = AssetManager::GetAsset<Mesh>(meshComp.Mesh);
                     if (!mesh->IsFlagSet(AssetFlag::Missing)) {
                         Entity e = Entity(entity, this);
 
-                        glm::mat4 transform = glm::mat4(1.0f);
+                        glm::mat4 transform = e.GetComponent<TransformComponent>().GetTransform();
 
                         renderer->SubmitMesh(mesh, meshComp.MaterialTable, transform);
                     }
@@ -364,11 +507,12 @@ namespace Snow {
             auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
             for (auto entity : group) {
                 auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+                auto texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
 
                 if (!sprite.Texture)
                     m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Color);
                 else
-                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Texture, sprite.Color);
+                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), texture, sprite.Color);
             }
 
             m_SceneRenderer2D->EndScene();
@@ -392,23 +536,44 @@ namespace Snow {
         //Render::SceneRenderer::OnViewportResize(width, height);
     }
 
-    template<typename Component>
+    template<typename... Component>
     static void CopyComponent(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap) {
-        auto view = srcRegistry.view<Component>();
-        for (auto srcEntity : view) {
-            entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponent>(srcEntity).ID);
+        ([&](){
+            auto view = srcRegistry.view<Component>();
+            for (auto srcEntity : view) {
+                entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponent>(srcEntity).ID);
 
-            auto& srcComp = srcRegistry.get<Component>(srcEntity);
-            auto& dstComp = dstRegistry.emplace_or_replace<Component>(destEntity, srcComp);
-        }
+                auto& srcComp = srcRegistry.get<Component>(srcEntity);
+                auto& dstComp = dstRegistry.emplace_or_replace<Component>(destEntity, srcComp);
+            }
+        }(), ...);
     }
 
-    template<typename Component>
+    template<typename... Component>
+    static void CopyComponent(ComponentGroup<Component...>, entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap) {
+        CopyComponent<Component...>(dstRegistry, srcRegistry, enttMap);
+    }
+
+    template<typename... Component>
     static void CopyComponentIfExists(Entity dst, Entity src) {
-        if (src.HasComponent<Component>())
-            dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+        ([&]() {
+            if (src.HasComponent<Component>())
+                dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+        }(), ...);
     }
 
+    template<typename... Component>
+    static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dstEntity, Entity srcEntity) {
+        CopyComponentIfExists<Component...>(dstEntity, srcEntity);
+    }
+
+    static void CopyAllComponents(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap) {
+        CopyComponent(AllComponents{}, dstRegistry, srcRegistry, enttMap);
+    }
+
+    static void CopyAllExistingComponents(Entity dstEntity, Entity srcEntity) {
+        CopyComponentIfExists(AllComponents{}, dstEntity, srcEntity);
+    }
     
 
     Ref<Scene> Scene::CopyScene(Ref<Scene> scene) {
@@ -423,20 +588,12 @@ namespace Snow {
 
         for (auto entity : idComponents) {
             auto uuid = srcRegistry.get<IDComponent>(entity).ID;
-            auto name = srcRegistry.get<TagComponent>(entity).Tag;
+            const auto& name = srcRegistry.get<TagComponent>(entity).Tag;
             Entity e = newScene->CreateEntityWithID(uuid, name, true);
             enttMap[uuid] = e.m_EntityHandle;
         }
 
-        CopyComponent<TagComponent>(dstRegistry, srcRegistry, enttMap);
-        CopyComponent<TransformComponent>(dstRegistry, srcRegistry, enttMap);
-        CopyComponent<SpriteRendererComponent>(dstRegistry, srcRegistry, enttMap);
-        CopyComponent<CameraComponent>(dstRegistry, srcRegistry, enttMap);
-        CopyComponent<BRDFMaterialComponent>(dstRegistry, srcRegistry, enttMap);
-        CopyComponent<MeshComponent>(dstRegistry, srcRegistry, enttMap);
-        CopyComponent<ScriptComponent>(dstRegistry, srcRegistry, enttMap);
-        CopyComponent<RigidBody2DComponent>(dstRegistry, srcRegistry, enttMap);
-        CopyComponent<BoxCollider2DComponent>(dstRegistry, srcRegistry, enttMap);
+        CopyAllComponents(dstRegistry, srcRegistry, enttMap);
 
         const auto& entityInstanceMap = Script::ScriptEngine::GetEntityInstanceMap();
         if (entityInstanceMap.find(scene->GetUUID()) != entityInstanceMap.end())
@@ -493,14 +650,7 @@ namespace Snow {
         else
             newEntity = CreateEntity();
 
-        CopyComponentIfExists<TransformComponent>(newEntity, entity);
-
-        CopyComponentIfExists<MeshComponent>(newEntity, entity);
-        CopyComponentIfExists<SpriteRendererComponent>(newEntity, entity);
-        CopyComponentIfExists<ScriptComponent>(newEntity, entity);
-        CopyComponentIfExists<CameraComponent>(newEntity, entity);
-        CopyComponentIfExists<RigidBody2DComponent>(newEntity, entity);
-        CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
+        CopyAllExistingComponents(newEntity, entity);
 
         return newEntity;
     }
@@ -521,7 +671,7 @@ namespace Snow {
         for (auto entity : view) {
             auto& camera = view.get<CameraComponent>(entity);
             if (camera.Primary) {
-                return { entity, this };
+                return Entity{ entity, this };
             }
         }
         return Entity{};

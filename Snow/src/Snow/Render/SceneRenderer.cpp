@@ -10,6 +10,8 @@
 #include "Snow/Render/Material.h"
 #include "Snow/Render/Texture.h"
 
+#include "Snow/ImGui/ImGui.h"
+
 #include <imgui.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -74,17 +76,97 @@ namespace Snow {
 			uint32_t framesInFlight = Renderer::GetConfig().FramesInFlight;
 			m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 			m_UniformBufferSet->Create(sizeof(UBCamera), 0);
+			m_UniformBufferSet->Create(sizeof(UBShadow), 1);
+			m_UniformBufferSet->Create(sizeof(UBScene), 2);
+			m_UniformBufferSet->Create(sizeof(UBRenderer), 3);
+			m_UniformBufferSet->Create(sizeof(UBPointLights), 4);
 
-			m_CompositeShader = Renderer::GetShaderLibrary()->Get("SceneComposite");
-			m_CompositeMaterial = Material::Create(m_CompositeShader);
+			
+			{
+				ImageSpecification spec;
+				spec.Format = ImageFormat::Depth32F;
+				spec.Usage = ImageUsage::Attachment;
+				spec.Width = 4096;
+				spec.Height = 4096;
+				spec.Layers = 4;
+				Ref<Image2D> depthImage = Image2D::Create(spec);
+				depthImage->Invalidate();
+				depthImage->CreatePerLayerImageViews();
+
+				FramebufferSpecification fbSpec;
+				fbSpec.Width = 4096;
+				fbSpec.Height = 4096;
+				fbSpec.AttachmentList = { ImageFormat::Depth32F };
+				fbSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+				fbSpec.ClearDepthValue = 1.0f;
+				fbSpec.NoResize = true;
+				fbSpec.ExistingImage = depthImage;
+				fbSpec.DebugName = "Shadow Map";
+
+				Ref<Shader> shadowMapShader = Renderer::GetShaderLibrary()->Get("ShadowMap");
+
+				PipelineSpecification pipelineSpec;
+				pipelineSpec.DebugName = "ShadowPass";
+				pipelineSpec.Shader = shadowMapShader;
+				pipelineSpec.Layout = {
+					{AttribType::Float3, "a_Position"},
+					{AttribType::Float3, "a_Normal"},
+					{AttribType::Float3, "a_Tangent"},
+					{AttribType::Float3, "a_Binormal"},
+					{AttribType::Float2, "a_TexCoord"},
+				};
+
+				m_ShadowPassPipelines.resize(4);
+				for (uint32_t i = 0; i < 4; i++) {
+					fbSpec.ExistingImageLayers.clear();
+					fbSpec.ExistingImageLayers.emplace_back(i);
+
+					RenderPassSpecification rpSpec;
+					rpSpec.TargetFramebuffer = Framebuffer::Create(fbSpec);
+					rpSpec.DebugName = "ShadowMap" + std::to_string(i);
+					pipelineSpec.BindedRenderPass = RenderPass::Create(rpSpec);
+					m_ShadowPassPipelines[i] = Pipeline::Create(pipelineSpec);
+				}
+
+				m_ShadowPassMaterial = Material::Create(shadowMapShader, "ShadowPass");
+			}
+
+			//PreDepth Pass
+			{
+				FramebufferSpecification fbSpec;
+				fbSpec.AttachmentList = { ImageFormat::Red, ImageFormat::Depth32F };
+				fbSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+				fbSpec.DebugName = "PreDepth";
+
+				RenderPassSpecification rpSpec;
+				rpSpec.TargetFramebuffer = Render::Framebuffer::Create(fbSpec);
+				rpSpec.DebugName = "PreDepth";
+
+				auto shader = Renderer::GetShaderLibrary()->Get("PreDepth");
+				PipelineSpecification pipelineSpec;
+				pipelineSpec.DebugName = "PreDepth";
+				pipelineSpec.Shader = shader;
+				pipelineSpec.Layout = {
+					{AttribType::Float3, "a_Position"},
+					{AttribType::Float3, "a_Normal"},
+					{AttribType::Float3, "a_Tangent"},
+					{AttribType::Float3, "a_Binormal"},
+					{AttribType::Float2, "a_TexCoord"},
+				};
+				pipelineSpec.BindedRenderPass = RenderPass::Create(rpSpec);
+				m_PreDepthPipeline = Pipeline::Create(pipelineSpec);
+				m_PreDepthMaterial = Material::Create(shader, "PreDepth");
+			}
 
 			// Geometry Pipeline
-			
 			{
 				FramebufferSpecification framebufferSpec;
 				framebufferSpec.AttachmentList = { ImageFormat::RGBA32F, ImageFormat::RGBA32F, ImageFormat::RGBA16F, ImageFormat::DepthStencil };
+				//framebufferSpec.ExistingImages[3] = m_PreDepthPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
+
 				framebufferSpec.Samples = 1;
 				framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+				framebufferSpec.ClearDepthOnLoad = false;
 				framebufferSpec.DebugName = "Geometry";
 
 				Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
@@ -93,9 +175,10 @@ namespace Snow {
 				RenderPassSpecification renderPassSpec;
 				renderPassSpec.TargetFramebuffer = framebuffer;
 				renderPassSpec.DebugName = "Geometry";
-
+				
 				PipelineSpecification pipelineSpec;
 				pipelineSpec.LineWidth = 1.0f;
+				pipelineSpec.DepthTest = true;
 				pipelineSpec.Layout = {
 					{AttribType::Float3, "a_Position"},
 					{AttribType::Float3, "a_Normal"},
@@ -111,18 +194,26 @@ namespace Snow {
 				//s_SceneRendererData.GeometryPass = RenderPass::Create(geoRenderPassSpec);
 			}
 
+			{
+				m_LightCullingWorkGroups = { (m_ViewportWidth + m_ViewportWidth % 16) / 16, (m_ViewportHeight + m_ViewportHeight % 16) / 16, 1 };
+
+				m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
+				m_StorageBufferSet->Create(1, 14);
+			}
+
 			// Grid Pipeline
 			{
-				m_GridShader = Renderer::GetShaderLibrary()->Get("Grid");
-				const float gridScale = 16.0f;
+				Ref<Shader> gridShader = Renderer::GetShaderLibrary()->Get("Grid");
+
+				const float gridScale = 160.0f;
 				const float gridSize = 0.025f;
-				m_GridMaterial = Render::Material::Create(m_GridShader);
+				m_GridMaterial = Render::Material::Create(gridShader);
 				m_GridMaterial->Set("u_Settings.Scale", gridScale);
 				m_GridMaterial->Set("u_Settings.Size", gridSize);
 
 				PipelineSpecification pipelineSpec;
 				pipelineSpec.DebugName = "Grid";
-				pipelineSpec.Shader = m_GridShader;
+				pipelineSpec.Shader = gridShader;
 				pipelineSpec.BackfaceCulling = false;
 				pipelineSpec.Layout = {
 					{AttribType::Float3, "a_Position"},
@@ -130,6 +221,24 @@ namespace Snow {
 				};
 				pipelineSpec.BindedRenderPass = m_GeometryPipeline->GetSpecification().BindedRenderPass;
 				m_GridPipeline = Render::Pipeline::Create(pipelineSpec);
+			}
+
+			{
+				auto skyboxShader = Renderer::GetShaderLibrary()->Get("Skybox");
+
+				PipelineSpecification pipelineSpec;
+				pipelineSpec.DebugName = "Skybox";
+				pipelineSpec.Shader = skyboxShader;
+				pipelineSpec.BackfaceCulling = false;
+				pipelineSpec.Layout = {
+					{AttribType::Float3, "a_Position"},
+					{AttribType::Float2, "a_TexCoord"}
+				};
+				pipelineSpec.BindedRenderPass = m_GeometryPipeline->GetSpecification().BindedRenderPass;
+				m_SkyboxPipeline = Pipeline::Create(pipelineSpec);
+
+				m_SkyboxMaterial = Material::Create(skyboxShader);
+				m_SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, false);
 			}
 
 			// Composite Pipeline
@@ -150,13 +259,15 @@ namespace Snow {
 				compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
 				compRenderPassSpec.DebugName = "SceneComposite";
 
+				Ref<Shader> compositeShader = Renderer::GetShaderLibrary()->Get("SceneComposite");
+
 				PipelineSpecification pipelineSpec;
 				pipelineSpec.Layout = {
 					{AttribType::Float3, "a_Position"},
 					{AttribType::Float2, "a_TexCoord"},
 				};
 				pipelineSpec.BackfaceCulling = false;
-				pipelineSpec.Shader = Renderer::GetShaderLibrary()->Get("SceneComposite");
+				pipelineSpec.Shader = compositeShader;
 				pipelineSpec.BindedRenderPass = RenderPass::Create(compRenderPassSpec);
 				pipelineSpec.DebugName = "SceneComposite";
 				pipelineSpec.DepthWrite = false;
@@ -169,13 +280,16 @@ namespace Snow {
 					{ AttribType::Float3, "a_Position" },
 					{ AttribType::Float2, "a_TexCoord" }
 				};
+
+				m_CompositeMaterial = Material::Create(compositeShader);
 			}
 
 			if(!m_Specification.SwapChainTarget) {
 				FramebufferSpecification framebufferSpec;
 				framebufferSpec.AttachmentList = { ImageFormat::RGBA, ImageFormat::DepthStencil };
 				framebufferSpec.ClearColor = { 0.4f, 0.0f, 0.0f, 1.0f };
-				framebufferSpec.ClearOnLoad = false;
+				framebufferSpec.ClearColorOnLoad = false;
+				framebufferSpec.ClearDepthOnLoad = false;
 				framebufferSpec.DebugName = "External Composite";
 
 				framebufferSpec.ExistingImages[0] = m_CompositePipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetImage();
@@ -194,10 +308,6 @@ namespace Snow {
 			Renderer::Submit([instance]() mutable {
 				instance->m_ResourcesCreated = true;
 			});
-			//s_SceneRendererData.SceneData.SceneEnvironment = {};
-			//auto [rad, irr] = CreateEnvironmentMap("assets/env/birchwood_4k.hdr");
-			//s_SceneRendererData.SceneData.SceneEnvironment.RadianceMap = rad;
-			//s_SceneRendererData.SceneData.SceneEnvironment.IrradianceMap = irr;
 		}
 
 		void SceneRenderer::SetScene(Ref<Scene> scene) {
@@ -205,6 +315,11 @@ namespace Snow {
 		}
 
 		void SceneRenderer::OnViewportResize(uint32_t width, uint32_t height) {
+			if (m_ViewportWidth != width || m_ViewportHeight != height) {
+				m_ViewportWidth = width;
+				m_ViewportHeight = height;
+				m_NeedsResize = true;
+			}
 			//s_SceneRendererData.GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 			//s_SceneRendererData.CompPass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 		}
@@ -216,8 +331,36 @@ namespace Snow {
 				return;
 
 			m_SceneData.SceneCamera = camera;
+			m_SceneData.SceneEnvironment = m_Scene->m_Environment;
+			m_SceneData.SceneEnvironmentIntensity = m_Scene->m_EnvironmentIntensity;
+			m_SceneData.ActiveLight = m_Scene->m_Light;
+			m_SceneData.SkyboxLod = m_Scene->m_SkyboxLod;
+			m_SceneData.SceneLightEnvironment = m_Scene->m_LightEnvironment;
+
+			if (m_NeedsResize) {
+				m_NeedsResize = false;
+
+				m_GeometryPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
+
+				m_CompositePipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
+
+				if(m_ExternalCompositeRenderPass)
+					m_ExternalCompositeRenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
+
+				if (m_Specification.SwapChainTarget)
+					m_CommandBuffer = RenderCommandBuffer::CreateFromSwapChain("SceneRenderer");
+
+				m_LightCullingWorkGroups = { (m_ViewportWidth + m_ViewportWidth % 16) / 16, (m_ViewportHeight + m_ViewportHeight % 16) / 16, 1 };
+				RendererDataUB.tilesCountX = m_LightCullingWorkGroups.x;
+
+				m_StorageBufferSet->Resize(14, 0, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 4096);
+			}
 
 			UBCamera& cameraData = CameraDataUB;
+			UBScene& sceneData = SceneDataUB;
+			UBShadow& shadowData = ShadowDataUB;
+			UBRenderer& rendererData = RendererDataUB;
+			UBPointLights& pointLightData = PointLightsUB;
 
 			auto& sceneCamera = m_SceneData.SceneCamera;
 			const auto viewProj = sceneCamera.Camera.GetProjection() * sceneCamera.ViewMatrix;
@@ -233,6 +376,45 @@ namespace Snow {
 				uint32_t bufferIndex = Render::Renderer::GetCurrentFrameIndex();
 				instance->m_UniformBufferSet->Get(0, 0, bufferIndex)->RTSetData(&cameraData, sizeof(cameraData));
 			});
+
+			const std::vector<PointLight>& pointLightVec = m_SceneData.SceneLightEnvironment.PointLights;
+			pointLightData.Count = pointLightVec.size();
+			std::memcpy(pointLightData.PointLights, pointLightVec.data(), sizeof(PointLight) * pointLightVec.size());
+			Renderer::Submit([instance, &pointLightData]() mutable {
+				uint32_t bufferIndex = Render::Renderer::GetCurrentFrameIndex();
+				instance->m_UniformBufferSet->Get(4, 0, bufferIndex)->RTSetData(&pointLightData, 16ull + sizeof PointLight * pointLightData.Count);
+			});
+
+			auto& directionalLight = m_SceneData.SceneLightEnvironment.DirectionalLights[0];
+			sceneData.Light.Direction = directionalLight.Direction;
+			sceneData.Light.Radiance = directionalLight.Radiance;
+			sceneData.Light.Multiplier = directionalLight.Multiplier;
+			sceneData.u_CameraPosition = cameraPosition;
+			sceneData.EnvironmentMapIntensity = m_SceneData.SceneEnvironmentIntensity;
+			Render::Renderer::Submit([instance, sceneData]() mutable {
+				uint32_t bufferIndex = Render::Renderer::GetCurrentFrameIndex();
+				instance->m_UniformBufferSet->Get(2, 0, bufferIndex)->RTSetData(&sceneData, sizeof(sceneData));
+			});
+
+			CascadeData cascades[4];
+			CalculateCascades(cascades, sceneCamera, directionalLight.Direction);
+
+			for (uint32_t i = 0; i < 4; i++) {
+				CascadeSplits[i] = cascades[i].SplitDepth;
+				shadowData.ViewProjection[i] = cascades[i].ViewProj;
+			}
+			Render::Renderer::Submit([instance, shadowData]() mutable {
+				uint32_t bufferIndex = Render::Renderer::GetCurrentFrameIndex();
+				instance->m_UniformBufferSet->Get(1, 0, bufferIndex)->RTSetData(&shadowData, sizeof(shadowData));
+				});
+
+			rendererData.CascadeSplits = CascadeSplits;
+			Render::Renderer::Submit([instance, rendererData]() mutable {
+				uint32_t bufferIndex = Render::Renderer::GetCurrentFrameIndex();
+				instance->m_UniformBufferSet->Get(3, 0, bufferIndex)->RTSetData(&rendererData, sizeof(rendererData));
+			});
+
+			Renderer::SetSceneEnvironment(this, m_SceneData.SceneEnvironment, m_ShadowPassPipelines[2]->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage());
 		}
 
 		void SceneRenderer::BeginScene(const Editor::EditorCamera& camera) {
@@ -247,10 +429,40 @@ namespace Snow {
 
 		void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform, Ref<Material> overrideMaterial) {//, const Ref<MaterialInstance> overrideMaterial) {
 			m_DrawList.push_back({ mesh, materialTable, transform, overrideMaterial });
+			m_ShadowDrawList.push_back({ mesh, materialTable, transform, overrideMaterial });
 		}
 
 		void SceneRenderer::Submit2DQuad(const glm::mat4& transform, const glm::vec4& color) {
 			//s_SceneRendererData.QuadDrawList.push_back({ transform, color });
+		}
+
+		void SceneRenderer::PreDepthPass() {
+			Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPipeline->GetSpecification().BindedRenderPass);
+			for (auto& dc : m_DrawList) 
+				Renderer::RenderMeshWithMaterial(m_CommandBuffer, m_PreDepthPipeline, m_UniformBufferSet, nullptr, dc.Mesh, dc.Transform, m_PreDepthMaterial);
+			
+			Renderer::EndRenderPass(m_CommandBuffer);
+		}
+
+		void SceneRenderer::ShadowMapPass() {
+
+			auto& directionalLights = m_SceneData.SceneLightEnvironment.DirectionalLights;
+			if (directionalLights[0].Multiplier = 0.0f || !directionalLights[0].CastShadows) {
+				for (uint32_t i = 0; i < 4; i++) {
+					ClearPass(m_ShadowPassPipelines[i]->GetSpecification().BindedRenderPass);
+				}
+				return;
+			}
+
+			for (uint32_t i = 0; i < 4; i++) {
+				Renderer::BeginRenderPass(m_CommandBuffer, m_ShadowPassPipelines[i]->GetSpecification().BindedRenderPass);
+
+				const Buffer cascade(&i, sizeof(uint32_t));
+				for (auto& dc : m_ShadowDrawList) {
+					Renderer::RenderMeshWithMaterial(m_CommandBuffer, m_ShadowPassPipelines[i], m_UniformBufferSet, nullptr, dc.Mesh, dc.Transform, m_ShadowPassMaterial, cascade);
+				}
+				Renderer::EndRenderPass(m_CommandBuffer);
+			}
 		}
 
 		void SceneRenderer::GeometryPass() {
@@ -261,66 +473,24 @@ namespace Snow {
 			//Renderer::ClearImage(m_CommandBuffer, m_GeometryPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetImage());
 			Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryPipeline->GetSpecification().BindedRenderPass, true);
 
+			m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SceneData.SkyboxLod);
+			m_SkyboxMaterial->Set("u_Uniforms.Intensity", m_SceneData.SceneEnvironmentIntensity);
+			const Ref<TextureCube> radianceMap = m_SceneData.SceneEnvironment ? m_SceneData.SceneEnvironment->RadianceMap : Renderer::GetBlackCubeTexture();
+			m_SkyboxMaterial->Set("u_Texture", radianceMap);
+			Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_SkyboxPipeline, m_UniformBufferSet, nullptr, m_SkyboxMaterial);
+
 			for (auto& dc : m_DrawList) {
 				Renderer::RenderMesh(m_CommandBuffer, m_GeometryPipeline, m_UniformBufferSet, m_StorageBufferSet, dc.Mesh, dc.MaterialTable ? dc.MaterialTable : dc.Mesh->GetMaterials(), dc.Transform);
 			}
 
-			glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
-			Renderer::RenderQuad(m_CommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial, transform);
-
+			if (GetOptions().ShowGrid) {
+				glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
+				Renderer::RenderQuad(m_CommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial, transform);
+			}
 
 
 			Renderer::EndRenderPass(m_CommandBuffer);
-			//auto& sceneCamera = s_SceneRendererData.SceneData.Camera;
 			
-			//auto viewProjection = sceneCamera.Camera.GetProjection() * sceneCamera.ViewMatrix;
-			//auto viewProjection = sceneCamera.GetViewProjectionMatrix();
-			//glm::vec3 cameraPosition = glm::inverse(sceneCamera.ViewMatrix)[3];
-
-
-#if 0
-			struct EnvironmentUB {
-				Light lights;
-				glm::vec3 u_CameraPosition;
-			};
-
-			EnvironmentUB enviroUB;
-			enviroUB.lights = s_SceneRendererData.SceneData.ActiveLight;
-			enviroUB.u_CameraPosition = cameraPosition;
-			s_SceneRendererData.CompositeShader->SetUniformBufferData("Environment", &enviroUB, sizeof(EnvironmentUB));
-
-			
-
-			s_SceneRendererData.CompositeShader->SetUniformBufferData("Camera", &viewProjection, sizeof(glm::mat4));
-
-			for (auto& dc : s_SceneRendererData.MeshDrawList) {
-				//Ref<MaterialInstance> mi = dc.Mesh->GetMaterialInstance();
-
-				//auto baseMaterial = mi->GetMaterial();
-				//baseMaterial->Set("u_EnvRadianceTexture", s_SceneRendererData.SceneData.SceneEnvironment.RadianceMap);
-				//baseMaterial->Set("u_EnvIrradianceTexture", s_SceneRendererData.SceneData.SceneEnvironment.IrradianceMap);
-				//baseMaterial->Set("u_BRDFLUTTexture", s_SceneRendererData.BRDFLUT);
-
-				//pl->SetUniformBufferData(2, &s_Data.SceneData.ActiveLight, sizeof(Light));
-
-				//Renderer3D::DrawMesh(dc.Mesh, dc.Transform, dc.MaterialInstance);
-
-				//pl->SetUniformBufferData(2, )
-			}
-
-#endif
-			//RenderCommand::SetBlending(true);
-			//Render::Renderer2D::BeginScene(s_SceneRendererData.SceneData.Camera.Camera, s_SceneRendererData.SceneData.Camera.ViewMatrix);
-			//for (auto& dc : s_SceneRendererData.QuadDrawList) {
-				//Renderer2D::DrawQuad(dc.Transform, dc.Color);
-			//}
-			//Render::Renderer2D::DrawString("This is a wonderful test string for fonts with this font i can write what every i want to", "comic", { -20.0f, 0.0f }, {0.1, 0.9, 0.1});
-			
-			//Render::Renderer2D::DrawQuad(glm::vec3(10.0f, 10.0f, 0.0f), glm::vec2(1.0), s_SceneRendererData.TestTexture);
-			
-			//Render::Renderer2D::EndScene();
-
-			//Renderer::EndRenderPass(m_CommandBuffer);
 		}
 
 		void SceneRenderer::CompositePass() {
@@ -355,6 +525,8 @@ namespace Snow {
 
 				m_CommandBuffer->Begin();
 
+				ShadowMapPass();
+				PreDepthPass();
 				GeometryPass();
 				CompositePass();
 
@@ -370,18 +542,320 @@ namespace Snow {
 				m_CommandBuffer->Submit();
 			}
 
-
+			m_DrawList.clear();
+			m_ShadowDrawList.clear();
 		}
 
-		
+		void SceneRenderer::ClearPass(Ref<RenderPass> renderPass, bool clear) {
+			Renderer::BeginRenderPass(m_CommandBuffer, renderPass, clear);
+			Renderer::EndRenderPass(m_CommandBuffer);
+		}
 
 		void SceneRenderer::ClearPass() {
 			Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePipeline->GetSpecification().BindedRenderPass, true);
 			Renderer::EndRenderPass(m_CommandBuffer);
 		}
 
+		void SceneRenderer::CalculateCascades(CascadeData* cascades, const SceneRendererCamera& sceneCamera, const glm::vec3& lightDirection) const {
+			struct FrustumBounds
+			{
+				float r, l, b, t, f, n;
+			};
+
+			//FrustumBounds frustumBounds[3];
+
+			auto viewProjection = sceneCamera.Camera.GetProjection() * sceneCamera.ViewMatrix;
+
+			const int SHADOW_MAP_CASCADE_COUNT = 4;
+			float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
+
+			// TODO: less hard-coding!
+			float nearClip = 0.1f;
+			float farClip = 1000.0f;
+			float clipRange = farClip - nearClip;
+
+			float minZ = nearClip;
+			float maxZ = nearClip + clipRange;
+
+			float range = maxZ - minZ;
+			float ratio = maxZ / minZ;
+
+			// Calculate split depths based on view camera frustum
+			// Based on method presented in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
+			for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
+			{
+				float p = (i + 1) / static_cast<float>(SHADOW_MAP_CASCADE_COUNT);
+				float log = minZ * std::pow(ratio, p);
+				float uniform = minZ + range * p;
+				float d = CascadeSplitLambda * (log - uniform) + uniform;
+				cascadeSplits[i] = (d - nearClip) / clipRange;
+			}
+
+			cascadeSplits[3] = 0.3f;
+
+			// Manually set cascades here
+			// cascadeSplits[0] = 0.05f;
+			// cascadeSplits[1] = 0.15f;
+			// cascadeSplits[2] = 0.3f;
+			// cascadeSplits[3] = 1.0f;
+
+			// Calculate orthographic projection matrix for each cascade
+			float lastSplitDist = 0.0;
+			for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
+			{
+				float splitDist = cascadeSplits[i];
+
+				glm::vec3 frustumCorners[8] =
+				{
+					glm::vec3(-1.0f,  1.0f, -1.0f),
+					glm::vec3(1.0f,  1.0f, -1.0f),
+					glm::vec3(1.0f, -1.0f, -1.0f),
+					glm::vec3(-1.0f, -1.0f, -1.0f),
+					glm::vec3(-1.0f,  1.0f,  1.0f),
+					glm::vec3(1.0f,  1.0f,  1.0f),
+					glm::vec3(1.0f, -1.0f,  1.0f),
+					glm::vec3(-1.0f, -1.0f,  1.0f),
+				};
+
+				// Project frustum corners into world space
+				glm::mat4 invCam = glm::inverse(viewProjection);
+				for (uint32_t i = 0; i < 8; i++)
+				{
+					glm::vec4 invCorner = invCam * glm::vec4(frustumCorners[i], 1.0f);
+					frustumCorners[i] = invCorner / invCorner.w;
+				}
+
+				for (uint32_t i = 0; i < 4; i++)
+				{
+					glm::vec3 dist = frustumCorners[i + 4] - frustumCorners[i];
+					frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
+					frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
+				}
+
+				// Get frustum center
+				glm::vec3 frustumCenter = glm::vec3(0.0f);
+				for (uint32_t i = 0; i < 8; i++)
+					frustumCenter += frustumCorners[i];
+
+				frustumCenter /= 8.0f;
+
+				//frustumCenter *= 0.01f;
+
+				float radius = 0.0f;
+				for (uint32_t i = 0; i < 8; i++)
+				{
+					float distance = glm::length(frustumCorners[i] - frustumCenter);
+					radius = glm::max(radius, distance);
+				}
+				radius = std::ceil(radius * 16.0f) / 16.0f;
+
+				glm::vec3 maxExtents = glm::vec3(radius);
+				glm::vec3 minExtents = -maxExtents;
+
+				glm::vec3 lightDir = -lightDirection;
+				glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 0.0f, 1.0f));
+				glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f + CascadeNearPlaneOffset, maxExtents.z - minExtents.z + CascadeFarPlaneOffset);
+
+				// Offset to texel space to avoid shimmering (from https://stackoverflow.com/questions/33499053/cascaded-shadow-map-shimmering)
+				glm::mat4 shadowMatrix = lightOrthoMatrix * lightViewMatrix;
+				const float ShadowMapResolution = 4096.0f;
+				glm::vec4 shadowOrigin = (shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) * ShadowMapResolution / 2.0f;
+				glm::vec4 roundedOrigin = glm::round(shadowOrigin);
+				glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
+				roundOffset = roundOffset * 2.0f / ShadowMapResolution;
+				roundOffset.z = 0.0f;
+				roundOffset.w = 0.0f;
+
+				lightOrthoMatrix[3] += roundOffset;
+
+				// Store split distance and matrix in cascade
+				cascades[i].SplitDepth = (nearClip + splitDist * clipRange) * -1.0f;
+				cascades[i].ViewProj = lightOrthoMatrix * lightViewMatrix;
+				cascades[i].View = lightViewMatrix;
+
+				lastSplitDist = cascadeSplits[i];
+			}
+
+			/*
+			struct FrustumBounds {
+				float r, l, b, t, f, n;
+			};
+
+			auto viewProj = sceneCamera.Camera.GetProjection() * sceneCamera.ViewMatrix;
+
+			const int ShadowMapCascadeCount = 4;
+			float cascadeSplits[ShadowMapCascadeCount];
+
+			float nearClip = 0.1f;
+			float farClip = 1000.0f;
+			float clipRange = farClip - nearClip;
+
+			float minZ = nearClip;
+			float maxZ = nearClip + clipRange;
+
+			float range = maxZ - minZ;
+			float ratio = maxZ / minZ;
+
+			for (uint32_t i = 0; i < ShadowMapCascadeCount; i++) {
+				float p = (i + 1) / static_cast<float>(ShadowMapCascadeCount);
+				float log = minZ * std::pow(ratio, p);
+				float uniform = minZ + range * p;
+				float d = CascadeSplitLambda * (log - uniform) + uniform;
+				cascadeSplits[i] = (d - nearClip) / clipRange;
+			}
+
+			cascadeSplits[3] = 0.3f;
+
+			float lastSplitDist = 0.0f;
+			for (uint32_t i = 0; i < ShadowMapCascadeCount; i++) {
+				float splitDist = cascadeSplits[i];
+
+				glm::vec3 frustumCorners[8] = {
+					glm::vec3(-1.0f,  1.0f, -1.0f),
+					glm::vec3( 1.0f,  1.0f, -1.0f),
+					glm::vec3( 1.0f, -1.0f, -1.0f),
+					glm::vec3(-1.0f, -1.0f, -1.0f),
+					glm::vec3(-1.0f,  1.0f,  1.0f),
+					glm::vec3( 1.0f,  1.0f,  1.0f),
+					glm::vec3( 1.0f, -1.0f,  1.0f),
+					glm::vec3(-1.0f, -1.0f,  1.0f)
+				};
+
+				glm::mat4 invCamera = glm::inverse(viewProj);
+				for (uint32_t i = 0; i < 8; i++) {
+					glm::vec4 invCorner = invCamera * glm::vec4(frustumCorners[i], 1.0f);
+					frustumCorners[i] = invCorner / invCorner.w;
+				}
+
+				for (uint32_t i = 0; i < 4; i++) {
+					glm::vec3 dist = frustumCorners[i + 4] - frustumCorners[i];
+					frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
+					frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
+				}
+
+				glm::vec3 frustumCenter = glm::vec3(0.0f);
+				for (uint32_t i = 0; i < 8; i++)
+					frustumCenter += frustumCorners[i];
+				frustumCenter /= 8.0f;
+
+				float radius = 0.0f;
+				for (uint32_t i = 0; i < 8; i++) {
+					float dist = glm::length(frustumCorners[i] - frustumCenter);
+					radius = glm::max(radius, dist);
+				}
+				radius = std::ceil(radius * 16.0f) / 16.0f;
+
+				glm::vec3 maxExtents = glm::vec3(radius);
+				glm::vec3 minExtents = -maxExtents;
+
+				glm::vec3 lightDir = -lightDirection;
+				glm::mat4 lightViewMat = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 0.0f, 1.0f));
+				glm::mat4 lightOrthoMat = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f + CascadeNearPlaneOffset, maxExtents.z - minExtents.z + CascadeFarPlaneOffset);
+
+				glm::mat4 shadowMatrix = lightOrthoMat * lightViewMat;
+				const float ShadowMapResolution = 4096.0f;
+				glm::vec4 shadowOrigin = (shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) * ShadowMapResolution / 2.0f;
+				glm::vec4 roundedOrigin = glm::round(shadowOrigin);
+				glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
+				roundOffset = roundOffset * 2.0f / ShadowMapResolution;
+				roundOffset.z = 0.0f;
+				roundOffset.w = 0.0f;
+
+				lightOrthoMat[3] += roundOffset;
+
+				cascades[i].SplitDepth = (nearClip + splitDist * clipRange) * -1.0f;
+				cascades[i].ViewProj = lightOrthoMat * lightViewMat;
+				cascades[i].View = lightViewMat;
+
+				lastSplitDist = cascadeSplits[i];
+			}
+
+			*/
+		}
+
+		SceneRendererOptions& SceneRenderer::GetOptions() {
+			return m_Options;
+		}
+
 		void SceneRenderer::OnImGuiRender() {
-			ImGui::Begin("Composite Pass");
+			ImGui::Begin("SceneOptions");
+
+			if(UI::PropertyGridHeader("Options")) {
+				UI::BeginPropertyGrid();
+				UI::Property("Show Grid", m_Options.ShowGrid);
+				UI::Property("Show Bounding Boxes", m_Options.ShowBoundingBoxes);
+				UI::Property("Show Shadow Cascades", RendererDataUB.ShowCascades);
+				UI::EndPropertyGrid();
+
+				UI::EndTreeNode();
+			}
+
+			if (UI::PropertyGridHeader("Shadows")) {
+				UI::BeginPropertyGrid();
+				UI::Property("Soft Shadows", RendererDataUB.SoftShadows);
+				UI::Property("Directional Light Size", RendererDataUB.LightSize, 0.01f);
+				UI::Property("Max Shadow Distance", RendererDataUB.MaxShadowDistance, 1.0f);
+				UI::Property("Shadow Fade", RendererDataUB.ShadowFade, 5.0f);
+				UI::EndPropertyGrid();
+				if (UI::BeginTreeNode("Cascade Settings")) {
+					UI::BeginPropertyGrid();
+					UI::Property("Cascade Fading", RendererDataUB.CascadeFading);
+					UI::Property("Cascade Transition Fade", RendererDataUB.CascadeTransitionFade, 0.05f, 0.0f, FLT_MAX);
+					UI::Property("Cascade Split", CascadeSplitLambda, 0.01f);
+					UI::Property("Cascade Near Plane Offset", CascadeNearPlaneOffset);
+					UI::Property("Cascade Far Plane Offset", CascadeFarPlaneOffset);
+					UI::EndPropertyGrid();
+					UI::EndTreeNode();
+				}
+				if (UI::BeginTreeNode("Shadow Map", false)) {
+					static int cascadeIndex = 0;
+					auto fb = m_ShadowPassPipelines[cascadeIndex]->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer;
+					auto image = fb->GetDepthImage();
+
+					float size = ImGui::GetContentRegionAvailWidth();
+					UI::BeginPropertyGrid();
+					UI::PropertySlider("Cascade Index", cascadeIndex, 0, 3);
+					UI::EndPropertyGrid();
+					if (m_ResourcesCreated)
+						UI::Image(image, (uint32_t)cascadeIndex, { size, size }, { 0, 1 }, { 1, 0 });
+					UI::EndTreeNode();
+				}
+
+				if (UI::BeginTreeNode("DebugShadowMap", false)) {
+					
+					auto fb = m_ShadowPassPipelines[0]->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer;
+					auto image = fb->GetDepthImage();
+
+					float size = ImGui::GetContentRegionAvailWidth();
+
+					if (m_ResourcesCreated) {
+						UI::Image(image, (uint32_t)0, { size, size }, { 0, 1 }, { 1, 0 });
+						UI::Image(image, (uint32_t)1, { size, size }, { 0, 1 }, { 1, 0 });
+						UI::Image(image, (uint32_t)2, { size, size }, { 0, 1 }, { 1, 0 });
+						UI::Image(image, (uint32_t)3, { size, size }, { 0, 1 }, { 1, 0 });
+					}
+					UI::EndTreeNode();
+				}
+
+				UI::EndTreeNode();
+			}
+
+			if (UI::PropertyGridHeader("Render Statistics")) {
+				uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
+
+				if (UI::BeginTreeNode("Pipeline Stats")) {
+					const PipelineStatistics& pipelineStats = m_CommandBuffer->GetPipelineStatistics(frameIndex);
+					ImGui::Text("Input Assembly Vertices: %llu", pipelineStats.InputAssemblyVertices);
+					ImGui::Text("Input Assembly Primitives: %llu", pipelineStats.InputAssemblyPrimitives);
+					ImGui::Text("Clipping Invocations: %llu", pipelineStats.ClippingInvocations);
+					ImGui::Text("Clipping Primitives: %llu", pipelineStats.ClippingPrimitives);
+					ImGui::Text("Vertex Shader Invocations: %llu", pipelineStats.VertexShaderInvocations);
+					ImGui::Text("Fragment Shader Invocations: %llu", pipelineStats.FragmentShaderInvocations);
+					ImGui::Text("Compute Shader Invocations: %llu", pipelineStats.ComputeShaderInvocations);
+					UI::EndTreeNode();
+				}
+				UI::EndTreeNode();
+			}
 			ImGui::End();
 		}
 

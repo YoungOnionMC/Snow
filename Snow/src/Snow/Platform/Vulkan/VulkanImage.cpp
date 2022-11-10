@@ -12,7 +12,9 @@ namespace Snow {
 
 	//using namespace Render;
 	VulkanImage2D::VulkanImage2D(Render::ImageSpecification spec) :
-		m_Specification(spec) {}
+		m_Specification(spec) {
+		
+	}
 
 	VulkanImage2D::~VulkanImage2D() {
 		if (m_ImageInfo.Image) {
@@ -58,6 +60,65 @@ namespace Snow {
 		
 	}
 
+	void VulkanImage2D::SetData(void* data) {
+		Ref<VulkanImage2D> instance = this;
+		Render::Renderer::Submit([instance, data]() mutable {
+			instance->RTSetData(data);
+		});
+	}
+
+	void VulkanImage2D::RTSetData(void* data) {
+		Ref<VulkanDevice> vkDevice = VulkanContext::GetCurrentDevice();
+		VkCommandBuffer cmdBuffer = vkDevice->GetCommandBuffer(true);
+		VulkanAllocator allocator("VulkanImage2D");
+
+		uint64_t size = m_Specification.Width * m_Specification.Height * Render::Utils::GetFormatSize(m_Specification.Format);
+		if (!m_StagingBuffer) {
+			VkBufferCreateInfo bufferCI = {};
+			bufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferCI.size = size;
+			bufferCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			bufferCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			m_StagingBufferAllocation = allocator.AllocateBuffer(bufferCI, VMA_MEMORY_USAGE_CPU_TO_GPU, m_StagingBuffer);
+			//vkCreateBuffer(vkDevice->GetVulkanDevice(), &bufferCI, nullptr, &m_StagingBuffer);
+		}
+
+		uint8_t* allocatedData = allocator.MapMemory<uint8_t>(m_StagingBufferAllocation);
+		memcpy(allocatedData, data, size);
+		allocator.UnmapMemory(m_StagingBufferAllocation);
+
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = 1;
+		subresourceRange.layerCount = 1;
+
+		Render::Utils::InsertImageMemoryBarrier(cmdBuffer, m_ImageInfo.Image, 
+			0, VK_ACCESS_TRANSFER_WRITE_BIT, 
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+			VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 
+			subresourceRange);
+
+		VkBufferImageCopy region = {};
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageExtent.width = m_Width;
+		region.imageExtent.height = m_Height;
+		region.imageExtent.depth = 1;
+		region.bufferOffset = 0;
+
+		vkCmdCopyBufferToImage(cmdBuffer, m_StagingBuffer, m_ImageInfo.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+		Render::Utils::InsertImageMemoryBarrier(cmdBuffer, m_ImageInfo.Image, 
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
+			subresourceRange);
+
+		vkDevice->FlushCommandBuffer(cmdBuffer);
+	}
+
 	void VulkanImage2D::RTInvalidate() {
 		
 		Ref<VulkanDevice> vkDevice = VulkanContext::GetCurrentDevice();
@@ -81,7 +142,7 @@ namespace Snow {
 		if (m_Specification.Format == Render::ImageFormat::Depth24Stencil8)
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-		VkFormat vulkanFormat = Utils::GetVulkanFormat(m_Specification.Format);
+		VkFormat vulkanFormat = Render::Utils::GetVulkanFormat(m_Specification.Format);
 
 		VkImageCreateInfo imageCI = {};
 		imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -166,7 +227,7 @@ namespace Snow {
 		if (m_Specification.Format == Render::ImageFormat::Depth24Stencil8)
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-		const VkFormat vulkanFormat = Utils::GetVulkanFormat(m_Specification.Format);
+		const VkFormat vulkanFormat = Render::Utils::GetVulkanFormat(m_Specification.Format);
 
 		m_PerLayerImageViews.resize(m_Specification.Layers);
 		for (uint32_t layer = 0; layer < m_Specification.Layers; layer++) {
@@ -195,7 +256,7 @@ namespace Snow {
 		if (m_Specification.Format == Render::ImageFormat::Depth24Stencil8)
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-		const VkFormat vulkanFormat = Utils::GetVulkanFormat(m_Specification.Format);
+		const VkFormat vulkanFormat = Render::Utils::GetVulkanFormat(m_Specification.Format);
 
 		if (m_PerLayerImageViews.empty())
 			m_PerLayerImageViews.resize(m_Specification.Layers);
@@ -219,7 +280,7 @@ namespace Snow {
 
 	void VulkanImage2D::UpdateDescriptor() {
 		if (m_Specification.Format == Render::ImageFormat::Depth24Stencil8 || m_Specification.Format == Render::ImageFormat::Depth32F)
-			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 		else
 			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

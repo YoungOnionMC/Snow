@@ -32,7 +32,7 @@ namespace Snow {
 		virtual Ref<Render::Image2D> GetDepthImage() const override { return m_DepthAttachmentImage; }
 		size_t GetColorAttachmentCount() const { return (m_Specification.SwapChainTarget ? 1 : m_ColorAttachmentImages.size()); }
 
-		const std::vector<VkClearValue> GetVkClearValues() const { return m_ClearValues; }
+		const std::vector<VkClearValue>& GetVkClearValues() const { return m_ClearValues; }
 
 		bool HasDepthAttachment() const { return m_DepthAttachmentImage; }
 

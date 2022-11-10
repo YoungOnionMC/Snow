@@ -7,6 +7,10 @@
 #include "Snow/Platform/Vulkan/VulkanTexture.h"
 #include "Snow/Platform/Vulkan/VulkanImage.h"
 
+#include "Snow/Utils/StringUtils.h"
+
+#include <glm/gtc/type_ptr.hpp>
+
 namespace Snow {
 	VulkanMaterial::VulkanMaterial(const Ref<Render::Shader>& shader, const std::string& name) :
 		m_Shader(shader), m_Name(name), m_WriteDescriptors(Render::Renderer::GetConfig().FramesInFlight),
@@ -38,6 +42,7 @@ namespace Snow {
 		m_ImageHashes = vkMaterial->m_ImageHashes;
 
 		m_VariableMap = vkMaterial->m_VariableMap;
+		m_MaterialTextures = vkMaterial->m_MaterialTextures;
 	}
 
 	void VulkanMaterial::Init() {
@@ -84,12 +89,28 @@ namespace Snow {
 			uint32_t size = 0;
 			for (auto [name, shaderBuffer] : shaderBuffers) {
 				size += shaderBuffer.Size;
-				for(auto [uniformName, uniform] : shaderBuffer.Uniforms) 
-					m_VariableMap[uniformName] = uniform.GetType();
+				for (auto [uniformName, uniform] : shaderBuffer.Uniforms) {
+					Buffer buffer(uniform.GetSize());
+					buffer.ZeroInitialize();
+					m_VariableMap[uniformName] = { uniform.GetType(), buffer };
+				}
 			}
 
 			m_UniformStorageBuffer.Allocate(size);
 			m_UniformStorageBuffer.ZeroInitialize();
+		}
+
+		const auto& shaderResources = m_Shader->GetResources();
+		if (shaderResources.size()) {
+			for (auto [name, resource] : shaderResources) {
+				if (Snow::Utils::String::StartsWith(name, "u_Material")) {
+					if (resource.GetType() == ResourceType::Texture2D) {
+						m_MaterialTextures[name] = { ResourceType::Texture2D, Renderer::GetWhiteTexture() };
+						Set(name, Renderer::GetWhiteTexture());
+					}
+					
+				}
+			}
 		}
 	}
 
@@ -213,45 +234,56 @@ namespace Snow {
 
 	void VulkanMaterial::Set(const std::string& name, float value) {
 		Set<float>(name, value);
+		m_VariableMap.at(name).Data.Write(&value, sizeof(float));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, double value) {
 		Set<double>(name, value);
+		m_VariableMap.at(name).Data.Write(&value, sizeof(double));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, int value) {
 		Set<int>(name, value);
+		m_VariableMap.at(name).Data.Write(&value, sizeof(int));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, uint32_t value) {
 		Set<uint32_t>(name, value);
+		m_VariableMap.at(name).Data.Write(&value, sizeof(uint32_t));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, bool value) {
 		Set<int>(name, (int)value);
+		m_VariableMap.at(name).Data.Write(&value, sizeof(bool));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, const glm::vec2& value) {
 		Set<glm::vec2>(name, value);
+		m_VariableMap.at(name).Data.Write((void*)glm::value_ptr(value), sizeof(glm::vec2));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, const glm::vec3& value) {
 		Set<glm::vec3>(name, value);
+		m_VariableMap.at(name).Data.Write((void*)glm::value_ptr(value), sizeof(glm::vec3));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, const glm::vec4& value) {
 		Set<glm::vec4>(name, value);
+		m_VariableMap.at(name).Data.Write((void*)glm::value_ptr(value), sizeof(glm::vec4));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, const glm::mat3& value) {
 		Set<glm::mat3>(name, value);
+		m_VariableMap.at(name).Data.Write((void*)glm::value_ptr(value), sizeof(glm::mat3));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, const glm::mat4& value) {
 		Set<glm::mat4>(name, value);
+		m_VariableMap.at(name).Data.Write((void*)glm::value_ptr(value), sizeof(glm::mat4));
 	}
 
 	void VulkanMaterial::Set(const std::string& name, const Ref<Render::Texture2D>& texture) {
+		m_MaterialTextures[name] = { ResourceType::Texture2D, texture };
 		SetVulkanDescriptor(name, texture);
 	}
 
@@ -353,10 +385,10 @@ namespace Snow {
 					pd->ImageInfo = texture->GetVulkanDescriptorInfo();
 					pd->WDS.pImageInfo = &pd->ImageInfo;
 				}
-				if (pd->Type == PendingDescriptorType::TextureCube) { // Texture Cubes not yet implemented
-					//Ref<VulkanTexture2D> texture = pd->Texture.As<VulkanTextureCube>();
-					//pd->ImageInfo = texture->GetVulkanDescriptorInfo();
-					//pd->WDS.pImageInfo = &pd->ImageInfo;
+				if (pd->Type == PendingDescriptorType::TextureCube) { 
+					Ref<VulkanTextureCube> texture = pd->Texture.As<VulkanTextureCube>();
+					pd->ImageInfo = texture->GetVulkanDescriptorInfo();
+					pd->WDS.pImageInfo = &pd->ImageInfo;
 				}
 				if (pd->Type == PendingDescriptorType::Image2D) {
 					Ref<VulkanImage2D> image = pd->Image.As<VulkanImage2D>();

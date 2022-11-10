@@ -5,7 +5,8 @@
 namespace Snow {
 	void AssetImporter::Init() {
 		s_Serializers[AssetType::Texture] = CreateScope<TextureSerializer>();
-		s_Serializers[AssetType::MeshAsset] = CreateScope<MeshAssetSerializer>();
+		s_Serializers[AssetType::MeshSource] = CreateScope<MeshSourceSerializer>();
+		s_Serializers[AssetType::Scene] = CreateScope<SceneAssetSerializer>();
 	}
 
 	void AssetImporter::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) {

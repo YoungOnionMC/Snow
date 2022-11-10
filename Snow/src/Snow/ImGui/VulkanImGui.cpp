@@ -5,6 +5,7 @@
 
 #include "Snow/Platform/Vulkan/VulkanImage.h"
 #include "Snow/Platform/Vulkan/VulkanTexture.h"
+#include "Snow/Platform/Vulkan/VulkanImGuiLayer.h"
 
 #include "examples/imgui_impl_vulkan_with_textures.h"
 
@@ -16,7 +17,7 @@ namespace ImGui {
 namespace Snow {
 	namespace UI {
 
-
+		
 
 		void Image(const Ref<Render::Image2D>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col) {
 			if (Render::RendererAPI::Current() == Render::RendererAPIType::OpenGL) {
@@ -29,6 +30,10 @@ namespace Snow {
 				if (!imageInfo.ImageView)
 					return;
 				const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vkImage->GetImageDescriptor().imageLayout);
+
+				auto& vulkanImGuiLayer = Core::Application::Get().GetImGuiLayer().As<VulkanImGuiLayer>();
+				vulkanImGuiLayer->GetTextureIDs().push_back((VkDescriptorSet)textureID);
+
 				ImGui::Image(textureID, size, uv0, uv1, tint_col, border_col);
 			}
 		}
@@ -44,6 +49,9 @@ namespace Snow {
 				if (!imageInfo.ImageView)
 					return;
 				const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vkImage->GetImageDescriptor().imageLayout);
+
+				auto& vulkanImGuiLayer = Core::Application::Get().GetImGuiLayer().As<VulkanImGuiLayer>();
+				vulkanImGuiLayer->GetTextureIDs().push_back((VkDescriptorSet)textureID);
 				ImGui::Image(textureID, size, uv0, uv1, tint_col, border_col);
 			}
 		}
@@ -59,6 +67,9 @@ namespace Snow {
 				if (!imageInfo.ImageView)
 					return;
 				const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vkImage->GetImageDescriptor().imageLayout);
+
+				auto& vulkanImGuiLayer = Core::Application::Get().GetImGuiLayer().As<VulkanImGuiLayer>();
+				vulkanImGuiLayer->GetTextureIDs().push_back((VkDescriptorSet)textureID);
 				ImGui::Image(textureID, size, uv0, uv1, tint_col, border_col);
 			}
 		}
@@ -73,6 +84,9 @@ namespace Snow {
 				if (!imageInfo.imageView)
 					return;
 				const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+
+				auto& vulkanImGuiLayer = Core::Application::Get().GetImGuiLayer().As<VulkanImGuiLayer>();
+				vulkanImGuiLayer->GetTextureIDs().push_back((VkDescriptorSet)textureID);
 				ImGui::Image(textureID, size, uv0, uv1, tint_col, border_col);
 			}
 		}
@@ -90,6 +104,9 @@ namespace Snow {
 				const auto& imageInfo = vkImage->GetImageInfo();
 
 				const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vkImage->GetImageDescriptor().imageLayout);
+
+				auto& vulkanImGuiLayer = Core::Application::Get().GetImGuiLayer().As<VulkanImGuiLayer>();
+				vulkanImGuiLayer->GetTextureIDs().push_back((VkDescriptorSet)textureID);
 				ImGuiID id = (ImGuiID)((((uint64_t)imageInfo.ImageView) >> 32) ^ (uint32_t)imageInfo.ImageView);
 				if (stringID) {
 					const ImGuiID strID = ImGui::GetID(stringID);
@@ -118,6 +135,9 @@ namespace Snow {
 				const auto& imageInfo = vkTexture->GetVulkanDescriptorInfo();
 
 				const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+
+				auto& vulkanImGuiLayer = Core::Application::Get().GetImGuiLayer().As<VulkanImGuiLayer>();
+				vulkanImGuiLayer->GetTextureIDs().push_back((VkDescriptorSet)textureID);
 				ImGuiID id = (ImGuiID)((((uint64_t)imageInfo.imageView) >> 32) ^ (uint32_t)imageInfo.imageView);
 				if (stringID) {
 					const ImGuiID strID = ImGui::GetID(stringID);

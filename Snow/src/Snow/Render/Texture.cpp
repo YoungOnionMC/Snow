@@ -34,14 +34,15 @@ namespace Snow {
             }
         }
 
-        Ref<TextureCube> TextureCube::Create(ImageFormat format, uint32_t width, uint32_t height) {
+        Ref<TextureCube> TextureCube::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, TextureProperties properties) {
             switch (Render::RendererAPI::Current()) {
             case RendererAPIType::None:   return nullptr;
+            case RendererAPIType::Vulkan:   return Ref<VulkanTextureCube>::Create(format, width, height, data, properties);
             //case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(format, width, height);
             }
         }
 
-        Ref<TextureCube> TextureCube::Create(const std::string& path, bool srgb) {
+        Ref<TextureCube> TextureCube::Create(const std::string& path, TextureProperties properties) {
             switch (Render::RendererAPI::Current()) {
             case RendererAPIType::None:   return nullptr;
             //case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(path, srgb);

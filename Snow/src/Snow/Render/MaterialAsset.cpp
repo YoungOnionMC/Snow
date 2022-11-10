@@ -64,7 +64,7 @@ namespace Snow {
 
 	void MaterialAsset::SetValuesInMap() {
 		for (auto [name, type] : m_Material->GetVariables()) {
-			switch (type) {
+			switch (type.Type) {
 			case UniformType::Bool: {
 				SetValue(name, false);
 				break;

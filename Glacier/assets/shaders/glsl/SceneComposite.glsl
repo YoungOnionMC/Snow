@@ -25,7 +25,7 @@ struct PixelInput {
 	vec2 TexCoord;
 };
 
-layout (location = 0) in PixelInput Output;
+layout (location = 0) in PixelInput Input;
 
 layout (binding = 0) uniform sampler2D u_Texture;
 
@@ -33,9 +33,16 @@ layout (push_constant) uniform Uniforms {
 	float Exposure;
 } u_Uniforms;
 
+vec3 GammaCorrect(vec3 color, float gamma) {
+	return pow(color, vec3(1.0f / gamma));
+}
+
 void main() {
-	vec4 color = texture(u_Texture, Output.TexCoord);
+	const float gamma = 2.2;
+	vec3 color = texture(u_Texture, Input.TexCoord).rgb;
 	color *= u_Uniforms.Exposure;
 
-	o_Color = color + vec4(0.9, 1.0, 0.7, 1.0);
+	color = GammaCorrect(color.rgb, gamma);
+
+	o_Color = vec4(color, 1.0);//color; //;
 }

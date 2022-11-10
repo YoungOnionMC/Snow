@@ -7,20 +7,29 @@
 namespace Snow {
 	inline static std::unordered_map<std::string, AssetType> s_AssetExtensionMap = {
 		{".scene", AssetType::Scene},
+
 		{".mesh", AssetType::Mesh},
+
 		{".mat", AssetType::Material},
 
-		{".fbx", AssetType::MeshAsset},
-		{".gltf", AssetType::MeshAsset},
-		{".obj", AssetType::MeshAsset},
-		{".glb", AssetType::MeshAsset},
+		{".fbx", AssetType::MeshSource},
+		{".gltf", AssetType::MeshSource},
+		{".glb", AssetType::MeshSource},
+		{".obj", AssetType::MeshSource},
 
+		{".jpeg", AssetType::Texture},
+		{".jpg", AssetType::Texture},
 		{".png", AssetType::Texture},
 		{".tga", AssetType::Texture},
-		{".jpg", AssetType::Texture},
-		{".jpeg", AssetType::Texture},
 
 		{".hdr", AssetType::EnvMap},
 
+		{".wav", AssetType::Audio},
+		{".ogg", AssetType::Audio},
+		{".mp3", AssetType::Audio},
+
+		{".cs", AssetType::Script},
+
+		{".prefab", AssetType::Prefab},
 	};
 }

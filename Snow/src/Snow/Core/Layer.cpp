@@ -10,9 +10,6 @@ namespace Snow {
         }
 
         LayerStack::~LayerStack() {
-            for(auto& layer : m_Layers){
-                delete layer;
-            }
         }
 
         void LayerStack::PushLayer(Layer* layer) {

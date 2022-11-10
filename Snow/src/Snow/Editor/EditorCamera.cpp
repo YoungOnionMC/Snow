@@ -20,7 +20,7 @@ namespace Snow {
 			Camera(projMatrix) {
 			m_FocalPoint = glm::vec3(0.0f);
 
-			glm::vec3 position = { 0, 0, 5 };
+			glm::vec3 position = { 0, 0, -5 };
 			m_Distance = glm::distance(position, m_FocalPoint);
 
 			m_Yaw = 3.0f * (float)M_PI / 4.0f;
@@ -96,6 +96,16 @@ namespace Snow {
 					m_CameraMode = CameraMode::FLYCAM;
 					DisableMouse();
 					const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+
+					if (Core::Input::IsKeyPressed(KeyCode::LeftShift))
+						m_Speed = 0.02f;
+					else
+						m_Speed = 0.002f;
+
+					if (Core::Input::IsKeyPressed(KeyCode::LeftControl))
+						m_Speed = 0.0002f;
+					else
+						m_Speed = 0.002f;
 
 					if(Core::Input::IsKeyPressed(KeyCode::Q))
 						m_PositionDelta -= ts.GetMilliseconds() * m_Speed * glm::vec3{ 0.0f, yawSign, 0.0f };

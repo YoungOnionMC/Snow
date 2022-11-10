@@ -29,6 +29,10 @@ namespace Snow {
 		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
 		virtual uint32_t GetHeight() const override { return m_Specification.Height; }
 
+		virtual void SetData(void* data) override;
+		void RTSetData(void* data);
+		virtual bool GetImageData() override { return m_ImageData; }
+
 		virtual Render::ImageSpecification& GetSpecification() override { return m_Specification; }
 		virtual const Render::ImageSpecification& GetSpecification() const override { return m_Specification; }
 
@@ -40,6 +44,8 @@ namespace Snow {
 
 		VkImageView GetLayerImageView(uint32_t layer) {
 			SNOW_CORE_ASSERT(layer < m_PerLayerImageViews.size());
+			if (m_PerLayerImageViews.size() == 0)
+				return nullptr;
 			return m_PerLayerImageViews[layer];
 		}
 
@@ -62,8 +68,12 @@ namespace Snow {
 	private:
 		Render::ImageSpecification m_Specification;
 
+		uint32_t m_Width = 0, m_Height = 0;
 		Buffer m_ImageData;
 		VulkanImageInfo m_ImageInfo;
+
+		VkBuffer m_StagingBuffer = nullptr;
+		VmaAllocation m_StagingBufferAllocation;
 
 		std::vector<VkImageView> m_PerLayerImageViews;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};

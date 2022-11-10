@@ -219,6 +219,10 @@ namespace Snow {
 			DrawButtonImage(imageN, imageH, imageP, tintN, tintH, tintP, rect.Min, rect.Max);
 		}
 
+		static void DrawButtonImage(const Ref<Render::Texture2D>& imageN, const Ref<Render::Texture2D>& imageH, const Ref<Render::Texture2D>& imageP, ImU32 tintN, ImU32 tintH, ImU32 tintP) {
+			DrawButtonImage(imageN, imageH, imageP, tintN, tintH, tintP, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+		}
+
 		static void DrawButtonImage(const Ref<Render::Texture2D>& image, ImU32 tintN, ImU32 tintH, ImU32 tintP, ImVec2 rectMin, ImVec2 rectMax) {
 			DrawButtonImage(image, image, image, tintN, tintH, tintP, rectMin, rectMax);
 		}

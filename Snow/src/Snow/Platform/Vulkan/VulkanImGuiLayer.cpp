@@ -14,12 +14,12 @@
 
 #if defined(SNOW_WINDOW_GLFW)
     #include <GLFW/glfw3.h>
-    #include <examples/imgui_impl_glfw.h>
-    #include <examples/imgui_impl_glfw.cpp>
+    #include <backends/imgui_impl_glfw.h>
+    #include <backends/imgui_impl_glfw.cpp>
 #elif defined(SNOW_WINDOW_WIN32)
     #include <windows.h>
-    #include <examples/imgui_impl_win32.h>
-    #include <examples/imgui_impl_win32.cpp>
+    #include <backends/imgui_impl_win32.h>
+    #include <backends/imgui_impl_win32.cpp>
 #endif
 
 #include <ImGuizmo.h>
@@ -60,69 +60,76 @@ namespace Snow {
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
-        Ref<Core::Window> window = Core::Application::Get().GetWindow();
 
-        auto vkContext = VulkanContext::Get();
-        auto vkDevice = vkContext->GetCurrentDevice();
-        auto vkSwapChain = window->GetSwapChain().As<VulkanSwapChain>();
+        VulkanImGuiLayer* instance = this;
+        Renderer::Submit([instance]() {
+            Ref<Core::Window> window = Core::Application::Get().GetWindow();
 
-        VkDescriptorPool descriptorPool = {};
+            auto vkContext = VulkanContext::Get();
+            auto vkDevice = vkContext->GetCurrentDevice();
+            auto vkSwapChain = window->GetSwapChain().As<VulkanSwapChain>();
 
-        VkDescriptorPoolSize poolSizes[] = {
-            { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 },
-        };
+            VkDescriptorPool descriptorPool = {};
 
-        VkDescriptorPoolCreateInfo poolInfo = {};
-        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        poolInfo.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
-        poolInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
-        poolInfo.pPoolSizes = poolSizes;
-        auto result = vkCreateDescriptorPool(vkDevice->GetVulkanDevice(), &poolInfo, nullptr, &descriptorPool);
-        checkVKResult(result);
+            VkDescriptorPoolSize poolSizes[] = {
+                { VK_DESCRIPTOR_TYPE_SAMPLER, 100 },
+                { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100 },
+                { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 100 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 100 },
+                { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 100 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 100 },
+                { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100 },
+                { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 100 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 100 },
+                { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 100 }
+            };
+
+            VkDescriptorPoolCreateInfo poolInfo = {};
+            poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+            poolInfo.maxSets = 100 * IM_ARRAYSIZE(poolSizes);
+            poolInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
+            poolInfo.pPoolSizes = poolSizes;
+            VKCheckError(vkCreateDescriptorPool(vkDevice->GetVulkanDevice(), &poolInfo, nullptr, &descriptorPool));
+            //checkVKResult(result);
 
 #if defined(SNOW_WINDOW_WIN32)
-        ImGui_ImplWin32_Init((HWND)window->GetWindowHandle());
+            ImGui_ImplWin32_Init((HWND)window->GetWindowHandle());
 #elif defined(SNOW_WINDOW_GLFW)
-        ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->GetWindowHandle(), true);
+
+            ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->GetWindowHandle(), true);
 #endif
-        ImGui_ImplVulkan_InitInfo info = {};
-        info.Instance = VulkanContext::GetVulkanInstance();
-        info.PhysicalDevice = vkDevice->GetPhysicalDevice();
-        info.Device = vkDevice->GetVulkanDevice();
-        info.QueueFamily = vkDevice->GetQueueFamilyIndices().Graphics;
-        info.Queue = vkDevice->GetGraphicsQueue();
-        info.PipelineCache = nullptr;
-        info.DescriptorPool = descriptorPool;
-        info.Allocator = nullptr;
-        info.MinImageCount = vkSwapChain->GetMinimumImageCount();
-        info.ImageCount = vkSwapChain->GetImageCount();
-        info.CheckVkResultFn = checkVKResult;
-        ImGui_ImplVulkan_Init(&info, vkSwapChain->GetRenderPass());
+            ImGui_ImplVulkan_InitInfo info = {};
+            info.Instance = VulkanContext::GetVulkanInstance();
+            info.PhysicalDevice = vkDevice->GetPhysicalDevice();
+            info.Device = vkDevice->GetVulkanDevice();
+            info.QueueFamily = vkDevice->GetQueueFamilyIndices().Graphics;
+            info.Queue = vkDevice->GetGraphicsQueue();
+            info.PipelineCache = nullptr;
+            info.DescriptorPool = descriptorPool;
+            info.Allocator = nullptr;
+            info.MinImageCount = vkSwapChain->GetMinimumImageCount();
+            info.ImageCount = vkSwapChain->GetImageCount();
+            info.CheckVkResultFn = checkVKResult;
+            ImGui_ImplVulkan_Init(&info, vkSwapChain->GetRenderPass());
 
-        {
-            VkCommandBuffer commandBuffer = vkDevice->GetCommandBuffer(true);
-            ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
-            vkDevice->FlushCommandBuffer(commandBuffer);
+            {
+                VkCommandBuffer commandBuffer = vkDevice->GetCommandBuffer(true);
+                ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+                vkDevice->FlushCommandBuffer(commandBuffer);
 
-            result = vkDeviceWaitIdle(vkDevice->GetVulkanDevice());
-            checkVKResult(result);
-            ImGui_ImplVulkan_DestroyFontUploadObjects();
+                VKCheckError(vkDeviceWaitIdle(vkDevice->GetVulkanDevice()));
+                //checkVKResult(result);
+                ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-        }
+            }
 
-        uint32_t framesInFlight = Render::Renderer::GetConfig().FramesInFlight;
-        s_ImGuiCommandBuffer.resize(framesInFlight);
-        for(uint32_t i=0; i< framesInFlight; i++)
-            s_ImGuiCommandBuffer[i] = vkDevice->CreateSecondaryCommandBuffer();
+            uint32_t framesInFlight = Render::Renderer::GetConfig().FramesInFlight;
+            s_ImGuiCommandBuffer.resize(framesInFlight);
+            for (uint32_t i = 0; i < framesInFlight; i++)
+                s_ImGuiCommandBuffer[i] = vkDevice->CreateSecondaryCommandBuffer();
+        });
     }
 
     void VulkanImGuiLayer::OnDetach() {
@@ -130,8 +137,8 @@ namespace Snow {
             auto vkContext = VulkanContext::Get();
             auto vkDevice = vkContext->GetDevice();
 
-            VkResult error = vkDeviceWaitIdle(vkDevice->GetVulkanDevice());
-            checkVKResult(error);
+            VKCheckError(vkDeviceWaitIdle(vkDevice->GetVulkanDevice()));
+            //checkVKResult(error);
             ImGui_ImplVulkan_Shutdown();
 #if defined(SNOW_WINDOW_WIN32)
             ImGui_ImplWin32_Shutdown();
@@ -158,23 +165,25 @@ namespace Snow {
 
         Ref<VulkanContext> context = VulkanContext::Get();
         auto swapChain = Core::Application::Get().GetWindow()->GetSwapChain().As<VulkanSwapChain>();
+
+        uint32_t commandBufferIndex = swapChain->GetCurrentBufferIndex();
+
+        uint32_t width = swapChain->GetWidth();
+        uint32_t height = swapChain->GetHeight();
+
         VkCommandBuffer drawCommandBuffer = swapChain->GetCurrentDrawCommandBuffer();
         VkCommandBufferBeginInfo drawCommandBufferInfo = {};
         drawCommandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         drawCommandBufferInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         drawCommandBufferInfo.pNext = nullptr;
 
-        
         vkBeginCommandBuffer(drawCommandBuffer, &drawCommandBufferInfo);
 
-        uint32_t commandBufferIndex = swapChain->GetCurrentBufferIndex();
-
         VkClearValue clearValues[2];
-        clearValues[0].color = { {1.1f, 0.1f ,0.1f, 1.0f} };
+        clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
-        uint32_t width = swapChain->GetWidth();
-        uint32_t height = swapChain->GetHeight();
+        
 
         VkRenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -182,8 +191,8 @@ namespace Snow {
         renderPassInfo.renderPass = swapChain->GetRenderPass();
         renderPassInfo.renderArea.offset.x = 0;
         renderPassInfo.renderArea.offset.y = 0;
-        renderPassInfo.renderArea.extent.width = swapChain->GetWidth();
-        renderPassInfo.renderArea.extent.height = swapChain->GetHeight();
+        renderPassInfo.renderArea.extent.width = width;
+        renderPassInfo.renderArea.extent.height = height;
         renderPassInfo.clearValueCount = 2;
         renderPassInfo.pClearValues = clearValues;
         renderPassInfo.framebuffer = swapChain->GetCurrentFramebuffer();
@@ -231,6 +240,7 @@ namespace Snow {
         vkCmdEndRenderPass(drawCommandBuffer);
 
         VKCheckError(vkEndCommandBuffer(drawCommandBuffer));
+
 
 
         ImGuiIO& io = ImGui::GetIO(); (void)io;

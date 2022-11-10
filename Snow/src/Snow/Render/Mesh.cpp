@@ -34,7 +34,8 @@ namespace Snow {
 			aiProcess_CalcTangentSpace |
 			aiProcess_Triangulate |
 			aiProcess_SortByPType |
-			aiProcess_GenNormals |
+			//aiProcess_GenNormals |
+			aiProcess_GenSmoothNormals | 
 			aiProcess_GenUVCoords |
 			aiProcess_OptimizeMeshes |
 			aiProcess_JoinIdenticalVertices |
@@ -53,7 +54,7 @@ namespace Snow {
 			}
 		};
 
-		MeshAsset::MeshAsset(const std::string& filePath) :
+		MeshSource::MeshSource(const std::string& filePath) :
 			m_FilePath(filePath) {
 			
 			LogStream::Initialize();
@@ -71,7 +72,8 @@ namespace Snow {
 
 			m_Scene = scene;
 
-			m_IsAnimated = scene->mAnimations != nullptr;
+			//m_IsAnimated = scene->mAnimations != nullptr;
+			m_IsAnimated = false;
 			m_MeshShader = m_IsAnimated ? Renderer::GetShaderLibrary()->Get("PBR") : Renderer::GetShaderLibrary()->Get("PBR");
 			m_InverseTransform = glm::inverse(Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 
@@ -204,8 +206,8 @@ namespace Snow {
 						auto texture = Texture2D::Create(texturePath, props);
 						if (texture->Loaded()) {
 							m_Textures[i] = texture;
-							mi->Set("u_AlbedoTexture", texture);
-							mi->Set("u_MaterialUniforms.AlbedoColor", texture);
+							mi->Set("u_MaterialAlbedoTexture", texture);
+							mi->Set("u_MaterialUniforms.AlbedoColor", {1.0f, 1.0f, 1.0f, 1.0f});
 						}
 						else {
 							SNOW_CORE_ERROR("could not load texture: {0}", texturePath);
@@ -215,7 +217,7 @@ namespace Snow {
 
 					if (fallback) {
 						SNOW_MESH_LOG("    No albedo map");
-						mi->Set("u_AlbedoTexture", whiteTexture);
+						mi->Set("u_MaterialAlbedoTexture", whiteTexture);
 					}
 
 					bool hasNormalMap = aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS;
@@ -229,7 +231,7 @@ namespace Snow {
 						auto texture = Texture2D::Create(texturePath);
 						if (texture->Loaded()) {
 							m_Textures[i] = texture;
-							mi->Set("u_NormalTexture", texture);
+							mi->Set("u_MaterialNormalTexture", texture);
 							mi->Set("u_MaterialUniforms.UseNormalMap", true);
 						}
 						else {
@@ -240,7 +242,7 @@ namespace Snow {
 
 					if (fallback) {
 						SNOW_MESH_LOG("    No normal map");
-						mi->Set("u_NormalTexture", whiteTexture);
+						mi->Set("u_MaterialNormalTexture", whiteTexture);
 						mi->Set("u_MaterialUniforms.UseNormalMap", false);
 					}
 
@@ -255,7 +257,7 @@ namespace Snow {
 						auto texture = Texture2D::Create(texturePath);
 						if (texture->Loaded()) {
 							m_Textures[i] = texture;
-							mi->Set("u_RoughnessTexture", texture);
+							mi->Set("u_MaterialRoughnessTexture", texture);
 							mi->Set("u_MaterialUniforms.Roughness", 1.0f);
 						}
 						else {
@@ -266,7 +268,7 @@ namespace Snow {
 
 					if (fallback) {
 						SNOW_MESH_LOG("    No roughness map");
-						mi->Set("u_RoughnessTexture", whiteTexture);
+						mi->Set("u_MaterialRoughnessTexture", whiteTexture);
 						mi->Set("u_MaterialUniforms.Roughness", roughness);
 					}
 
@@ -336,7 +338,7 @@ namespace Snow {
 								if (texture->Loaded()) {
 									metalnessTextureFound = true;
 									m_Textures[i] = texture;
-									mi->Set("u_MetalnessTexture", texture);
+									mi->Set("u_MaterialMetalnessTexture", texture);
 									mi->Set("u_MaterialUniforms.Metalness", 1.0f);
 								}
 								else {
@@ -350,7 +352,7 @@ namespace Snow {
 					fallback = !metalnessTextureFound;
 					if (fallback) {
 						SNOW_MESH_LOG("    no metalness map");
-						mi->Set("u_MetalnessTexture", whiteTexture);
+						mi->Set("u_MaterialMetalnessTexture", whiteTexture);
 						mi->Set("u_MaterialUniforms.Metalness", metalness);
 					}
 				}
@@ -364,9 +366,9 @@ namespace Snow {
 				mi->Set("u_MaterialUniforms.Roughness", 0.8f);
 				mi->Set("u_MaterialUniforms.UseNormalMap", false);
 
-				mi->Set("u_AlbedoTexture", whiteTexture);
-				mi->Set("u_MetalnessTexture", whiteTexture);
-				mi->Set("u_RoughnessTexture", whiteTexture);
+				mi->Set("u_MaterialAlbedoTexture", whiteTexture);
+				mi->Set("u_MaterialMetalnessTexture", whiteTexture);
+				mi->Set("u_MaterialRoughnessTexture", whiteTexture);
 				m_Materials.push_back(mi);
 			}
 
@@ -388,7 +390,7 @@ namespace Snow {
 			m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)(m_Indices.size() * sizeof(Index)));
 		}
 
-		MeshAsset::MeshAsset(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform) :
+		MeshSource::MeshSource(const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const glm::mat4& transform) :
 			m_StaticVertices(vertices), m_Indices(indices), m_IsAnimated(false) {
 			
 			Submesh submesh;
@@ -409,6 +411,8 @@ namespace Snow {
 			m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)(m_Indices.size() * sizeof(Index)));
 		}
 
+		MeshSource::~MeshSource() {}
+
 		static std::string LevelToSpaces(uint32_t level) {
 			std::string result = "";
 			for (uint32_t i = 0; i < level; i++)
@@ -416,7 +420,7 @@ namespace Snow {
 			return result;
 		}
 
-		void MeshAsset::TraverseNodes(aiNode* node, const glm::mat4& parentTransform, uint32_t level) {
+		void MeshSource::TraverseNodes(aiNode* node, const glm::mat4& parentTransform, uint32_t level) {
 			glm::mat4 transform = parentTransform * Mat4FromAssimpMat4(node->mTransformation);
 			m_NodeMap[node].resize(node->mNumMeshes);
 			for (uint32_t i = 0; i < node->mNumMeshes; i++) {
@@ -433,29 +437,43 @@ namespace Snow {
 				TraverseNodes(node->mChildren[i], transform, level + 1);
 		}
 
-		Mesh::Mesh(Ref<MeshAsset> meshAsset) :
-			m_MeshAsset(meshAsset) {
+		Mesh::Mesh(Ref<MeshSource> MeshSource) :
+			m_MeshSource(MeshSource) {
 			SetSubmeshes({});
 
-			const auto& meshMaterials = meshAsset->GetMaterials();
+			const auto& meshMaterials = MeshSource->GetMaterials();
 			m_Materials = Ref<MaterialTable>::Create(meshMaterials.size());
 			for (size_t i = 0; i < meshMaterials.size(); i++)
 				m_Materials->SetMaterial(i, Ref<MaterialAsset>::Create(meshMaterials[i]));
 		}
 
-		Mesh::Mesh(Ref<MeshAsset> meshAsset, const std::vector<uint32_t>& submeshes) :
-			m_MeshAsset(meshAsset) {
+		Mesh::Mesh(Ref<MeshSource> MeshSource, const std::vector<uint32_t>& submeshes) :
+			m_MeshSource(MeshSource) {
 			SetSubmeshes(submeshes);
 
-			const auto& meshMaterials = meshAsset->GetMaterials();
+			const auto& meshMaterials = MeshSource->GetMaterials();
 			m_Materials = Ref<MaterialTable>::Create(meshMaterials.size());
 			for (size_t i = 0; i < meshMaterials.size(); i++)
 				m_Materials->SetMaterial(i, Ref<MaterialAsset>::Create(meshMaterials[i]));
 		}
 
 		Mesh::Mesh(const Ref<Mesh>& other) :
-			m_MeshAsset(other->m_MeshAsset), m_Materials(other->m_Materials) {
+			m_MeshSource(other->m_MeshSource), m_Materials(other->m_Materials) {
 			SetSubmeshes(other->m_Submeshes);
+		}
+
+		Mesh::~Mesh() {}
+
+		void Mesh::SetSubmeshes(const std::vector<uint32_t>& submeshes) {
+			if (!submeshes.empty())
+				m_Submeshes = submeshes;
+			else {
+				const auto& submeshes = m_MeshSource->GetSubmeshes();
+				m_Submeshes.resize(submeshes.size());
+				for (uint32_t i = 0; i < submeshes.size(); i++) {
+					m_Submeshes[i] = i;
+				}
+			}
 		}
 
 	}

@@ -1,5 +1,6 @@
 #include <spch.h>
 #include "Snow/Render/Renderer2D.h"
+#include "Snow/Render/Renderer.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,7 +28,7 @@ namespace Snow {
             FramebufferSpecification fbSpec;
             fbSpec.AttachmentList = { ImageFormat::RGBA32F, ImageFormat::DepthStencil };
             fbSpec.Samples = 1;
-            fbSpec.ClearOnLoad = false;
+            fbSpec.ClearColorOnLoad = false;
             fbSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 0.0f };
             fbSpec.DebugName = "Renderer2D Framebuffer";
 
@@ -199,6 +200,14 @@ namespace Snow {
                 //Renderer::SetLineWidth(m_CommandBuffer, m_LineWidth);
 
                 Renderer::RenderGeometry(m_CommandBuffer, m_LinePipeline, m_UniformBufferSet, nullptr, m_LineMaterial, m_LineVertexBuffer, m_LineIndexBuffer, glm::mat4(1.0f), m_LineIndexCount);
+
+                m_Stats.DrawCalls++;
+            }
+
+            dataSize = (uint32_t)((uint8_t*)m_CircleVertexBufferPtr - (uint8_t*)m_CircleVertexBufferBase);
+            if (dataSize) {
+                m_CircleVertexBuffer->SetData(m_CircleVertexBufferBase, dataSize);
+                Renderer::RenderGeometry(m_CommandBuffer, m_CirclePipeline, m_UniformBufferSet, nullptr, m_CircleMaterial, m_CircleVertexBuffer, m_QuadIndexBuffer, glm::mat4(1.0f), m_CircleIndexCount);
 
                 m_Stats.DrawCalls++;
             }
@@ -596,6 +605,10 @@ namespace Snow {
 
         void Renderer2D::SetLineWidth(float lineWidth) {
             m_LineWidth = lineWidth;
+
+            auto pipelineSpec = m_LinePipeline->GetSpecification();
+            pipelineSpec.LineWidth = m_LineWidth;
+            m_LinePipeline = Pipeline::Create(pipelineSpec);
         }
 
         void Renderer2D::ResetStats() {

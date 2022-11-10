@@ -4,6 +4,7 @@
 #include "Snow/Editor/EditorCamera.h"
 #include "Snow/Render/Texture.h"
 #include "Snow/Render/Renderer2D.h"
+#include "Snow/Scene/SceneEnvironment.h"
 
 #include "Snow/Core/Timestep.h"
 #include "Snow/Core/UUID.h"
@@ -23,21 +24,35 @@ namespace Snow {
     class Entity;
     using EntityMap = std::unordered_map<UUID, Entity>;
 
-    struct Environment {
-        std::string Path;
-        Ref<Render::TextureCube> RadianceMap;
-        Ref<Render::TextureCube> IrradianceMap;
-    };
 
-    struct Light {
+    struct DirectionalLight {
         glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
-        float padding = 0.0f;
         glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
 
         float Multiplier = 1.0f;
+
+        bool CastShadows = true;
+        bool SoftShadows = false;
     };
 
-    class Scene : public RefCounted {
+    struct PointLight {
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+        float Intensity = 1.0f;
+        glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+        float LightSize = 0.5;
+        float MinRadius = 1.0f;
+        float Radius = 10.0f;
+        float Falloff = 1.0f;
+
+        bool CastShadows = false;
+    };
+
+    struct LightEnvironment {
+        DirectionalLight DirectionalLights[8];
+        std::vector<PointLight> PointLights;
+    };
+
+    class Scene : public Asset {
     public:
 
         Scene(const std::string& name = "Unnamed Scene");
@@ -62,8 +77,10 @@ namespace Snow {
         Entity FindEntityByTag(const std::string& tag);
         static Ref<Scene> CopyScene(Ref<Scene> scene);
 
-        Light& GetLight() { return m_Light; }
-        const Light& GetLight() const { return m_Light; }
+        const Ref<Environment>& GetEnvironment() const { return m_Environment; }
+
+        DirectionalLight& GetLight() { return m_Light; }
+        const DirectionalLight& GetLight() const { return m_Light; }
 
         b2World* GetPhysicsWorld() const { return m_PhysicsWorld; }
 
@@ -77,6 +94,10 @@ namespace Snow {
 
         const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
 
+        static AssetType GetStaticType() { return AssetType::Scene; }
+        virtual AssetType GetAssetType() const override { return GetStaticType(); }
+
+
         UUID GetUUID() const { return m_SceneID; }
         static Ref<Scene> GetScene(UUID uuid);
     private:
@@ -87,10 +108,15 @@ namespace Snow {
 
         EntityMap m_EntityIDMap;
 
-        Light m_Light;
+        DirectionalLight m_Light;
         float m_LightMultiplier = 0.3f;
 
-        Ref<Render::TextureCube> m_EnvMap;
+        LightEnvironment m_LightEnvironment;
+
+        Ref<Environment> m_Environment;
+        float m_EnvironmentIntensity = 0.0f;
+        int m_SkyboxLod = 0;
+
         Ref<Render::Texture2D> m_BRDFLUT;
 
         Entity* m_Physics2DBodyEntityBuffer = nullptr;

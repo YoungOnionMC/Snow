@@ -128,6 +128,10 @@ namespace Snow {
 			Core::Event::MouseScrolledEvent event(xOffset, xOffset);
 			InputEventCallback(event);
 		}
+
+		void JoyStickCallback(int jid, int event) {
+			SNOW_CORE_TRACE("Controller Connected? {0}", event == GLFW_CONNECTED);
+		}
 #endif
 
 		void Input::SetCursorMode(CursorMode mode) {
@@ -163,11 +167,52 @@ namespace Snow {
 			glfwSetCursorPosCallback(win, MouseMoveCallback);
 			glfwSetScrollCallback(win, MouseScrollCallback);
 			
+			glfwSetJoystickCallback(JoyStickCallback);
 #endif
 			return true;
 		}
 
-		void Input::SetEventCallback(const std::function<void(Event::Event&)>& callback) {
+		void Input::Update() {
+#if defined(SNOW_WINDOW_WIN32)
+			
+#elif defined(SNOW_WINDOW_GLFW)
+			for (auto it = s_Controllers.begin(); it != s_Controllers.end();) {
+				int id = it->first;
+				if (glfwJoystickPresent(id) != GLFW_TRUE)
+					it = s_Controllers.erase(it);
+				else
+					it++;
+			}
+
+			for (int id = GLFW_JOYSTICK_1; id < GLFW_JOYSTICK_LAST; id++) {
+				if (glfwJoystickPresent(id) == GLFW_TRUE) {
+					Controller& controller = s_Controllers[id];
+					controller.ID = id;
+					controller.Name = glfwGetJoystickName(id);
+
+					int buttonCount;
+					const unsigned char* buttons = glfwGetJoystickButtons(id, &buttonCount);
+					for (int i = 0; i < buttonCount; i++) {
+						controller.ButtonStates[i] = buttons[i] == GLFW_PRESS;
+					}
+
+					int axisCount;
+					const float* axes = glfwGetJoystickAxes(id, &axisCount);
+					for (int i = 0; i < axisCount; i++) {
+						controller.AxisStates[i] = axes[i];
+					}
+
+					int hatCount;
+					const unsigned char* hats = glfwGetJoystickHats(id, &hatCount);
+					for (int i = 0; i < hatCount; i++) {
+						controller.HatStates[i] = hats[i];
+					}
+				}
+			}
+#endif
+		}
+
+		void Input::SetEventCallback(const EventCallbackFn& callback) {
 			InputEventCallback = callback;
 		}
 	}

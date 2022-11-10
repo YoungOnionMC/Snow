@@ -49,6 +49,7 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Snow\Core\Log.cs" />
     <Compile Include="src\Snow\Entity.cs" />
     <Compile Include="src\Snow\Input\Input.cs" />
     <Compile Include="src\Snow\Input\InputCode.cs" />

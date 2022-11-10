@@ -2,6 +2,8 @@
 
 #include "Snow/ImGui/ImGuiLayer.h"
 
+#include "Snow/Platform/Vulkan/VulkanCommon.h"
+
 namespace Snow {
     class VulkanImGuiLayer : public ImGuiLayer {
     public:
@@ -11,5 +13,9 @@ namespace Snow {
         void OnDetach() override;
         void BeginImGuiFrame() override;
         void EndImGuiFrame() override;
+
+        std::vector<VkDescriptorSet>& GetTextureIDs() { return s_TextureIDs; }
+    private:
+        std::vector<VkDescriptorSet> s_TextureIDs;
     };
 }

@@ -4,7 +4,9 @@
 #include "Snow/Asset/AssetManager.h"
 
 namespace Snow {
-	Project::Project() {}
+	Project::Project() {
+		
+	}
 
 	Project::~Project() {}
 
@@ -14,7 +16,7 @@ namespace Snow {
 
 		s_ActiveProject = project;
 		if (s_ActiveProject) {
-			//AssetManager::Init();
+			AssetManager::Init();
 		}
 	}
 

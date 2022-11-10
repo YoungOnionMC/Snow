@@ -12,6 +12,7 @@ namespace Snow {
             None = -1,
             Bool,
             Int, Int2, Int3, Int4,
+            UInt, UInt2, UInt3, UInt4,
             Float, Float2, Float3, Float4,
             Double,
             Mat3x3, Mat4x4,
@@ -105,12 +106,12 @@ namespace Snow {
             uint32_t Register = 0;
             uint32_t Set = 0;
             uint32_t Count = 0;
-            Render::ShaderType Stage;
+            Render::ShaderType Stage = Render::ShaderType::None;
             ResourceType Type = ResourceType::None;
 
             ShaderResource() {}
             ShaderResource(const std::string& name, Render::ShaderType stage, ResourceType type, uint32_t resourceRegister, uint32_t set = 0, uint32_t count = 1) :
-                Name(name), Register(resourceRegister), Set(set), Count(count) {}
+                Name(name), Register(resourceRegister), Set(set), Count(count), Stage(stage), Type(type) {}
 
             const std::string& GetName() const { return Name; }
             uint32_t GetRegister() const { return Register; }

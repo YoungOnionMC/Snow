@@ -31,6 +31,9 @@ namespace Snow {
 
 		void SetValuesInMap();
 
+		static AssetType GetStaticType() { return AssetType::Material; }
+		virtual AssetType GetAssetType() const override { return GetStaticType(); }
+
 		Ref<Render::Material> GetMaterial() const { return m_Material; }
 
 	private:
@@ -62,6 +65,6 @@ namespace Snow {
 
 	private:
 		std::map<uint32_t, Ref<MaterialAsset>> m_Materials;
-		uint32_t m_MaterialCount;
+		uint32_t m_MaterialCount = 0;
 	};
 }

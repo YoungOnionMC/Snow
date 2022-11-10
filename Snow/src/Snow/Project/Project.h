@@ -32,23 +32,28 @@ namespace Snow {
 		const ProjectConfig& GetConfig() const { return m_Config; }
 
 		static const std::string& GetProjectName() {
+			SNOW_CORE_ASSERT(s_ActiveProject);
 			return s_ActiveProject->GetConfig().Name;
 		}
 
 		static std::filesystem::path GetProjectDirectory() {
+			SNOW_CORE_ASSERT(s_ActiveProject);
 			return s_ActiveProject->GetConfig().ProjectDirectory;
 		}
 
 		static std::filesystem::path GetAssetDirectory() {
-			return s_ActiveProject->GetConfig().AssetDirectory;
+			SNOW_CORE_ASSERT(s_ActiveProject);
+			return std::filesystem::path(s_ActiveProject->GetConfig().ProjectDirectory) / s_ActiveProject->GetConfig().AssetDirectory;
 		}
 
 		static std::filesystem::path GetAssetRegistryPath() {
-			return s_ActiveProject->GetConfig().AssetRegistryPath;
+			SNOW_CORE_ASSERT(s_ActiveProject);
+			return std::filesystem::path(s_ActiveProject->GetConfig().ProjectDirectory) / s_ActiveProject->GetConfig().AssetRegistryPath;
 		}
 
 		static std::filesystem::path GetScriptModulePath() {
-			return s_ActiveProject->GetConfig().ScriptModulePath;
+			SNOW_CORE_ASSERT(s_ActiveProject);
+			return std::filesystem::path(s_ActiveProject->GetConfig().ProjectDirectory) / s_ActiveProject->GetConfig().ScriptModulePath;
 		}
 
 	private:

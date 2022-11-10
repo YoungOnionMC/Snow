@@ -13,6 +13,11 @@ namespace Snow {
         Buffer() :
             Data(nullptr), Size(0) {}
 
+        Buffer(uint32_t size) :
+            Data(nullptr), Size(size) {
+            Allocate(size);
+        }
+
         Buffer(void* data, uint32_t size) :
             Data(data), Size(size) {}
 

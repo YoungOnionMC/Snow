@@ -19,13 +19,16 @@ project "Snow"
 
         "src/Snow/Asset/**.*",
         "src/Snow/Core/**.*",
+        "src/Snow/Editor/**.*",
         "src/Snow/ImGui/**.*",
+        "src/Snow/Physics/**.*",
+        "src/Snow/Project/**.*",
         "src/Snow/Render/**.*",
         "src/Snow/Math/**.*",
-        "src/Snow/Physics/**.*",
         "src/Snow/Scene/**.*",
         "src/Snow/Script/**.*",
-        "src/Snow/Platform/OpenGL/**.*",
+        "src/Snow/Utils/**.*",
+        --"src/Snow/Platform/OpenGL/**.*",
         "src/Snow/Platform/Vulkan/**.*",
 
         
@@ -96,7 +99,7 @@ project "Snow"
         characterset("MBCS")
 
         files {
-            "src/Snow/Platform/DirectX11/**.*",
+            --"src/Snow/Platform/DirectX11/**.*",
             "src/Snow/Platform/Windows/**.*",
         }
 
@@ -110,7 +113,7 @@ project "Snow"
         libdirs {
             "%{VendorLibraryDir.Assimp}/Windows",
             "%{VendorLibraryDir.Vulkan}/Windows",
-            "%{VendorLibraryDir.shaderc}/Windows",
+            
             "%{VendorLibraryDir.glslang}/Windows",
             "%{VendorLibraryDir.SPIRVTools}/Windows",
             "%{VendorLibraryDir.mono}/Windows",
@@ -126,8 +129,6 @@ project "Snow"
             "D3DCompiler.lib",
 
             "vulkan-1.lib",
-            "shaderc.lib",
-            "shaderc_util.lib",
 
             "GLFW",
             "ImGui",
@@ -143,6 +144,7 @@ project "Snow"
                 "%{VendorLibraryDir.Assimp}/Windows/Debug",
                 "%{VendorLibraryDir.glslang}/Windows/Debug",
                 "%{VendorLibraryDir.SPIRVTools}/Windows/Debug",
+                "%{VendorLibraryDir.shaderc}/Windows-Debug",
                 "%{VendorLibraryDir.freetype}/Windows",
             }
 
@@ -153,6 +155,10 @@ project "Snow"
                 "OGLCompilerd.lib",
                 "OSDependentd.lib",
                 "GenericCodeGend.lib",
+
+                
+                "shaderc.lib",
+                "shaderc_util.lib",
 
                 "SPIRV-Tools.lib",
                 "SPIRV-Tools-opt.lib",
@@ -166,7 +172,9 @@ project "Snow"
             libdirs {
                 "%{VendorLibraryDir.Assimp}/Windows/Release",
                 "%{VendorLibraryDir.glslang}/Windows/Release",
-                "%{VendorLibraryDir.SPIRVTools}/Windows/Release"
+                "%{VendorLibraryDir.SPIRVTools}/Windows/Release",
+
+                "%{VendorLibraryDir.shaderc}/Windows-Release",
             }
 
             links {
@@ -176,6 +184,9 @@ project "Snow"
                 "OGLCompiler.lib",
                 "OSDependent.lib",
                 "GenericCodeGen.lib",
+
+                "shaderc.lib",
+                "shaderc_util.lib",
 
                 "SPIRV-Tools.lib",
                 "SPIRV-Tools-opt.lib",

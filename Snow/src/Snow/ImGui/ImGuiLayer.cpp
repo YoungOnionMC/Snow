@@ -19,5 +19,7 @@ namespace Snow {
         //case Render::RendererAPIType::DirectX:    return new DirectX11ImGuiLayer();
 #endif
         }
+
+        return nullptr;
     }
 }

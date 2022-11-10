@@ -12,6 +12,7 @@
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 #include "Snow/Platform/Vulkan/VulkanRenderer.h"
 
+
 namespace Snow {
 
     std::string VulkanShader::ReadShaderFromFile(const std::string& path) {
@@ -48,6 +49,7 @@ namespace Snow {
 
         for (auto [type, path] : m_ShaderPathModules) {
             m_Paths.push_back(path);
+            m_ShaderTypes.push_back(type);
             size_t found = path.find_last_of("/\\");
             m_Name = found != std::string::npos ? path.substr(found + 1) : path;
             found = m_Name.find_first_of(".");
@@ -55,8 +57,12 @@ namespace Snow {
 
         }
 
-        bool forceCompile = true;
-        Reload(forceCompile);
+        m_AssetPath = m_Paths[0];
+
+        CreateShaderModuleStrings();
+
+        m_Hash = Hash::GenerateFNVHash(m_ShaderSourceModules[0].second);
+        Reload(false);
 
         
     }
@@ -67,7 +73,10 @@ namespace Snow {
     }
 
     void VulkanShader::CreateShaderModuleStrings() {
+        
+
         if (m_ShaderPathModules.size() > 1) {
+            
             m_ShaderSourceModules.resize(m_ShaderPathModules.size());
             for (uint32_t i = 0; i < m_ShaderSourceModules.size(); i++) {
                 //auto& [type, path] : m_ShaderModules
@@ -100,18 +109,23 @@ namespace Snow {
 
         Ref<VulkanShader> instance = this;
         Render::Renderer::Submit([instance, forceCompile]() mutable {
-            instance->m_ShaderDescriptorSets.clear();
-            instance->m_Resources.clear();
-            instance->m_Buffers.clear();
-            instance->m_PushConstantRanges.clear();
-            instance->m_DescriptorSetLayouts.clear();
-            instance->m_TypeCounts.clear();
-            instance->m_ShaderSourceModules.clear();
+            if (forceCompile) {
+                instance->m_Buffers.clear();
+                instance->m_Resources.clear();
 
-            instance->CreateShaderModuleStrings();
+                instance->m_ShaderDescriptorSets.clear();
+                instance->m_PushConstantRanges.clear();
+                instance->m_DescriptorSetLayouts.clear();
+                instance->m_TypeCounts.clear();
+                instance->m_VertexInputAttributeDescriptions.clear();
 
-            instance->m_Hash = Hash::GenerateFNVHash(instance->m_ShaderSourceModules[0].second);
+                instance->m_ShaderSourceModules.clear();
 
+                instance->CreateShaderModuleStrings();
+
+                instance->m_Hash = Hash::GenerateFNVHash(instance->m_ShaderSourceModules[0].second);
+            }
+            instance->m_ForceRecompile = forceCompile;
             instance->Load();
 
             Render::Renderer::OnShaderReloaded(instance->GetHash());
@@ -123,13 +137,15 @@ namespace Snow {
         m_VulkanShaderModules.resize(m_ShaderSourceModules.size());
         for (uint32_t i = 0; i < m_SPIRVBinaryData.size(); i++) {
             CreateSPIRVBinaryCache(i);
+            
             CreateVulkanShaderModule(i);
         }
 
         for (uint32_t i = 0; i < m_ShaderSourceModules.size(); i++) {
             Reflect(m_SPIRVBinaryData[i], m_ShaderSourceModules[i].first);
         }
-
+        if (m_ForceRecompile)
+            m_ForceRecompile = false;
 
         CreateDescriptors();
         
@@ -199,7 +215,8 @@ namespace Snow {
             }
         }
 
-        if (m_SPIRVBinaryData[shaderIndex].size() == 0) {
+        if (m_SPIRVBinaryData[shaderIndex].size() == 0 || m_ForceRecompile) {
+            
             shaderc::Compiler compiler;
             shaderc::CompileOptions options;
             options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
@@ -209,10 +226,11 @@ namespace Snow {
             if (optimize)
                 options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
+#if debug
             printf("--------------\n");
             printf("Shader: %s\n", m_ShaderSourceModules[shaderIndex].second.c_str());
             printf("--------------\n");
-
+#endif
 
             shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_ShaderSourceModules[shaderIndex].second, SnowShaderTypeToShaderC(m_ShaderSourceModules[shaderIndex].first), m_Paths[shaderIndex].c_str(), options);
 
@@ -255,12 +273,22 @@ namespace Snow {
 
         UniformType retType = UniformType::None;
         switch (type.basetype) {
-        case spirv_cross::SPIRType::Boolean:    retType = UniformType::Bool; break;
+        case spirv_cross::SPIRType::Boolean: { 
+            SNOW_CORE_TRACE("this is a bool");
+            retType = UniformType::Bool; break;
+        }
         case spirv_cross::SPIRType::Int: {
             if (type.vecsize == 1)   retType = UniformType::Int;
             else if (type.vecsize == 2)   retType = UniformType::Int2;
             else if (type.vecsize == 3)   retType = UniformType::Int3;
             else if (type.vecsize == 4)   retType = UniformType::Int4;
+            break;
+        }
+        case spirv_cross::SPIRType::UInt: {
+            if (type.vecsize == 1)   retType = UniformType::Bool;
+            else if (type.vecsize == 2)   retType = UniformType::UInt2;
+            else if (type.vecsize == 3)   retType = UniformType::UInt3;
+            else if (type.vecsize == 4)   retType = UniformType::UInt4;
             break;
         }
         case spirv_cross::SPIRType::Float: {
@@ -381,7 +409,7 @@ namespace Snow {
         for (const spirv_cross::Resource& resource : res.uniform_buffers) {
             const auto& bufferName = resource.name;
             auto& bufferType = compiler.get_type(resource.base_type_id);
-            int memberCount = bufferType.member_types.size();
+            size_t memberCount = bufferType.member_types.size();
             auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             auto descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
             auto bufferSize = compiler.get_declared_struct_size(bufferType);
@@ -418,7 +446,7 @@ namespace Snow {
         for (const spirv_cross::Resource& resource : res.storage_buffers) {
             const auto& bufferName = resource.name;
             auto& bufferType = compiler.get_type(resource.base_type_id);
-            int memberCount = bufferType.member_types.size();
+            size_t memberCount = bufferType.member_types.size();
             auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             auto descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
             auto bufferSize = compiler.get_declared_struct_size(bufferType);
@@ -456,8 +484,8 @@ namespace Snow {
             const auto& bufferName = resource.name;
             auto& bufferType = compiler.get_type(resource.base_type_id);
             auto bufferSize = compiler.get_declared_struct_size(bufferType);
-            int memberCount = bufferType.member_types.size();
-            uint32_t size = compiler.get_declared_struct_size(bufferType);
+            size_t memberCount = bufferType.member_types.size();
+            //size_t size = compiler.get_declared_struct_size(bufferType);
             uint32_t bufferOffset = 0;
             if (m_PushConstantRanges.size())
                 bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
@@ -512,6 +540,8 @@ namespace Snow {
             imageSampler.DescriptorSet = descriptorSet;
             imageSampler.ShaderStage = shaderStage;
             imageSampler.ArraySize = arraySize;
+
+            
 
             m_Resources[imageName] = Render::ShaderResource(imageName, shaderType, Render::ResourceType::Texture2D, binding, descriptorSet, arraySize);
 
@@ -776,7 +806,7 @@ namespace Snow {
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorSetCount = 1;
         allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
-        VkDescriptorSet descriptorSet = Render::VulkanRenderer::RTAllocateDescriptorSet(allocInfo);
+        VkDescriptorSet descriptorSet = VulkanRenderer::RTAllocateDescriptorSet(allocInfo);
         SNOW_CORE_ASSERT(descriptorSet);
         result.DescriptorSets.push_back(descriptorSet);
         return result;

@@ -17,6 +17,7 @@ namespace Snow {
 
 		uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags props) const;
 		VkQueue GetGraphicsQueue() { return m_Queue; }
+		VkQueue GetComputeQueue() { return m_ComputeQueue; }
 
 		VkCommandBuffer GetCommandBuffer(bool begin, bool compute = false);
 		void FlushCommandBuffer(VkCommandBuffer commandBuffer);

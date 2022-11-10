@@ -2,10 +2,8 @@
 #include "Snow/Utils/FileSystem.h"
 
 
-//#define UNICODE
-#include <commdlg.h>
-#include <Windows.h>
-#include <shellapi.h>
+#define UNICODE
+
 
 #if defined(SNOW_WINDOW_GLFW)
 #include <GLFW/glfw3.h>
@@ -14,6 +12,10 @@
 #elif defined(SNOW_WINDOW_WIN32)
 #include <Windows.h>
 #endif
+
+#include <commdlg.h>
+#include <Windows.h>
+#include <shellapi.h>
 
 #include "Snow/Core/Application.h"
 
@@ -61,7 +63,11 @@ namespace Snow {
 
 	unsigned long FileSystem::Watch(void* param) {
 		auto assetDirectory = Project::GetActive()->GetAssetDirectory();
+#ifdef UNICODE
 		std::wstring dirStr = assetDirectory.wstring();
+#else
+		std::string dirStr = assetDirectory.string();
+#endif
 
 		char buf[2048];
 		DWORD bytesReturned;
@@ -199,8 +205,11 @@ namespace Snow {
 		auto absolutePath = std::filesystem::canonical(path);
 		if (!FileSystem::Exists(absolutePath))
 			return false;
-
+#ifdef UNICODE
 		ShellExecute(NULL, (LPCWSTR)L"open", (LPCWSTR)absolutePath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+#else
+		ShellExecute(NULL, (LPCSTR)L"open", (LPCSTR)absolutePath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+#endif
 		return true;
 	}
 }

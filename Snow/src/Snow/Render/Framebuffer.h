@@ -39,8 +39,10 @@ namespace Snow {
 		struct FramebufferSpecification {
 			float Scale = 1.0f;
 			uint32_t Width = 0, Height = 0;
-			glm::vec4 ClearColor;
-			bool ClearOnLoad = true;
+			glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+			float ClearDepthValue = 0.0f;
+			bool ClearColorOnLoad = true;
+			bool ClearDepthOnLoad = true;
 			FramebufferAttachmentSpecification AttachmentList;
 			uint32_t Samples = 1;
 
@@ -69,7 +71,7 @@ namespace Snow {
 			virtual void Unbind() const = 0;
 
 
-			virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate) = 0;
+			virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;
 
 			virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
 

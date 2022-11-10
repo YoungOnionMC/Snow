@@ -70,10 +70,12 @@ namespace Snow {
 		const std::string& GetPath() const override { return m_Paths[0]; }
 		const std::string& GetName() const override { return m_Name; }
 
-		virtual const uint32_t GetModuleCount() const override { return m_VulkanShaderModules.size(); }
+		virtual const uint32_t GetModuleCount() const override { return (uint32_t)m_VulkanShaderModules.size(); }
 
 		virtual const std::unordered_map<std::string, Render::ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, Render::ShaderResource>& GetResources() const override { return m_Resources; }
+
+		virtual std::vector<Render::ShaderType> GetModuleTypes() { return m_ShaderTypes; }
 
 		//virtual void SetUniformBufferData(const std::string& uniformBufferName, void* data = nullptr, uint32_t size = 0) override {}
 		//virtual void SetUniformBufferData(uint32_t bindingPoint, void* data = nullptr, uint32_t size = 0) override {}
@@ -140,10 +142,12 @@ namespace Snow {
 		void CreateDescriptors();
 		//VkDescriptorSet CreateDescriptorSet();
 
-
+		bool m_ForceRecompile;
 		std::vector<VkShaderModule> m_VulkanShaderModules;
 
 		std::vector<Render::ShaderModule> m_ShaderPathModules;
+		std::vector<Render::ShaderModule> m_ShaderSourceModules;
+		std::vector<Render::ShaderType> m_ShaderTypes;
 
 		std::string m_AssetPath;
 		std::vector<std::string> m_Paths;
@@ -161,14 +165,10 @@ namespace Snow {
 
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_TypeCounts;
 
-		std::vector<Render::ShaderModule> m_ShaderSourceModules;
-		//std::vector<> m_ShaderSources;
-
 		std::vector<std::vector<uint32_t>> m_SPIRVBinaryData;
 
 		uint32_t m_Hash;
 
-		//std::vector<VulkanUniformBuffer> m_UniformBuffers;
 
 		std::vector<VkVertexInputAttributeDescription> m_VertexInputAttributeDescriptions;
 	};

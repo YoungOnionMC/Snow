@@ -32,5 +32,8 @@ namespace Snow {
 			else
 				Flags &= ~(uint16_t)flag;
 		}
+
+	private:
+		friend class ContentBrowserPanel;
 	};
 }

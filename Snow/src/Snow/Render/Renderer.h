@@ -6,16 +6,19 @@
 #include "Snow/Render/RenderCommandQueue.h"
 #include "Snow/Render/RenderCommandBuffer.h"
 #include "Snow/Render/RendererAPI.h"
+#include "Snow/Render/ComputePipeline.h"
+#include "Snow/Render/Image.h"
 #include "Snow/Render/Material.h"
 #include "Snow/Render/MaterialAsset.h"
 #include "Snow/Render/Mesh.h"
-#include "Snow/Render/Image.h"
-#include "Snow/Render/ComputePipeline.h"
 #include "Snow/Render/Pipeline.h"
-#include "Snow/Render/TextRenderer.h"
 #include "Snow/Render/ShaderLibrary.h"
+#include "Snow/Render/SceneRenderer.h"
+#include "Snow/Render/Texture.h"
+#include "Snow/Render/TextRenderer.h"
 
 #include "Snow/Render/RenderCapabilities.h"
+#include "Snow/Scene/SceneEnvironment.h"
 
 #include "Snow/Core/Event/Event.h"
 #include "Snow/Core/Window.h"
@@ -83,6 +86,7 @@ namespace Snow {
             static void ClearImage(Ref<RenderCommandBuffer> commandBuffer, Ref<Image2D> image);
 
             static void RenderMesh(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform);
+            static void RenderMeshWithMaterial(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material, Buffer additionalUniforms = Buffer());
             static void RenderQuad(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::mat4& transform);
 
             static void RenderGeometry(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0);
@@ -90,9 +94,16 @@ namespace Snow {
             static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material);
             static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> commandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
 
+            static void DispatchComputeShader(Ref<RenderCommandBuffer> commandBuffer, Ref<ComputePipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::ivec3& workGroups);
+
+            static void SetSceneEnvironment(Ref<SceneRenderer> sceneRenderer, Ref<Environment> environment, Ref<Image2D> shadow);
+            static Ref<TextureCube> CreatePreethamSky(float turbidity, float azimuth, float inclination);
+
             static Ref<Texture2D> GetWhiteTexture();
             static Ref<Texture2D> GetBlackTexture();
             static Ref<Texture2D> GetBRDFLutTexture();
+            static Ref<TextureCube> GetBlackCubeTexture();
+            static Ref<Environment> GetEmptyEnvironment();
 
             static void RegisterShaderDependency(Ref<Shader> shader, Ref<ComputePipeline> computePipeline);
             static void RegisterShaderDependency(Ref<Shader> shader, Ref<Pipeline> pipeline);

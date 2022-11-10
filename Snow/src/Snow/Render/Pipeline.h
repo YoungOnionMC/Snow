@@ -111,11 +111,23 @@ namespace Snow {
             TriangleFan
         };
 
+        struct PipelineStatistics {
+            uint64_t InputAssemblyVertices;
+            uint64_t InputAssemblyPrimitives;
+            uint64_t VertexShaderInvocations;
+            uint64_t ClippingInvocations;
+            uint64_t ClippingPrimitives;
+            uint64_t FragmentShaderInvocations;
+            uint64_t ComputeShaderInvocations;
+        };
+
         struct PipelineSpecification {
             Ref<Shader> Shader;
             VertexBufferLayout Layout;
             PrimitiveTopology Topology = PrimitiveTopology::Triangle;
             Ref<RenderPass> BindedRenderPass;
+
+            bool CounterClockwiseWinding = true;
             bool BackfaceCulling = true;
             bool DepthTest = true;
             bool DepthWrite = true;

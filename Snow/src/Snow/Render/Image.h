@@ -65,7 +65,7 @@ namespace Snow {
 			uint32_t Mips = 1;
 			uint32_t Layers = 1;
 			std::string DebugName = "";
-			bool Deinterleaved = false;
+			//bool Deinterleaved = false;
 		};
 
 		class Image : public RefCounted {
@@ -93,6 +93,9 @@ namespace Snow {
 		public:
 			static Ref<Image2D> Create(ImageSpecification specification, Buffer buffer);
 			static Ref<Image2D> Create(ImageSpecification specification, const void* data = nullptr);
+
+			virtual void SetData(void* data) = 0;
+			virtual bool GetImageData() = 0;
 		};
 
 		namespace Utils {

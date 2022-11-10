@@ -12,9 +12,9 @@
 
     #include <glfw/glfw3native.h>
 
-    #include <examples/imgui_impl_glfw.h>
+    //#include <examples/imgui_impl_glfw.h>
 #elif defined(SNOW_WINDOW_WIN32)
-    #include <examples/imgui_impl_dx11.h>
+    //#include <examples/imgui_impl_dx11.h>
 #endif
 
 namespace Snow {

@@ -11,6 +11,7 @@ namespace Snow {
         glm::vec2 Input::m_MousePosition = {};
         glm::vec2 Input::m_MouseScroll = {};
 
+        std::map<int, Controller> Input::s_Controllers;
 
         void Input::Init() {
             SNOW_CORE_INFO("Input Initialzed");

@@ -1,11 +1,13 @@
 #include <spch.h>
 
 #include "Snow/Core/Application.h"
+#include "Snow/Asset/AssetManager.h"
+#include "Snow/Project/Project.h"
 #include "Snow/Render/Renderer.h"
-
 #include "Snow/Render/Renderer2D.h"
-
 #include "Snow/Script/ScriptEngine.h"
+
+#include "Snow/Core/Input.h"
 
 namespace Snow {
     namespace Core {
@@ -34,7 +36,7 @@ namespace Snow {
 
             Render::Renderer::Init();
             m_ImGuiLayer = ImGuiLayer::Create();
-            m_LayerStack.PushOverlay(m_ImGuiLayer);
+            m_LayerStack.PushOverlay(m_ImGuiLayer.Raw());
 
 
             Script::ScriptEngine::Init("assets/scripts/ExampleScriptApp.dll");
@@ -42,18 +44,37 @@ namespace Snow {
 
         Application::~Application() {
             //delete m_Window;
+            for (Layer* layer : m_LayerStack) {
+                layer->OnDetach();
+                delete layer;
+            }
+
+            Script::ScriptEngine::Shutdown();
+            AssetManager::Shutdown();
+
+            Render::Renderer::WaitAndRender();
+
+            for (uint32_t i = 0; i < Render::Renderer::GetConfig().FramesInFlight; i++) {
+                auto& queue = Render::Renderer::GetRenderResourceReleaseQueue(i);
+                queue.Execute();
+            }
+
+            Render::Renderer::Shutdown();
+
+            Project::SetActive(nullptr);
+
             SNOW_CORE_TRACE("Destroying Application");
         }
 
         void Application::OnImGuiRender() {
             m_ImGuiLayer->BeginImGuiFrame();
-            ImGui::Begin("RendererStats");
-            ImGui::Text("Frame Time: %.2fms\n", m_Timestep.GetMilliseconds());
-
-            ImGui::End();
 
             for(Layer* layer : m_LayerStack)
                 layer->OnImGuiRender();
+
+            ImGui::Begin("RendererStats");
+            ImGui::Text("Frame Time: %.2fms\n", m_Timestep.GetMilliseconds());
+            ImGui::End();
         }
 
         void Application::Run() {

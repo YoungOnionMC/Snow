@@ -105,6 +105,7 @@ namespace Snow {
 		virtual const std::string& GetName() const override { return m_Name; }
 
 		Render::VariableMap GetVariables() const override { return m_VariableMap; }
+		virtual std::map<std::string, std::pair<Render::ResourceType, Ref<Render::Texture>>> GetTextures() const override { return m_MaterialTextures; }
 
 		Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }
 
@@ -173,6 +174,7 @@ namespace Snow {
 
 		std::unordered_map<std::string, VkDescriptorImageInfo> m_ImageInfos;
 
-		std::unordered_map<std::string, Render::UniformType> m_VariableMap;
+		Render::VariableMap m_VariableMap;
+		std::map<std::string, std::pair<Render::ResourceType, Ref<Render::Texture>>> m_MaterialTextures;
 	};
 }

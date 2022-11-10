@@ -12,6 +12,9 @@
 
 
 namespace Snow {
+
+	AssetManager::AssetChangeCallbackFn AssetManager::s_AssetChangeCallback;
+
 	void AssetManager::Init() {
 		AssetImporter::Init();
 
@@ -26,6 +29,10 @@ namespace Snow {
 		s_MemoryAssets.clear();
 		s_AssetRegistry.Clear();
 		s_LoadedAssets.clear();
+	}
+
+	void AssetManager::SetAssetChangeCallback(const AssetChangeCallbackFn& callback) {
+		s_AssetChangeCallback = callback;
 	}
 
 	void AssetManager::OnFileSystemChanged(const Core::Event::FileSystemChangedEvent& event) {
@@ -50,6 +57,8 @@ namespace Snow {
 		else if (event.GetEventType() == EventType::FileDeleted) {
 			OnAssetDeleted(GetAssetHandleFromFilePath(event.GetFilePath()));
 		}
+
+		s_AssetChangeCallback(event);
 	}
 
 	static AssetMetadata s_NullMetadata;

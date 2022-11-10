@@ -65,10 +65,17 @@ namespace Snow {
 
 	std::optional<std::string> Utils::FileDialogs::OpenFile(const char* filter) {
 		OPENFILENAME ofn;
+
+#ifdef UNICODE
 		WCHAR szFile[260] = { 0 };
 		WCHAR currentDir[256] = { 0 };
-		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-		ofn.lStructSize = sizeof(OPENFILENAMEA);
+#else
+		CHAR szFile[260] = { 0 };
+		CHAR currentDir[256] = { 0 };
+#endif
+
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
 #if defined(SNOW_WINDOW_GLFW)
 		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Core::Application::Get().GetWindow()->GetWindowHandle());
 #elif defined(SNOW_WINDOW_WIN32)
@@ -81,6 +88,7 @@ namespace Snow {
 
 		//Utils::MBCSToWS((wchar_t*)ofn.lpstrFilter, filter);
 			//Utils::WSToMBCS((void*)ofn.lpstrInitialDir,currentDir);
+#ifdef UNICODE
 		mbstowcs((wchar_t*)ofn.lpstrFilter, filter, std::strlen(filter));
 		ofn.nFilterIndex = 1;
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
@@ -93,6 +101,21 @@ namespace Snow {
 			WSToMBCS(result, ofn.lpstrFile, wcslen(ofn.lpstrFile), true);
 			return result;
 		}
+#else
+		memcpy((char*)ofn.lpstrFilter, filter, std::strlen(filter));
+		//mbstowcs((wchar_t*)ofn.lpstrFilter, filter, std::strlen(filter));
+		ofn.nFilterIndex = 1;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+		//std::string result;
+		if (GetOpenFileName(&ofn) == TRUE) {
+			//SNOW_CORE_TRACE("Name of Project File: {0}", ofn.lpstrFile);
+			SNOW_CORE_TRACE("Size: {0}", strlen(ofn.lpstrFile));
+			//char* result;
+			//WSToMBCS(result, ofn.lpstrFile, wcslen(ofn.lpstrFile), true);
+			return ofn.lpstrFile;
+		}
+#endif
 		return std::nullopt;
 	}
 
@@ -123,8 +146,13 @@ namespace Snow {
 
 	std::optional<std::string> Utils::FileDialogs::SaveFile(const char* filter) {
 		OPENFILENAME ofn;
+#ifdef UNICODE
 		WCHAR szFile[260] = { 0 };
 		WCHAR currentDir[256] = { 0 };
+#else
+		CHAR szFile[260] = { 0 };
+		CHAR currentDir[256] = { 0 };
+#endif
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 #if defined(SNOW_WINDOW_GLFW)
@@ -138,6 +166,7 @@ namespace Snow {
 			ofn.lpstrInitialDir = currentDir;
 		//Utils::MBCSToWS(ofn.lpstrFile, filter);
 		//ofn.lpstrFilter = filter;
+#ifdef UNICODE
 		mbstowcs((wchar_t*)ofn.lpstrFilter, filter, std::strlen(filter));
 		ofn.nFilterIndex = 1;
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
@@ -159,7 +188,14 @@ namespace Snow {
 			//wcstombs((char*)result.c_str(), ofn.lpstrFile, std::strlen(filter));
 			//return result;
 		}
-			//return ofn.lpstrFile;
+#else
+		ofn.nFilterIndex = 1;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
+
+		if (GetSaveFileName(&ofn) == TRUE) {
+			return ofn.lpstrFile;
+		}
+#endif
 		return std::nullopt;
 	}
 	

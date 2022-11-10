@@ -1,6 +1,12 @@
 #include <spch.h>
 #include "Snow/Core/Window.h"
 
+#include "Snow/Core/Input.h"
+
+#include "Snow/Render/Renderer.h"
+
+#include "Snow/Core/Event/ApplicationEvent.h"
+
 #if defined(SNOW_WINDOW_WIN32)
 
     #include <windows.h>
@@ -11,9 +17,7 @@
     #include <GLFW/glfw3.h>
 #endif
 
-#include "Snow/Render/Renderer.h"
-
-#include "Snow/Core/Event/ApplicationEvent.h"
+#include <stb_image.h>
 
 namespace Snow {
     namespace Core {
@@ -178,6 +182,12 @@ namespace Snow {
             glfwSetWindowPosCallback(GLFWWindowHandle, WindowMovedCallback);
             glfwSetWindowFocusCallback(GLFWWindowHandle, WindowFocusCallback);
 
+            int channels;
+            GLFWimage iconImage;
+            iconImage.pixels = stbi_load("Resources/Editor/SnowLogo.png", &iconImage.width, &iconImage.height, &channels, 4);
+            glfwSetWindowIcon(GLFWWindowHandle, 1, &iconImage);
+            stbi_image_free(iconImage.pixels);
+
             WindowHandle = GLFWWindowHandle;
 #endif
             Render::ContextSpecification contextSpec = { WindowHandle };
@@ -185,12 +195,7 @@ namespace Snow {
             m_RendererContext->Create();
             //m_RendererContext->Init();
 
-            /*
-            m_SwapChain.Init(s_VulkanInstance, m_Device);
-            m_SwapChain.InitSurface();
-            uint32_t width = 1080, height = 720;
-            m_SwapChain.Create(&width, &height);
-            */
+            
             m_SwapChain = Render::SwapChain::CreateSwapChain({});
             m_SwapChain->Init();
             m_SwapChain->InitSurface(WindowHandle);
@@ -226,6 +231,8 @@ namespace Snow {
             }
 #elif defined(SNOW_WINDOW_GLFW)
             glfwPollEvents();
+
+            Input::Update();
 #endif
 
             
@@ -247,7 +254,7 @@ namespace Snow {
 #if defined(SNOW_WINDOW_WIN32)
             return 0.0f;
 #elif defined(SNOW_WINDOW_GLFW)
-            return glfwGetTime();
+            return (float)glfwGetTime();
 #endif
         }
 

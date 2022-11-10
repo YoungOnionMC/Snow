@@ -2,6 +2,7 @@
 
 #include <Snow.h>
 #include "Snow/Editor/SceneHierarchyPanel.h"
+#include "Snow/Editor/ContentBrowserPanel.h"
 
 #include <glm/glm.hpp>
 
@@ -37,6 +38,8 @@ namespace Snow {
         void SaveScene();
         void SaveSceneAs();
 
+        void OnRender();
+
     private:
         bool OnKeyPressed(Core::Event::KeyPressedEvent& e);
 
@@ -44,6 +47,8 @@ namespace Snow {
 
         Ref<Snow::Scene> m_RuntimeScene, m_EditorScene;
         Ref<Render::SceneRenderer> m_SceneRenderer;
+
+        Ref<Render::Renderer2D> m_Renderer2D;
 
         std::string m_SceneFilePath;
 
@@ -66,6 +71,7 @@ namespace Snow {
         Ref<Render::Texture2D> m_PlayButtonTex;
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
+        Scope<ContentBrowserPanel> m_ContentBrowserPanel;
 
         static int m_ImGuizmoSelection;
     };

@@ -4,31 +4,35 @@
 #include "Snow/Asset/AssetMetadata.h"
 #include "Snow/Asset/AssetImporter.h"
 #include "Snow/Asset/AssetRegistry.h"
+#include "Snow/Project/Project.h"
 
 #include "Snow/Utils/FileSystem.h"
+
+//#include "Snow/Core/Event/"
 
 namespace Snow {
 
 
 	class AssetManager {
 	public:
-
+		using AssetChangeCallbackFn = std::function<void(const Core::Event::FileSystemChangedEvent&)>;
+		//using FileSystemChangedCallbackFn = std::function<void(const Core::Event::FileSystemChangedEvent&)>;
 
 		static void Init();
 		static void Shutdown();
 
-
+		static void SetAssetChangeCallback(const AssetChangeCallbackFn& callback);
 
 		static const AssetMetadata& GetMetadata(AssetHandle handle);
 		static const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
 		static const AssetMetadata& GetMetadata(const Ref<Asset>& asset) { return GetMetadata(asset->Handle); }
 
-		static std::filesystem::path GetFileSystemPath(const AssetMetadata& metadata) { return metadata.FilePath; }
+		static std::filesystem::path GetFileSystemPath(const AssetMetadata& metadata) { return Project::GetAssetDirectory() / metadata.FilePath; }
 		static std::string GetFileSystemPathString(const AssetMetadata& metadata) { return GetFileSystemPath(metadata).string(); }
 		static std::filesystem::path GetRelativePath(const std::filesystem::path& path);
 
 		static AssetHandle GetAssetHandleFromFilePath(const std::filesystem::path& filepath);
-		static bool IsAssetHandleValid(AssetHandle handle) { return GetMetadata(handle).IsValid(); }
+		static bool IsAssetHandleValid(AssetHandle handle) { return IsMemoryAsset(handle) || GetMetadata(handle).IsValid(); }
 
 		static AssetType GetAssetTypeFromExtension(const std::string& extension);
 		static AssetType GetAssetTypeFromPath(const std::filesystem::path& path);
@@ -147,7 +151,11 @@ namespace Snow {
 
 		static std::unordered_map<AssetHandle, Ref<Asset>> s_LoadedAssets;
 		static std::unordered_map<AssetHandle, Ref<Asset>> s_MemoryAssets;
-
+		static AssetChangeCallbackFn s_AssetChangeCallback;
 		inline static AssetRegistry s_AssetRegistry;
+
+		friend class ContentBrowserPanel;
+		friend class ContentBrowserDirectory;
+		friend class ContentBrowserAsset;
 	};
 }

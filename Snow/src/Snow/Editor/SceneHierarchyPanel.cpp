@@ -7,6 +7,7 @@
 
 #include "Snow/Script/ScriptEngine.h"
 #include "Snow/Render/Renderer.h"
+#include "Snow/Render/MeshFactory.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -14,6 +15,10 @@
 
 #include "Snow/ImGui/ImGui.h"
 #include "Snow/ImGui/ImGuiUtilities.h"
+
+#include "Snow/Asset/AssetManager.h"
+
+#include <limits>
 
 namespace Snow {
     SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene) {
@@ -46,9 +51,66 @@ namespace Snow {
             if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
                 m_SelectionContext = {};
 
-            if (ImGui::BeginPopupContextWindow(0, 1, false)) {
-                if (ImGui::MenuItem("Create empty entity"))
-                    m_SceneContext->CreateEntity("Empty Entity");
+            if (ImGui::BeginPopupContextWindow(0, ImGuiMouseButton_Right, false)) {
+                if (ImGui::MenuItem("Create empty entity")) {
+                    m_SelectionContext = m_SceneContext->CreateEntity("Empty Entity");
+                }
+                if (ImGui::BeginMenu("2D Objects")) {
+                    if (ImGui::MenuItem("Sprite")) {
+                        m_SelectionContext = m_SceneContext->CreateEntity("Sprite");
+
+                        auto& spriteComp = m_SelectionContext.AddComponent<SpriteRendererComponent>();
+                        spriteComp.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+                        //spriteComp.Texture = AssetManager::CreateMemoryOnlyAsset<Texture2D>(Renderer::GetWhiteTexture());
+                    }
+
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("3D Objects")) {
+                    if (ImGui::MenuItem("Plane")) {
+                        m_SelectionContext = m_SceneContext->CreateEntity("Plane");
+                        //Ref<Render::Mesh> mesh = ;
+                        auto meshAsset = AssetManager::CreateMemoryOnlyAsset<Mesh>(Render::MeshFactory::CreateSquare(1.0f, 1.0f));
+                        // = mesh->Handle;
+                        //Ref<Render::Mesh> mesh = Ref<Render::Mesh>::Create(Ref<MeshAsset>::Create("assets/models/Plane.gltf"));
+                        auto& meshComp = m_SelectionContext.AddComponent<MeshComponent>(meshAsset);
+                        meshComp.MaterialTable = Ref<MaterialTable>::Create(1);
+                        auto material = Render::Material::Create(Render::Renderer::GetShaderLibrary()->Get("PBR"));
+                        meshComp.MaterialTable->SetMaterial(0, Ref<MaterialAsset>::Create(material));
+                    }
+                    if (ImGui::MenuItem("Cube")) {
+                        m_SelectionContext = m_SceneContext->CreateEntity("Cube");
+                        auto meshAsset = AssetManager::CreateMemoryOnlyAsset<Mesh>(Render::MeshFactory::CreateCube({ 1.0f, 1.0f, 1.0f }));
+                        auto& meshComp = m_SelectionContext.AddComponent<MeshComponent>(meshAsset);
+                        meshComp.MaterialTable = Ref<MaterialTable>::Create(1);
+                        auto material = Render::Material::Create(Render::Renderer::GetShaderLibrary()->Get("PBR"));
+                        meshComp.MaterialTable->SetMaterial(0, Ref<MaterialAsset>::Create(material));
+                    }
+                    if (ImGui::MenuItem("Sphere")) {
+                        m_SelectionContext = m_SceneContext->CreateEntity("Sphere");
+                        auto meshAsset = AssetManager::CreateMemoryOnlyAsset<Mesh>(Render::MeshFactory::CreateSphere(1.0f, 16.0f));
+                        auto& meshComp = m_SelectionContext.AddComponent<MeshComponent>(meshAsset);
+                        meshComp.MaterialTable = Ref<MaterialTable>::Create(1);
+                        auto material = Render::Material::Create(Render::Renderer::GetShaderLibrary()->Get("PBR"));
+                        meshComp.MaterialTable->SetMaterial(0, Ref<MaterialAsset>::Create(material));
+                    }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Lights")) {
+                    if (ImGui::MenuItem("Directional Light")) {
+                        m_SelectionContext = m_SceneContext->CreateEntity("Directional Light");
+                        auto& directLightComp = m_SelectionContext.AddComponent<DirectionalLightComponent>();
+                    }
+                    if (ImGui::MenuItem("Point Light")) {
+                        m_SelectionContext = m_SceneContext->CreateEntity("Point Light");
+                        auto& pointLoghtComp = m_SelectionContext.AddComponent<PointLightComponent>();
+                    }
+                    if (ImGui::MenuItem("Sky Light")) {
+                        m_SelectionContext = m_SceneContext->CreateEntity("Sky Light");
+                        auto& skyLightComp = m_SelectionContext.AddComponent<SkyLightComponent>();
+                    }
+                    ImGui::EndMenu();
+                }
 
                 ImGui::EndPopup();
             }
@@ -61,9 +123,7 @@ namespace Snow {
 
             ImGui::End();
 
-            ImGui::Begin("Environment");
             DrawEnvironment();
-            ImGui::End();
         }
     }
 
@@ -108,20 +168,20 @@ namespace Snow {
             ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
 
-            {
-                UI::ScopedStyle framePadding(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
-                float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-                ImGui::Separator();
 
-                bool open = ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(T).hash_code()), treeNodeFlags, name.c_str());
-           
-                UI::ScopedColorStack button(ImGuiCol_Button, ImVec4(0, 0, 0, 0), ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+            UI::ScopedStyle framePadding(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+            float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+            ImGui::Separator();
 
-                ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-                if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight })) {
-                    ImGui::OpenPopup("ComponentSettings");
-                }
+            bool opened = ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(T).hash_code()), treeNodeFlags, name.c_str());
+
+            UI::ScopedColorStack button(ImGuiCol_Button, ImVec4(0, 0, 0, 0), ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+
+            ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
+            if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight })) {
+                ImGui::OpenPopup("ComponentSettings");
             }
+
 
             bool resetValues = false;
             bool removeComponent = false;
@@ -137,7 +197,7 @@ namespace Snow {
                 UI::EndPopup();
             }
 
-            if (open) {
+            if (opened) {
                 uiFunction(component);
                 ImGui::TreePop();
             }
@@ -149,7 +209,7 @@ namespace Snow {
                 entity.AddComponent<T>();
 
             //if(!open)
-            
+
 
             ImGui::PopID();
         }
@@ -220,6 +280,15 @@ namespace Snow {
         return modified;
     }
 
+    template<typename Component>
+    void SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& name) {
+        if (!m_SelectionContext.HasComponent<Component>()) {
+            if (ImGui::MenuItem(name.c_str())) {
+                m_SelectionContext.AddComponent<Component>();
+                ImGui::CloseCurrentPopup();
+            }
+        }
+    }
 
     void SceneHierarchyPanel::DrawComponents(Entity entity) {
 
@@ -269,33 +338,16 @@ namespace Snow {
 
         {
             if (UI::BeginPopup("AddComponentPanel")) {
-                if (!m_SelectionContext.HasComponent<CameraComponent>()) {
-                    if (ImGui::MenuItem("Camera")) {
-                        m_SelectionContext.AddComponent<CameraComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                if (!m_SelectionContext.HasComponent<MeshComponent>()) {
-                    if (ImGui::MenuItem("Mesh")) {
-                        m_SelectionContext.AddComponent<MeshComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                if (!m_SelectionContext.HasComponent<SpriteRendererComponent>()) {
-                    if (ImGui::MenuItem("Sprite Renderer")) {
-                        m_SelectionContext.AddComponent<SpriteRendererComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
+                DisplayAddComponentEntry<CameraComponent>("Camera");
+                DisplayAddComponentEntry<MeshComponent>("Mesh");
+                DisplayAddComponentEntry<SpriteRendererComponent>("Sprite Renderer");
+                DisplayAddComponentEntry<ScriptComponent>("Script");
+                DisplayAddComponentEntry<RigidBody2DComponent>("Rigidbody 2D");
+                DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider 2D");
+                DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
 
-
-                if (!m_SelectionContext.HasComponent<ScriptComponent>()) {
-                    if (ImGui::MenuItem("Script")) {
-                        m_SelectionContext.AddComponent<ScriptComponent>();
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-
+                UI::EndPopup();
+                /*
                 if (ImGui::MenuItem("BRDF Material")) {
 
                     Ref<Render::Shader> shader = Render::Renderer::GetShaderLibrary()->Get("PBR");
@@ -305,18 +357,7 @@ namespace Snow {
 
                     ImGui::CloseCurrentPopup();
                 }
-
-                if (!m_SelectionContext.HasComponent<RigidBody2DComponent>()) {
-                    if (ImGui::MenuItem("RigidBody")) {
-                        auto transform = m_SelectionContext.GetComponent<TransformComponent>();
-                        auto rb = RigidBody2D(m_SceneContext->GetPhysicsWorld(), transform.GetTransform());
-                        m_SelectionContext.AddComponent<RigidBody2DComponent>(rb);
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-
-                UI::EndPopup();
-
+                */
             }
         }
 
@@ -334,43 +375,169 @@ namespace Snow {
             DrawVec3Control("Scale", component.Scale, 1.0f);
 
 
-            component.UpdateTransform();
+            //component.UpdateTransform();
         }, false);
 
         DrawComponent<MeshComponent>("Mesh", entity, [&](MeshComponent& mc) {
-            UI::BeginPropertyGrid();
+            //UI::BeginPropertyGrid();
+            //if (mc.Mesh && mc.Mesh->IsValid()) {
+            //    if (UI::Button("Change Mesh", ImVec2(128, 128))) {
+             //       auto file = Snow::Utils::FileDialogs::OpenFile().value();
+            //        if (!file.empty()) {
+            //            SNOW_CORE_TRACE("Congrats");
+                        //auto mesh = MeshAsset(file);
+                        //mc.Mesh = Ref<Mesh>::Create(mesh);
+                        //auto materials = mesh.GetMaterials();
+                        //for (int i = 0; i < materials.size(); i++)
+                        //    mc.MaterialTable->SetMaterial(i, materials[i]);
+           //         }
 
-            if (mc.Mesh && mc.Mesh->IsValid()) {
-                if (UI::BeginTreeNode("Materials")) {
-                    UI::BeginPropertyGrid();
+            //    }
+           // }
 
-                    auto& meshMaterialTable = mc.Mesh->GetMaterials();
-                    if (mc.MaterialTable->GetMaterialCount() < meshMaterialTable->GetMaterialCount())
-                        mc.MaterialTable->SetMaterialCount(meshMaterialTable->GetMaterialCount());
+            if (AssetManager::IsAssetHandleValid(mc.Mesh)) {
+                auto mesh = AssetManager::GetAsset<Mesh>(mc.Mesh);
+                if (mesh && mesh->IsValid()) {
+                    if (UI::BeginTreeNode("Materials")) {
+                        //UI::BeginPropertyGrid();
 
-                    for (size_t i = 0; i < mc.MaterialTable->GetMaterialCount(); i++) {
-                        if (i == meshMaterialTable->GetMaterialCount())
-                            ImGui::Separator();
+                        auto& meshMaterialTable = mesh->GetMaterials();
+                        if (mc.MaterialTable->GetMaterialCount() < meshMaterialTable->GetMaterialCount())
+                            mc.MaterialTable->SetMaterialCount(meshMaterialTable->GetMaterialCount());
 
-                        bool hasLocalMaterial = mc.MaterialTable->HasMaterial(i);
-                        bool hasMeshMaterial = meshMaterialTable->HasMaterial(i);
+                        auto playback = [](const Ref<Render::Texture2D>& icon, const float maxSize, const ImColor& tint) {
+                            const float size = std::min((float)icon->GetHeight(), maxSize);
+                            const float iconPadding = 2.0f;
+                            const bool clicked = ImGui::InvisibleButton(UI::GenerateID(), ImVec2(size, size));
+                            //if (index)
+                            UI::DrawButtonImage(icon, tint, UI::ColorWithMultipliedValue(tint, 1.3f), UI::ColorWithMultipliedValue(tint, 0.7f), UI::RectExpanded(UI::GetItemRect(), -iconPadding, -iconPadding));
 
-                        Ref<MaterialAsset> meshMaterialAsset;
-                        if (hasMeshMaterial)
-                            meshMaterialAsset = meshMaterialTable->GetMaterial(i);
+                            return clicked;
+                        };
 
-                        Ref<MaterialAsset> materialAsset = hasLocalMaterial ? mc.MaterialTable->GetMaterial(i) : meshMaterialAsset;
+                        for (size_t i = 0; i < mc.MaterialTable->GetMaterialCount(); i++) {
+                            if (i == meshMaterialTable->GetMaterialCount())
+                                ImGui::Separator();
 
-                        std::string label = fmt::format("[Material {0}]", i);
+                            bool hasLocalMaterial = mc.MaterialTable->HasMaterial(i);
+                            bool hasMeshMaterial = meshMaterialTable->HasMaterial(i);
+
+                            Ref<MaterialAsset> meshMaterialAsset;
+                            if (hasMeshMaterial)
+                                meshMaterialAsset = meshMaterialTable->GetMaterial(i);
+
+                            Ref<MaterialAsset> materialAsset = hasLocalMaterial ? mc.MaterialTable->GetMaterial(i) : meshMaterialAsset;
+                            //Ref<MaterialAsset> materialAsset = meshMaterialAsset;
+
+                            std::string label = fmt::format("[Material {0}]", i);
 
 
+
+                            for (auto [name, resource] : materialAsset->GetMaterial()->GetTextures()) {
+                                switch (resource.first) { // Resource Type
+                                case ResourceType::Texture2D: {
+                                    auto texture = resource.second.As<Render::Texture2D>();
+                                    if (playback(texture, 64, IM_COL32(255, 255, 255, 255))) {
+                                        auto filePath = Snow::Utils::FileDialogs::OpenFile();
+                                        if (filePath.has_value()) {
+                                            Ref<Render::Texture2D> newTexture = Render::Texture2D::Create(filePath.value());
+                                            materialAsset->GetMaterial()->Set(name, newTexture);
+                                        }
+
+                                    }
+                                    ImGui::SameLine();
+                                    ImGui::Text(name.c_str());
+                                }
+
+                                }
+                            }
+
+                            for (auto [name, type] : materialAsset->GetMaterial()->GetVariables()) {
+                                using namespace Render;
+                                switch (type.Type) {
+                                case UniformType::Bool: {
+                                    bool value = *materialAsset->GetMaterial()->GetVariables().at(name).Data.As<bool>();
+                                    if (UI::Property(name.c_str(), value))
+                                        materialAsset->GetMaterial()->Set(name, value);
+                                    break;
+                                }
+                                case UniformType::Int: {
+                                    int value = *materialAsset->GetMaterial()->GetVariables().at(name).Data.As<int>();
+                                    if (UI::Property(name.c_str(), value))
+                                        materialAsset->GetMaterial()->Set(name, value);
+                                    break;
+                                }
+                                case UniformType::Float: {
+                                    float value = *materialAsset->GetMaterial()->GetVariables().at(name).Data.As<float>();
+                                    if (UI::Property(name.c_str(), value))
+                                        materialAsset->GetMaterial()->Set(name, value);
+                                    break;
+                                }
+                                case UniformType::Float2: {
+                                    glm::vec2 value = *materialAsset->GetMaterial()->GetVariables().at(name).Data.As<glm::vec2>();
+                                    if (UI::Property(name.c_str(), value))
+                                        materialAsset->GetMaterial()->Set(name, value);
+                                    break;
+                                }
+                                case UniformType::Float3: {
+                                    glm::vec3 value = *materialAsset->GetMaterial()->GetVariables().at(name).Data.As<glm::vec3>();
+                                    if (UI::Property(name.c_str(), value))
+                                        materialAsset->GetMaterial()->Set(name, value);
+                                    break;
+                                }
+                                case UniformType::Float4: {
+                                    glm::vec4 value = *materialAsset->GetMaterial()->GetVariables().at(name).Data.As<glm::vec4>();
+                                    if (UI::Property(name.c_str(), value))
+                                        materialAsset->GetMaterial()->Set(name, value);
+                                    break;
+                                }
+                                }
+                            }
+
+                            UI::PropertyAssetReferenceSettings settings;
+                            if (hasLocalMaterial || !hasMeshMaterial) {
+                                if (hasLocalMaterial) {
+                                    settings.AdvanceToNextColumn = false;
+                                    settings.WidthOffset = ImGui::GetStyle().ItemSpacing.x + 28.0f;
+                                }
+                                UI::PropertyAssetReferenceTarget<MaterialAsset>(label.c_str(), nullptr, materialAsset, [i, materialTable = mc.MaterialTable](Ref<MaterialAsset> materialAsset) mutable {
+                                    materialTable->SetMaterial(i, materialAsset);
+                                }, settings);
+
+                            }
+                            else {
+                                std::string meshMaterialName = meshMaterialAsset->GetMaterial()->GetName();
+                                if (meshMaterialName.empty())
+                                    meshMaterialName = "Unnamed Material";
+
+                                UI::PropertyAssetReferenceTarget<MaterialAsset>(label.c_str(), meshMaterialName.c_str(), materialAsset, [i, materialTable = mc.MaterialTable](Ref<MaterialAsset> materialAsset) mutable {
+                                    materialTable->SetMaterial(i, materialAsset);
+                                }, settings);
+                            }
+
+                            if (hasLocalMaterial) {
+                                ImGui::SameLine();
+                                float prevItemHeight = ImGui::GetItemRectSize().y;
+                                if (ImGui::Button("X", { prevItemHeight, prevItemHeight }))
+                                    mc.MaterialTable->ClearMaterial(i);
+                                ImGui::NextColumn();
+                            }
+                        }
+
+                        //const int materialIndex = 0;
+                       // if (ImGui::Button("AddMaterial")) {
+                        //    Ref<Render::Material> matInstance = Render::Material::Create(Render::Renderer::GetShaderLibrary()->Get("PBR"), "Default Material");
+                        //    mc.MaterialTable->SetMaterial(materialIndex, matInstance);
+                        //}
+
+
+                        //UI::EndPropertyGrid();
+                        UI::EndTreeNode();
                     }
-
-                    UI::EndPropertyGrid();
-                    UI::EndTreeNode();
                 }
             }
-            UI::EndPropertyGrid();
+            //UI::EndPropertyGrid();
+
         });
 
 
@@ -445,6 +612,8 @@ namespace Snow {
         
 
         DrawComponent<BRDFMaterialComponent>("Material", entity, [this](auto& component) {
+
+            
             /*
             //Ref<Render::MaterialInstance> mat = component.MaterialInstance;
 
@@ -627,44 +796,109 @@ namespace Snow {
             UI::EndPropertyGrid();
         });
 
-        DrawComponent<RigidBody2DComponent>("RigidBody", entity, [](auto& component) {
-            auto rigidBody = component.RigidBody;
+        DrawComponent<RigidBody2DComponent>("Rigid Body 2D", entity, [](RigidBody2DComponent& component) {
+
+            const std::array<const char*, 3> types = { "Static", "Dynamic", "Kinematic" };
+            const char* currentBodyType = types[(int)component.Type];
+            if (ImGui::BeginCombo("Body Type", currentBodyType)) {
+                for (int i = 0; i < 3; i++) {
+                    bool isSelected = currentBodyType == types[i];
+                    if (ImGui::Selectable(types[i], isSelected)) {
+                        currentBodyType = types[i];
+                        component.Type = (RigidBody2DComponent::BodyType)i;
+                    }
+
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            UI::Property("Fixed Rotation", component.FixedRotation);
+
             
-            glm::vec2 position = rigidBody.GetPosition();
-            float rotation = rigidBody.GetRotation();
-            ImGui::InputFloat2("Position", glm::value_ptr(position), 2);
-            ImGui::InputFloat("Rotation", &rotation);
-
-
-
-            //rigidBody.SetTransform(position, rotation);
-
-            float friction = rigidBody.GetFriction();
-            ImGui::InputFloat("Friction Value", &friction);
-            rigidBody.SetFriction(friction);
-
-            float density = rigidBody.GetDensity();
-            ImGui::InputFloat("Density Value", &density);
-            rigidBody.SetDensity(density);
-
-            uint32_t dynamic = rigidBody.GetType();
-            const std::array<const char*, 3> types = { "Static", "Kinematic", "Dynamic" };
-            ImGui::Combo("RigidBody Type", (int*)&dynamic, types.data(), types.size());
-            rigidBody.SetType((RigidBodyType)dynamic);
+            
         });
-        /*
-        DrawComponent<Box2DShapeComponent>("Box2DShape", entity, [](auto& component) {
-            //float 
-           // ImGui::InputFloat("Density", &component.FixtureDef->density);
-        });
-        */
         
+        DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](BoxCollider2DComponent& component) {
+           
+            UI::Property("Offset", component.Offset);
+            UI::Property("Size", component.Size);
+            UI::Property("Density", component.Density);
+            UI::Property("Friction", component.Friction);
+            UI::Property("Restitution", component.Restitution);
+            UI::Property("Restitution Threshold", component.RestitutionThreshold);
+        });
+
+        DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](CircleCollider2DComponent& component) {
+
+            UI::Property("Radius", component.Radius);
+            UI::Property("Offset", component.Offset);
+            UI::Property("Density", component.Density);
+            UI::Property("Friction", component.Friction);
+            UI::Property("Restitution", component.Restitution);
+            UI::Property("Restitution Threshold", component.RestitutionThreshold);
+        });
+        
+        DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& component) {
+            UI::BeginPropertyGrid();
+            UI::PropertyColor("Light Radiance", component.Radiance);
+            UI::PropertySlider("Light Direction", component.Direction, -1.0f, 1.0f);
+            UI::Property("Light Intensity", component.Intensity);
+            UI::EndPropertyGrid();
+        });
+
+        DrawComponent<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& component) {
+            UI::BeginPropertyGrid();
+            UI::Property("Intensity", component.Intensity, 0.01f, 0.0f, 5.0f);
+            
+            if (AssetManager::IsAssetHandleValid(component.SceneEnvironment)) {
+                auto env = AssetManager::GetAsset<Environment>(component.SceneEnvironment);
+                if (env && env->RadianceMap) {
+                    UI::PropertySlider("Lod", component.Lod, 0.0f, env->RadianceMap->GetMipLevelCount());
+
+                }
+                else {
+                    UI::PropertySlider("Lod", component.Lod, 0.0f, 10.0f);
+                }
+            }
+
+            UI::Property("Dynamic Sky", component.DynamicSky);
+            if (component.DynamicSky) {
+                bool changed = UI::Property("Trubidity", component.TurbidityAzimuthInclination.x, 0.01);
+                changed |= UI::Property("Azimuth", component.TurbidityAzimuthInclination.y, 0.01);
+                changed |= UI::Property("Inclination", component.TurbidityAzimuthInclination.z, 0.01);
+                if (changed) {
+                    if (AssetManager::IsMemoryAsset(component.SceneEnvironment)) {
+                        Ref<TextureCube> preethEnv = Renderer::CreatePreethamSky(component.TurbidityAzimuthInclination.x, component.TurbidityAzimuthInclination.y, component.TurbidityAzimuthInclination.z);
+                        Ref<Environment> environment = AssetManager::GetAsset<Environment>(component.SceneEnvironment);
+                        if (environment) {
+                            environment->RadianceMap = preethEnv;
+                            environment->IrradianceMap = preethEnv;
+                        }
+                    }
+                    else {
+                        Ref<TextureCube> preethEnv = Renderer::CreatePreethamSky(component.TurbidityAzimuthInclination.x, component.TurbidityAzimuthInclination.y, component.TurbidityAzimuthInclination.z);
+                        component.SceneEnvironment = AssetManager::CreateMemoryOnlyAsset<Environment>(preethEnv, preethEnv);
+                    }
+                }
+            }
+            UI::EndPropertyGrid();
+        });
     }
 
     void SceneHierarchyPanel::DrawEnvironment() {
-        ImGui::DragFloat3("Light Direction", glm::value_ptr(m_SceneContext->GetLight().Direction), 0.01f, -10.0f, 10.0f);
-        ImGui::ColorEdit3("Light Color", glm::value_ptr(m_SceneContext->GetLight().Radiance));
-        float& lightMulti = m_SceneContext->GetLight().Multiplier;
-        ImGui::SliderFloat("Light Multiplier", &lightMulti, 0.0, 2.0);
+        auto* light = &m_SceneContext->m_LightEnvironment.DirectionalLights[0];
+        ImGui::Begin("Scene Environment");
+        UI::BeginPropertyGrid();
+        UI::PropertySlider("Light Direction", light->Direction, -1.0f, 1.0f);
+        UI::PropertyColor("Light Color", light->Radiance);
+        UI::Property("Light Intensity", light->Multiplier, 0.0f, 10.0f);
+        UI::EndPropertyGrid();
+        ImGui::End();
+        //ImGui::DragFloat3("Light Direction", glm::value_ptr(.Direction), 0.01f, -10.0f, 10.0f);
+        //ImGui::ColorEdit3("Light Color", glm::value_ptr(m_SceneContext->GetLight().Radiance));
+        //float& lightMulti = m_SceneContext->GetLight().Multiplier;
+        //ImGui::SliderFloat("Light Multiplier", &lightMulti, 0.0, 2.0);
     }
 }
