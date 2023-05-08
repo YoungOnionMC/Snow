@@ -94,8 +94,10 @@ namespace Snow {
 			static Ref<Image2D> Create(ImageSpecification specification, Buffer buffer);
 			static Ref<Image2D> Create(ImageSpecification specification, const void* data = nullptr);
 
-			virtual void SetData(void* data) = 0;
+			virtual void SetData(const void* data) = 0;
 			virtual bool GetImageData() = 0;
+
+			virtual void Resize(uint32_t width, uint32_t height) = 0;
 		};
 
 		namespace Utils {

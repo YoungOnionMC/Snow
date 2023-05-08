@@ -14,9 +14,9 @@ namespace Snow {
 			case ImageFormat::RGB:	return VkFormat::VK_FORMAT_R8G8B8_UNORM;
 			case ImageFormat::SRGB:	return VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
 			case ImageFormat::RGBA:	return VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
-			case ImageFormat::RGBA16F:
+			case ImageFormat::RGBA16F:	return VkFormat::VK_FORMAT_R16G16B16A16_SFLOAT;
 			case ImageFormat::RGBA32F:	return VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
-			case ImageFormat::Depth32F:	return VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
+			case ImageFormat::Depth32F:	return VkFormat::VK_FORMAT_D32_SFLOAT;
 			//case ImageFormat::DepthStencil:	return VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
 			case ImageFormat::Depth24Stencil8:	return VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
 			}

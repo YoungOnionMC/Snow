@@ -5,7 +5,8 @@
 
 #include "Snow/Utils/StringUtils.h"
 
-#if SNOW_LOG_RENDERER_ALLOCATIONS
+#define SNOW_LOG_RENDERER_ALLOCATIONS
+#ifdef SNOW_LOG_RENDERER_ALLOCATIONS
 #define SNOW_ALLOCATOR_LOG(...) SNOW_CORE_TRACE(__VA_ARGS__)
 #else
 #define SNOW_ALLOCATOR_LOG(...)
@@ -46,11 +47,11 @@ namespace Snow {
 
         VmaAllocationInfo allocInfo{};
         vmaGetAllocationInfo(s_Data->Allocator, allocation, &allocInfo);
-        SNOW_ALLOCATOR_LOG("VulkanAllocator ({0}): allocating buffer; size = {1}", m_Tag, Utils::BytesToString(allocInfo.size));
+        SNOW_ALLOCATOR_LOG("VulkanAllocator ({0}): allocating buffer; size = {1}", m_Tag, Snow::Utils::String::BytesToString(allocInfo.size));
 
         {
             s_Data->TotalAllocatedBytes += allocInfo.size;
-            SNOW_ALLOCATOR_LOG("VulkanAllocator ({0}): total allocated since start is {1}", m_Tag, Utils::BytesToString(s_Data->TotalAllocatedBytes));
+            SNOW_ALLOCATOR_LOG("VulkanAllocator ({0}): total allocated since start is {1}", m_Tag, Snow::Utils::String::BytesToString(s_Data->TotalAllocatedBytes));
         }
 
         return allocation;
@@ -65,11 +66,11 @@ namespace Snow {
 
         VmaAllocationInfo allocInfo{};
         vmaGetAllocationInfo(s_Data->Allocator, allocation, &allocInfo);
-        SNOW_ALLOCATOR_LOG("VulkanAllocator ({0}): allocating image; size = {1}", m_Tag, Utils::BytesToString(allocInfo.size));
+        SNOW_ALLOCATOR_LOG("VulkanAllocator ({0}): allocating image; size = {1}", m_Tag, Snow::Utils::String::BytesToString(allocInfo.size));
 
         {
             s_Data->TotalAllocatedBytes += allocInfo.size;
-            SNOW_ALLOCATOR_LOG("VulkanAllocator ({0}): total allocated since start is {1}", m_Tag, Utils::BytesToString(s_Data->TotalAllocatedBytes));
+            SNOW_ALLOCATOR_LOG("VulkanAllocator ({0}): total allocated since start is {1}", m_Tag, Snow::Utils::String::BytesToString(s_Data->TotalAllocatedBytes));
         }
 
         return allocation;

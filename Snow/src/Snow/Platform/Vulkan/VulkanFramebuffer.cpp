@@ -165,12 +165,12 @@ namespace Snow {
 				if (attachmentSpec.Format == Render::ImageFormat::Depth24Stencil8 || true) {
 					// TODO: check if sampling
 					attachmentDesc.finalLayout = true ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-					depthAttachmentRef = { attachmentIndex, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL };
+					depthAttachmentRef = { attachmentIndex, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
 				}
 				else {
 					// TODO: check if sampling
 					attachmentDesc.finalLayout = true ? VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-					depthAttachmentRef = { attachmentIndex, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL };
+					depthAttachmentRef = { attachmentIndex, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL };
 				}
 				m_ClearValues[attachmentIndex].depthStencil = { m_Specification.ClearDepthValue, 0 };
 			}

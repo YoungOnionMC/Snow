@@ -236,7 +236,8 @@ namespace Snow {
 				}
 
 				if (framebuffer->HasDepthAttachment()) {
-					attachments[colorAttachmentCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+					ImageFormat format = framebuffer->GetDepthImage()->GetSpecification().Format;
+					attachments[colorAttachmentCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | (format == ImageFormat::Depth24Stencil8 ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
 					attachments[colorAttachmentCount].clearValue = clearValues[colorAttachmentCount];
 
 					clearRects[colorAttachmentCount].rect.offset = { (int32_t)0, (int32_t)0 };

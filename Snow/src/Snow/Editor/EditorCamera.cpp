@@ -20,7 +20,7 @@ namespace Snow {
 			Camera(projMatrix) {
 			m_FocalPoint = glm::vec3(0.0f);
 
-			glm::vec3 position = { 0, 0, -5 };
+			glm::vec3 position = { 0, 0, -10 };
 			m_Distance = glm::distance(position, m_FocalPoint);
 
 			m_Yaw = 3.0f * (float)M_PI / 4.0f;

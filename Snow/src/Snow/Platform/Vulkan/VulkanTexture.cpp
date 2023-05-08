@@ -174,7 +174,7 @@ namespace Snow {
 			image->UpdateDescriptor();
 		}
 
-		if (m_ImageData)
+		if (m_ImageData && m_Properties.GenerateMips && mipCount > 1)
 			GenerateMips();
 	}
 
@@ -240,9 +240,9 @@ namespace Snow {
 				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, mipSubRange);
 
-			vkCmdBlitImage(blitCmd, info.Image, 
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, info.Image, 
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+			vkCmdBlitImage(blitCmd, 
+				info.Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+				info.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
 				&imageBlit, VK_FILTER_LINEAR);
 
 			Render::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,

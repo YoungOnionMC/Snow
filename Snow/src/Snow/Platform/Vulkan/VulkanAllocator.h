@@ -38,6 +38,12 @@ namespace Snow {
         }
         void UnmapMemory(VmaAllocation allocation);
 
+        VmaAllocationInfo GetAllocationInfo(VmaAllocation allocation) {
+            VmaAllocationInfo allocInfo;
+            vmaGetAllocationInfo(GetVMAAllocator(), allocation, &allocInfo);
+            return allocInfo;
+        }
+
         static void DumpStats();
         static GPUMemoryStats GetStats();
 

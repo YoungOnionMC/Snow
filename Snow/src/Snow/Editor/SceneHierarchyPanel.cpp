@@ -61,7 +61,7 @@ namespace Snow {
 
                         auto& spriteComp = m_SelectionContext.AddComponent<SpriteRendererComponent>();
                         spriteComp.Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-                        //spriteComp.Texture = AssetManager::CreateMemoryOnlyAsset<Texture2D>(Renderer::GetWhiteTexture());
+                        //spriteComp.Texture = AssetManager::CreateMemoryOnlyAsset<Texture>(Renderer::GetWhiteTexture());
                     }
 
                     ImGui::EndMenu();

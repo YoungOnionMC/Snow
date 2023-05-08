@@ -12,7 +12,7 @@ namespace Snow {
 
 	//using namespace Render;
 	VulkanImage2D::VulkanImage2D(Render::ImageSpecification spec) :
-		m_Specification(spec) {
+		m_Specification(spec), m_Width(spec.Width), m_Height(spec.Height) {
 		
 	}
 
@@ -37,7 +37,7 @@ namespace Snow {
 		Ref<VulkanImage2D> instance = this;
 		VulkanImageInfo info = m_ImageInfo;
 
-		Render::Renderer::SubmitResourceFree([info, layerViews = m_PerLayerImageViews]() mutable {
+		Render::Renderer::SubmitResourceFree([instance, info, layerViews = m_PerLayerImageViews]() mutable {
 			auto vkDevice = VulkanContext::GetCurrentDevice();
 			SNOW_CORE_WARN("VulkanImage2D::Release ImageView = {0}", (const void*)info.ImageView);
 			vkDestroyImageView(vkDevice->GetVulkanDevice(), info.ImageView, nullptr);
@@ -51,28 +51,32 @@ namespace Snow {
 			VulkanAllocator allocator("VulkanImage2D");
 			allocator.DestroyImage(info.Image, info.MemoryAllocation);
 			s_ImageReferences.erase(info.Image);
+			allocator.DestroyBuffer(instance->m_StagingBuffer, instance->m_StagingBufferAllocation);
+			instance->m_StagingBuffer = nullptr;
+			instance->m_StagingBufferAllocation = nullptr;
 		});
 		m_ImageInfo.Image = nullptr;
 		m_ImageInfo.ImageView = nullptr;
 		m_ImageInfo.Sampler = nullptr;
 		m_PerLayerImageViews.clear();
+		
 
 		
 	}
 
-	void VulkanImage2D::SetData(void* data) {
+	void VulkanImage2D::SetData(const void* data) {
 		Ref<VulkanImage2D> instance = this;
 		Render::Renderer::Submit([instance, data]() mutable {
 			instance->RTSetData(data);
 		});
 	}
 
-	void VulkanImage2D::RTSetData(void* data) {
+	void VulkanImage2D::RTSetData(const void* data) {
 		Ref<VulkanDevice> vkDevice = VulkanContext::GetCurrentDevice();
 		VkCommandBuffer cmdBuffer = vkDevice->GetCommandBuffer(true);
 		VulkanAllocator allocator("VulkanImage2D");
 
-		uint64_t size = m_Specification.Width * m_Specification.Height * Render::Utils::GetFormatSize(m_Specification.Format);
+		uint64_t size = m_Width * m_Height * Render::Utils::GetFormatSize(m_Specification.Format);
 		if (!m_StagingBuffer) {
 			VkBufferCreateInfo bufferCI = {};
 			bufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -84,13 +88,20 @@ namespace Snow {
 		}
 
 		uint8_t* allocatedData = allocator.MapMemory<uint8_t>(m_StagingBufferAllocation);
+		SNOW_CORE_ASSERT(data);
+		
+		//size_t allocSize = allocator.GetAllocationInfo(m_StagingBufferAllocation).size;
+		//if(allocSize <= size)
+		//SNOW_CORE_INFO("Alloc size {0}, data size {1}", allocSize, size);
 		memcpy(allocatedData, data, size);
 		allocator.UnmapMemory(m_StagingBufferAllocation);
+
 
 		VkImageSubresourceRange subresourceRange = {};
 		subresourceRange.baseMipLevel = 0;
 		subresourceRange.levelCount = 1;
 		subresourceRange.layerCount = 1;
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
 		Render::Utils::InsertImageMemoryBarrier(cmdBuffer, m_ImageInfo.Image, 
 			0, VK_ACCESS_TRANSFER_WRITE_BIT, 
@@ -110,11 +121,20 @@ namespace Snow {
 
 		vkCmdCopyBufferToImage(cmdBuffer, m_StagingBuffer, m_ImageInfo.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		Render::Utils::InsertImageMemoryBarrier(cmdBuffer, m_ImageInfo.Image, 
-			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
-			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
-			subresourceRange);
+		if (m_Specification.Mips > 1) {
+			Render::Utils::InsertImageMemoryBarrier(cmdBuffer, m_ImageInfo.Image,
+				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				subresourceRange);
+		}
+		else {
+			Render::Utils::InsertImageMemoryBarrier(cmdBuffer, m_ImageInfo.Image,
+				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_DescriptorImageInfo.imageLayout,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				subresourceRange);
+		}
 
 		vkDevice->FlushCommandBuffer(cmdBuffer);
 	}
@@ -209,6 +229,19 @@ namespace Snow {
 		}
 
 		UpdateDescriptor();
+	}
+
+	void VulkanImage2D::Resize(uint32_t width, uint32_t height) {
+		if (m_ImageInfo.Image && m_Width == width && m_Height == height)
+			return;
+
+		m_Width = width;
+		m_Height = height;
+		m_Specification.Width = m_Width;
+		m_Specification.Height = m_Height;
+
+		Release();
+		RTInvalidate();
 	}
 
 	void VulkanImage2D::CreatePerLayerImageViews() {

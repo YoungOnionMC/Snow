@@ -166,7 +166,7 @@ namespace Snow {
 
 				framebufferSpec.Samples = 1;
 				framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-				framebufferSpec.ClearDepthOnLoad = false;
+				framebufferSpec.ClearDepthOnLoad = true;
 				framebufferSpec.DebugName = "Geometry";
 
 				Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
@@ -246,7 +246,7 @@ namespace Snow {
 				FramebufferSpecification compFramebufferSpec;
 
 				compFramebufferSpec.DebugName = "SceneComposite";
-				compFramebufferSpec.ClearColor = { 0.15f, 0.15f, 0.15f, 1.0f };
+				compFramebufferSpec.ClearColor = { 0.35f, 0.15f, 0.15f, 1.0f };
 				compFramebufferSpec.SwapChainTarget = m_Specification.SwapChainTarget;
 				if(m_Specification.SwapChainTarget)
 					compFramebufferSpec.AttachmentList = { ImageFormat::RGBA };
@@ -499,7 +499,7 @@ namespace Snow {
 			auto framebuffer = m_GeometryPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer;
 			int textureSamples = framebuffer->GetSpecification().Samples;
 
-			float exposure = 1.0f;
+			float exposure = 2.0f;
 
 			//m_CompositeMaterial->Set("u_Uniforms.TextureSamples", textureSamples);
 			m_CompositeMaterial->Set("u_Uniforms.Exposure", exposure);
@@ -525,8 +525,8 @@ namespace Snow {
 
 				m_CommandBuffer->Begin();
 
-				ShadowMapPass();
-				PreDepthPass();
+				//ShadowMapPass();
+				//PreDepthPass();
 				GeometryPass();
 				CompositePass();
 

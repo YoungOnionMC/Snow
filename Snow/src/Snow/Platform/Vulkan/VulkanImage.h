@@ -29,9 +29,11 @@ namespace Snow {
 		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
 		virtual uint32_t GetHeight() const override { return m_Specification.Height; }
 
-		virtual void SetData(void* data) override;
-		void RTSetData(void* data);
+		virtual void SetData(const void* data) override;
+		void RTSetData(const void* data);
 		virtual bool GetImageData() override { return m_ImageData; }
+
+		void Resize(uint32_t width, uint32_t height) override;
 
 		virtual Render::ImageSpecification& GetSpecification() override { return m_Specification; }
 		virtual const Render::ImageSpecification& GetSpecification() const override { return m_Specification; }

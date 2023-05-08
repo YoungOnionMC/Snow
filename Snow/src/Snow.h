@@ -19,6 +19,7 @@
 
 #include "Snow/Math/AABB.h"
 #include "Snow/Math/Mat4.h"
+#include "Snow/Math/Random.h"
 
 #include "Snow/Project/Project.h"
 #include "Snow/Project/ProjectSerializer.h"
