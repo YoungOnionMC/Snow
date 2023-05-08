@@ -46,7 +46,7 @@ void RayTracingLayer::OnRender(RayCamera& camera) {
     for (int y = 0; y < m_OutputImage->GetHeight(); y++) {
         for (int x = 0; x < m_OutputImage->GetWidth(); x++) {
             ray.Direction = camera.getRayDirections()[x + y * m_OutputImage->GetWidth()];
-            glm::vec4 color = TraceRay(ray);
+            glm::vec4 color = TraceRay(m_Spheres, ray);
             color = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f));
             m_ImageData[x + y * m_OutputImage->GetWidth()] = ConvertVec4ToUInt(color);
         }
@@ -55,34 +55,50 @@ void RayTracingLayer::OnRender(RayCamera& camera) {
     m_OutputImage->SetData(m_ImageData.data());
 }
 
-glm::vec4 RayTracingLayer::TraceRay(Math::Ray ray) {
-    float radius = 0.5f;
+glm::vec4 RayTracingLayer::TraceRay(std::vector<Sphere>& spheres, Math::Ray ray) {
 
-    float a = glm::dot(ray.Direction, ray.Direction);
-
-    float b = 2.0f * glm::dot(ray.Origin, ray.Direction);
-
-    float c = glm::dot(ray.Origin, ray.Origin) - radius * radius;
-
-    float disc = b * b - 4.0f * a * c;
-
-    if (disc < 0.0f)
+    if (spheres.size() == 0)
         return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    float t0 = (-b + glm::sqrt(disc)) / (2.0f * a);
-    float t1 = (-b - glm::sqrt(disc)) / (2.0f * a);
+    const Sphere* closestSphere = nullptr;
+    float hitDistance = std::numeric_limits<float>::max();
+    
+    for (const Sphere& sphere : spheres) {
+        glm::vec3 origin = ray.Origin - sphere.Pos;
 
-    glm::vec3 hit0 = ray.Origin + ray.Direction * t0;
-    glm::vec3 hit1 = ray.Origin + ray.Direction * t1;
+        float a = glm::dot(ray.Direction, ray.Direction);
+        float b = 2.0f * glm::dot(origin, ray.Direction);
+        float c = glm::dot(origin, origin) - sphere.radius * sphere.radius;
 
-    glm::vec3 normalized = glm::normalize(hit1);
+        float discriminant = b * b - 4.0f * a * c;
+
+        if (discriminant < 0.0f)
+            continue;
+
+        //float t0 = (-b + glm::sqrt(discriminant)) / (2.0f * a);
+        float closestT = (-b - glm::sqrt(discriminant)) / (2.0f * a);
+        if (closestT < hitDistance) {
+            hitDistance = closestT;
+            closestSphere = &sphere;
+        }
+    }
+
+    if(closestSphere == nullptr)
+        return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        //glm::vec3 hit0 = ray.Origin + ray.Direction * t0;
+    glm::vec3 origin = ray.Origin - closestSphere->Pos;
+    glm::vec3 hit1 = origin + ray.Direction * hitDistance;
+
+    glm::vec3 normal = glm::normalize(hit1);
 
     glm::vec3 lightDir = glm::normalize(glm::vec3(1, -1, -1));
 
-    float dot = glm::max(glm::dot(normalized, -lightDir), 0.0f);
+    float dot = glm::max(glm::dot(normal, -lightDir), 0.0f);
 
-    glm::vec3 sphereColor = glm::vec3(0.2f, 0.6f, 0.7f);
+    glm::vec3 sphereColor = closestSphere->Color;
     sphereColor *= dot;
+    
 
     return glm::vec4(sphereColor, 1.0f);
 }
@@ -173,5 +189,20 @@ void RayTracingLayer::OnImGuiRender() {
         ImGui::End();
     }
     ImGui::PopStyleVar();
+    ImGui::End();
+
+    ImGui::Begin("Scene");
+    for (size_t i = 0; i < m_Spheres.size(); i++) {
+        ImGui::PushID(i);
+
+        Sphere& sphere = m_Spheres[i];
+
+        ImGui::DragFloat3("Position", glm::value_ptr(sphere.Pos), 0.1f);
+        ImGui::DragFloat("Radius", &sphere.radius, 0.1f);
+        ImGui::ColorEdit3("Albedo", glm::value_ptr(sphere.Color));
+        ImGui::Separator();
+
+        ImGui::PopID();
+    }
     ImGui::End();
 }
