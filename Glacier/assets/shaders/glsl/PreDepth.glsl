@@ -18,13 +18,10 @@ layout(push_constant) uniform Transform {
     mat4 Transform;
 } u_Renderer;
 
-layout(location = 0) out float LinearDepth;
-
 void main() {
     vec4 worldPosition = u_Renderer.Transform * vec4(a_Position, 1.0);
 
     vec4 viewPosition = u_ViewMatrix * worldPosition;
-    LinearDepth = -viewPosition.z;
     gl_Position = u_ViewProjMatrix * worldPosition;
 
 }
@@ -32,9 +29,5 @@ void main() {
 #type pixel
 #version 450 core
 
-layout(location = 0) out vec4 Color;
-layout(location = 0) in float LinearDepth;
-
 void main() {
-    Color = vec4(LinearDepth, 0.0, 0.0, 1.0);
 }

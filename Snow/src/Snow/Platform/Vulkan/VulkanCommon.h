@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_beta.h>
 
 
 static void VulkanErrorCheck(VkResult result) {

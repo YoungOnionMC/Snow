@@ -4,21 +4,23 @@
 
 #include "Snow/Utils/FileSystem.h"
 
+#include <filesystem>
+
 namespace Snow {
 	struct ProjectConfig {
 		std::string Name;
 
-		std::string AssetDirectory;
-		std::string AssetRegistryPath;
+		std::filesystem::path AssetDirectory;
+		std::filesystem::path AssetRegistryPath;
 
-		std::string ScriptModulePath;
+		std::filesystem::path ScriptModulePath;
 
-		std::string StartScene;
+		std::filesystem::path StartScene;
 
 		bool ReloadAssemblyOnPlay;
 
-		std::string ProjectFileName;
-		std::string ProjectDirectory;
+		std::filesystem::path ProjectFileName;
+		std::filesystem::path ProjectDirectory;
 	};
 
 	class Project : public RefCounted {
@@ -29,7 +31,14 @@ namespace Snow {
 		static Ref<Project> GetActive() { return s_ActiveProject; }
 		static void SetActive(Ref<Project> project);
 
-		const ProjectConfig& GetConfig() const { return m_Config; }
+		const ProjectConfig& GetConfig() const { 
+			SNOW_CORE_ASSERT(s_ActiveProject);
+			return m_Config; 
+		}
+
+		void SetConfig(const ProjectConfig& cfg) {
+			this->m_Config = cfg;
+		}
 
 		static const std::string& GetProjectName() {
 			SNOW_CORE_ASSERT(s_ActiveProject);
@@ -43,17 +52,17 @@ namespace Snow {
 
 		static std::filesystem::path GetAssetDirectory() {
 			SNOW_CORE_ASSERT(s_ActiveProject);
-			return std::filesystem::path(s_ActiveProject->GetConfig().ProjectDirectory) / s_ActiveProject->GetConfig().AssetDirectory;
+			return s_ActiveProject->GetConfig().ProjectDirectory / s_ActiveProject->GetConfig().AssetDirectory;
 		}
 
 		static std::filesystem::path GetAssetRegistryPath() {
 			SNOW_CORE_ASSERT(s_ActiveProject);
-			return std::filesystem::path(s_ActiveProject->GetConfig().ProjectDirectory) / s_ActiveProject->GetConfig().AssetRegistryPath;
+			return s_ActiveProject->GetConfig().ProjectDirectory / s_ActiveProject->GetConfig().AssetRegistryPath;
 		}
 
 		static std::filesystem::path GetScriptModulePath() {
 			SNOW_CORE_ASSERT(s_ActiveProject);
-			return std::filesystem::path(s_ActiveProject->GetConfig().ProjectDirectory) / s_ActiveProject->GetConfig().ScriptModulePath;
+			return s_ActiveProject->GetConfig().ProjectDirectory / s_ActiveProject->GetConfig().ScriptModulePath;
 		}
 
 	private:

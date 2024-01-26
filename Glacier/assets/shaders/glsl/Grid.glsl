@@ -44,7 +44,7 @@ float grid(vec2 st, float res) {
 
 void main() {
 	float x = grid(v_TexCoord * u_Settings.Scale, u_Settings.Size);
-	color = vec4(vec3(0.4), 1.0 * (1.0 - x));
+	color = vec4(vec3(0.4), 0.5) * (1.0 - x);
 	unused0 = vec4(0.0f);
 	unused1 = vec4(0.0f);
 	if(color.a == 0.0)

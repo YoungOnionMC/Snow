@@ -1,0 +1,7 @@
+Project:
+  Name: Sandbox
+  AssetDirectory: Assets
+  AssetRegistry: Assets/AssetRegistry.sar
+  ScriptModulePath: Assets/Scripts
+  StartScene: ""
+  ReloadAssemblyOnPlay: true

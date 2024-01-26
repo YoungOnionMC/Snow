@@ -3,125 +3,28 @@
 using namespace Snow;
 
 void RayTracingLayer::OnAttach() {
-	
-
-	Render::TextureProperties textureProps;
-	textureProps.SamplerFilter = TextureFilter::Linear;
+    //m_Camera.OnUpdate(ts);
+    m_Camera.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+    m_Renderer.OnRender(m_Scene, m_Camera);
+    //m_Renderer.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+	////Render::TextureProperties textureProps;
+	//textureProps.SamplerFilter = TextureFilter::Linear;
 }
 
 void RayTracingLayer::OnDetach() {
 }
 
-static glm::vec4 ConvertUIntToVec4(uint32_t num) {
-    uint8_t a = num >> 24 & 0xff;
-    uint8_t b = num >> 16 & 0xff;
-    uint8_t g = num >>  8 & 0xff;
-    uint8_t r = num       & 0xff;
-    return glm::vec4(r, g, b, a);
-}
-
-static uint32_t ConvertVec4ToUInt(glm::vec4 num) {
-    uint8_t r = (uint8_t)(num.r * 255.0f);
-    uint8_t g = (uint8_t)(num.g * 255.0f);
-    uint8_t b = (uint8_t)(num.b * 255.0f);
-    uint8_t a = (uint8_t)(num.a * 255.0f);
-    return (a << 24) | (b << 16) | (g << 8) | (r);
-}
-
-
-
 void RayTracingLayer::OnUpdate(Timestep ts) {
     m_Camera.OnUpdate(ts);
-    OnRender(m_Camera);
-}
-
-void RayTracingLayer::OnRender(RayCamera& camera) {
-    OnResize(m_ViewportSize.x, m_ViewportSize.y);
-    camera.OnResize(m_ViewportSize.x, m_ViewportSize.y);
-
-    Math::Ray ray;
-    ray.Origin = camera.GetPosition();
-    //Buffer imageData = Buffer(m_ViewportSize.x * m_ViewportSize.y * 4);
-
-    for (int y = 0; y < m_OutputImage->GetHeight(); y++) {
-        for (int x = 0; x < m_OutputImage->GetWidth(); x++) {
-            ray.Direction = camera.getRayDirections()[x + y * m_OutputImage->GetWidth()];
-            glm::vec4 color = TraceRay(m_Spheres, ray);
-            color = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f));
-            m_ImageData[x + y * m_OutputImage->GetWidth()] = ConvertVec4ToUInt(color);
-        }
-    }
-
-    m_OutputImage->SetData(m_ImageData.data());
-}
-
-glm::vec4 RayTracingLayer::TraceRay(std::vector<Sphere>& spheres, Math::Ray ray) {
-
-    if (spheres.size() == 0)
-        return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-    const Sphere* closestSphere = nullptr;
-    float hitDistance = std::numeric_limits<float>::max();
-    
-    for (const Sphere& sphere : spheres) {
-        glm::vec3 origin = ray.Origin - sphere.Pos;
-
-        float a = glm::dot(ray.Direction, ray.Direction);
-        float b = 2.0f * glm::dot(origin, ray.Direction);
-        float c = glm::dot(origin, origin) - sphere.radius * sphere.radius;
-
-        float discriminant = b * b - 4.0f * a * c;
-
-        if (discriminant < 0.0f)
-            continue;
-
-        //float t0 = (-b + glm::sqrt(discriminant)) / (2.0f * a);
-        float closestT = (-b - glm::sqrt(discriminant)) / (2.0f * a);
-        if (closestT < hitDistance) {
-            hitDistance = closestT;
-            closestSphere = &sphere;
-        }
-    }
-
-    if(closestSphere == nullptr)
-        return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-        //glm::vec3 hit0 = ray.Origin + ray.Direction * t0;
-    glm::vec3 origin = ray.Origin - closestSphere->Pos;
-    glm::vec3 hit1 = origin + ray.Direction * hitDistance;
-
-    glm::vec3 normal = glm::normalize(hit1);
-
-    glm::vec3 lightDir = glm::normalize(glm::vec3(1, -1, -1));
-
-    float dot = glm::max(glm::dot(normal, -lightDir), 0.0f);
-
-    glm::vec3 sphereColor = closestSphere->Color;
-    sphereColor *= dot;
-    
-
-    return glm::vec4(sphereColor, 1.0f);
+    m_Renderer.OnRender(m_Scene, m_Camera);
 }
 
 void RayTracingLayer::OnResize(uint32_t width, uint32_t height) {
-    
-    if (m_OutputImage) {
- 
+    m_Camera.OnResize(width, height);
+    m_Renderer.OnResize(width, height);
+}
 
-        m_OutputImage->Resize(width, height);
-        //m_OutputImage->Invalidate();
-    }
-    else {
-        Render::ImageSpecification imageSpec;
-        imageSpec.Format = ImageFormat::RGBA;
-        imageSpec.Width = width, imageSpec.Height = height;
-        m_OutputImage = Render::Image2D::Create(imageSpec);
-        m_OutputImage->Invalidate();
-    }
-
-    
-    m_ImageData.resize(width * height);
-    //SNOW_CORE_TRACE(m_ImageData.size());
+void RayTracingLayer::OnEvent(Core::Event::Event& e) {
 }
 
 void RayTracingLayer::OnImGuiRender() {
@@ -182,8 +85,10 @@ void RayTracingLayer::OnImGuiRender() {
 
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-        
-        UI::Image(m_OutputImage, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+        OnResize(m_ViewportSize.x, m_ViewportSize.y);
+        auto image = m_Renderer.GetOutputImage();
+        //if(image)
+        UI::Image(image, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 
         ImGui::End();
@@ -192,10 +97,11 @@ void RayTracingLayer::OnImGuiRender() {
     ImGui::End();
 
     ImGui::Begin("Scene");
-    for (size_t i = 0; i < m_Spheres.size(); i++) {
+    ImGui::DragInt("Bounces", &m_Renderer.GetBounces(), 1.0f, 1, 10);
+    for (size_t i = 0; i < m_Scene.Spheres.size(); i++) {
         ImGui::PushID(i);
 
-        Sphere& sphere = m_Spheres[i];
+        RayRenderer::Sphere& sphere = m_Scene.Spheres[i];
 
         ImGui::DragFloat3("Position", glm::value_ptr(sphere.Pos), 0.1f);
         ImGui::DragFloat("Radius", &sphere.radius, 0.1f);

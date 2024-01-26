@@ -3,7 +3,7 @@
 
 #include "Snow/Platform/Vulkan/VulkanContext.h"
 
-#include "Snow/Platform/Vulkan/VulkanImage.h"
+//#include "Snow/Platform/Vulkan/VulkanImage.h"
 
 namespace Snow {
 
@@ -25,19 +25,20 @@ namespace Snow {
 			for (auto& attachmentSpec : m_Specification.AttachmentList.Attachments) {
 				if (m_Specification.ExistingImage && m_Specification.ExistingImage->GetSpecification().Layers > 1) {
 					//SNOW_CORE_ASSERT(!Render::Utils::IsDepthFormat(attachmentSpec.Format), "Only supported for color attachments");
-					if (Render::Utils::IsDepthFormat(attachmentSpec.Format))
+					if (ImageUtils::IsDepthFormat(attachmentSpec.Format))
 						m_DepthAttachmentImage = m_Specification.ExistingImage;
 					else
 						m_ColorAttachmentImages.emplace_back(m_Specification.ExistingImage);
 				}
 				else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end()) {
-					if (!Render::Utils::IsDepthFormat(attachmentSpec.Format))
+					if (!ImageUtils::IsDepthFormat(attachmentSpec.Format))
 						m_ColorAttachmentImages.emplace_back();
 				}
-				else if (Render::Utils::IsDepthFormat(attachmentSpec.Format)) {
+				else if (ImageUtils::IsDepthFormat(attachmentSpec.Format)) {
 					Render::ImageSpecification imageSpec;
 					imageSpec.Format = attachmentSpec.Format;
 					imageSpec.Usage = Render::ImageUsage::Attachment;
+					imageSpec.Transfer = m_Specification.Transfer;
 					imageSpec.Width = m_Width;
 					imageSpec.Height = m_Height;
 					imageSpec.DebugName = fmt::format("{0}-DepthAttachment{1}", m_Specification.DebugName.empty() ? "Unnamed FB" : m_Specification.DebugName, attachmentIndex);
@@ -47,6 +48,7 @@ namespace Snow {
 					Render::ImageSpecification imageSpec;
 					imageSpec.Format = attachmentSpec.Format;
 					imageSpec.Usage = Render::ImageUsage::Attachment;
+					imageSpec.Transfer = m_Specification.Transfer;
 					imageSpec.Width = m_Width;
 					imageSpec.Height = m_Height;
 					imageSpec.DebugName = fmt::format("{0}-ColorAttachment{1}", m_Specification.DebugName.empty() ? "Unnamed FB" : m_Specification.DebugName, attachmentIndex);
@@ -131,7 +133,7 @@ namespace Snow {
 
 		uint32_t attachmentIndex = 0;
 		for (auto attachmentSpec : m_Specification.AttachmentList.Attachments) {
-			if (Render::Utils::IsDepthFormat(attachmentSpec.Format)) {
+			if (ImageUtils::IsDepthFormat(attachmentSpec.Format)) {
 				if (m_Specification.ExistingImage) {
 					m_DepthAttachmentImage = m_Specification.ExistingImage;
 				}
@@ -141,7 +143,7 @@ namespace Snow {
 				}
 				else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end()) {
 					Ref<Render::Image2D> existingImage = m_Specification.ExistingImages.at(attachmentIndex);
-					SNOW_CORE_ASSERT(Render::Utils::IsDepthFormat(existingImage->GetSpecification().Format), "Trying to attach non-depth image as depth attachment");
+					SNOW_CORE_ASSERT(ImageUtils::IsDepthFormat(existingImage->GetSpecification().Format), "Trying to attach non-depth image as depth attachment");
 					m_DepthAttachmentImage = existingImage;
 				}
 				else {
@@ -154,7 +156,7 @@ namespace Snow {
 
 				VkAttachmentDescription& attachmentDesc = attachmentDescriptions.emplace_back();
 				attachmentDesc.flags = 0;
-				attachmentDesc.format = Render::Utils::GetVulkanFormat(attachmentSpec.Format);
+				attachmentDesc.format = Utils::GetVulkanFormat(attachmentSpec.Format);
 				attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
 				attachmentDesc.loadOp = m_Specification.ClearDepthOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
 				attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -183,7 +185,7 @@ namespace Snow {
 				}
 				else if (m_Specification.ExistingImages.find(attachmentIndex) != m_Specification.ExistingImages.end()) {
 					Ref<Render::Image2D> existingImage = m_Specification.ExistingImages[attachmentIndex];
-					SNOW_CORE_ASSERT(!Render::Utils::IsDepthFormat(existingImage->GetSpecification().Format), "Trying to attach depth image as color attachment");
+					SNOW_CORE_ASSERT(!ImageUtils::IsDepthFormat(existingImage->GetSpecification().Format), "Trying to attach depth image as color attachment");
 					colorAttachment = existingImage.As<VulkanImage2D>();
 					m_ColorAttachmentImages[attachmentIndex] = colorAttachment;
 				}
@@ -216,7 +218,7 @@ namespace Snow {
 
 				VkAttachmentDescription& attachmentDesc = attachmentDescriptions.emplace_back();
 				attachmentDesc.flags = 0;
-				attachmentDesc.format = Render::Utils::GetVulkanFormat(attachmentSpec.Format);
+				attachmentDesc.format = Utils::GetVulkanFormat(attachmentSpec.Format);
 				attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
 				attachmentDesc.loadOp = m_Specification.ClearColorOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
 				attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;

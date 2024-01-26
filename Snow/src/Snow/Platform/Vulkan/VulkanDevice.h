@@ -56,7 +56,9 @@ namespace Snow {
 
 		VkPhysicalDevice m_VulkanPhysicalDevice;
 		VkPhysicalDeviceProperties m_VulkanPhysicalDeviceProperties;
+		VkPhysicalDeviceProperties2 m_VulkanPhysicalDeviceProperties2;
 		VkPhysicalDeviceFeatures m_VulkanPhysicalDeviceFeatures;
+		VkPhysicalDeviceFeatures2 m_VulkanPhysicalDeviceFeatures2;
 		VkPhysicalDeviceMemoryProperties m_VulkanPhysicalDeviceMemoryProperties;
 		std::vector<VkQueueFamilyProperties> m_QueueFamiliesProperties;
 		std::unordered_set<std::string> m_ExtensionProperties;

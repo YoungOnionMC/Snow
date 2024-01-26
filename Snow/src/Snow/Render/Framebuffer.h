@@ -46,6 +46,8 @@ namespace Snow {
 			FramebufferAttachmentSpecification AttachmentList;
 			uint32_t Samples = 1;
 
+			bool Transfer = false;
+
 			bool NoResize = false;
 
 			bool Blend = true;

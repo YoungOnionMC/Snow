@@ -9,18 +9,20 @@ namespace Snow {
 		m_Project = project;
 	}
 
-	void ProjectSerializer::Serialize(const std::string& filePath) {
+	void ProjectSerializer::Serialize(const std::filesystem::path& filePath) {
+		const auto& config = m_Project->GetConfig();
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Project" << YAML::Value;
 		{
 			out << YAML::BeginMap;
-			out << YAML::Key << "Name" << YAML::Value << m_Project->m_Config.Name;
-			out << YAML::Key << "AssetDirectory" << YAML::Value << m_Project->m_Config.AssetDirectory;
-			out << YAML::Key << "AssetRegistry" << YAML::Value << m_Project->m_Config.AssetRegistryPath;
-			out << YAML::Key << "ScriptModulePath" << YAML::Value << m_Project->m_Config.ScriptModulePath;
-			out << YAML::Key << "StartScene" << YAML::Value << m_Project->m_Config.StartScene;
-			out << YAML::Key << "ReloadAssemblyOnPlay" << YAML::Value << m_Project->m_Config.ReloadAssemblyOnPlay;
+			out << YAML::Key << "Name" << YAML::Value << config.Name;
+			out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
+			out << YAML::Key << "AssetRegistry" << YAML::Value << config.AssetRegistryPath.string();
+			out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();
+			out << YAML::Key << "StartScene" << YAML::Value << config.StartScene.string();
+			out << YAML::Key << "ReloadAssemblyOnPlay" << YAML::Value << config.ReloadAssemblyOnPlay;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
@@ -29,7 +31,7 @@ namespace Snow {
 		fout << out.c_str();
 	}
 
-	bool ProjectSerializer::Deserialize(const std::string& filePath) {
+	bool ProjectSerializer::Deserialize(const std::filesystem::path& filePath) {
 		std::ifstream stream(filePath);
 		SNOW_CORE_ASSERT(stream);
 
@@ -40,21 +42,21 @@ namespace Snow {
 		if (!data["Project"])
 			return false;
 
-		YAML::Node baseNode = data["Project"];
-		if (!baseNode["Name"])
+		YAML::Node projectNode = data["Project"];
+		if (!projectNode["Name"])
 			return false;
 
 		auto& config = m_Project->m_Config;
-		config.Name = baseNode["Name"].as<std::string>();
+		config.Name = projectNode["Name"].as<std::string>();
 
-		config.AssetDirectory = baseNode["AssetDirectory"].as<std::string>();
-		config.AssetRegistryPath = baseNode["AssetRegistry"].as<std::string>();
+		config.AssetDirectory = projectNode["AssetDirectory"].as<std::string>();
+		config.AssetRegistryPath = projectNode["AssetRegistry"].as<std::string>();
 
-		config.ScriptModulePath = baseNode["ScriptModulePath"].as<std::string>();
+		config.ScriptModulePath = projectNode["ScriptModulePath"].as<std::string>();
 
-		config.StartScene = baseNode["StartScene"] ? baseNode["StartScene"].as<std::string>() : "";
+		config.StartScene = projectNode["StartScene"] ? projectNode["StartScene"].as<std::string>() : "";
 
-		config.ReloadAssemblyOnPlay = baseNode["ReloadAssemblyOnPlay"] ? baseNode["ReloadAssemblyOnPlay"].as<bool>() : true;
+		config.ReloadAssemblyOnPlay = projectNode["ReloadAssemblyOnPlay"] ? projectNode["ReloadAssemblyOnPlay"].as<bool>() : true;
 
 		std::filesystem::path path = filePath;
 		config.ProjectFileName = path.filename().string();

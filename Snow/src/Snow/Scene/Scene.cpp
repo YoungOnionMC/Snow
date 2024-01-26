@@ -370,12 +370,14 @@ namespace Snow {
             auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
             for (auto entity : group) {
                 auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-                auto texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
+                //auto texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
 
-                if (!sprite.Texture)
-                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Color);
-                else
+                if (AssetManager::IsAssetHandleValid(sprite.Texture)) {
+                    Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
                     m_SceneRenderer2D->DrawQuad(transform.GetTransform(), texture, sprite.Color);
+                }
+                else
+                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Color);
             }
 
             m_SceneRenderer2D->EndScene();
@@ -461,42 +463,6 @@ namespace Snow {
                         renderer->SubmitMesh(mesh, meshComp.MaterialTable, transform);
                     }
                 }
-                    //auto material = group.get<BRDFMaterialComponent>(entity);
-                    /*
-                    if (material.MaterialInstance) {
-                        auto& matInstance = material.MaterialInstance;
-                        matInstance->Set("AlbedoColor", material.AlbedoInput.AlbedoColor);
-                        matInstance->Set("Metalness", material.MetalnessInput.Value);
-                        matInstance->Set("Roughness", material.RoughnessInput.Value);
-
-                        matInstance->Set("RadiancePrefilter", 0.0f);
-
-                        matInstance->Set("AlbedoTexToggle", material.AlbedoInput.UseTexture ? 1.0f : 0.0f);
-                        if (material.AlbedoInput.UseTexture)
-                            matInstance->Set("u_AlbedoTexture", material.AlbedoInput.AlbedoTexture);
-
-                        matInstance->Set("NormalTexToggle", material.NormalInput.UseTexture ? 1.0f : 0.0f);
-                        if (material.NormalInput.UseTexture)
-                            matInstance->Set("u_NormalTexture", material.NormalInput.NormalTexture);
-
-                        matInstance->Set("MetalnessTexToggle", material.MetalnessInput.UseTexture ? 1.0f : 0.0f);
-                        if (material.MetalnessInput.UseTexture)
-                            matInstance->Set("u_MetalnessTexture", material.MetalnessInput.MetalnessTexture);
-
-                        matInstance->Set("RoughnessTexToggle", material.RoughnessInput.UseTexture ? 1.0f : 0.0f);
-                        if (material.RoughnessInput.UseTexture)
-                            matInstance->Set("u_RoughnessTexture", material.RoughnessInput.RoughnessTexture);
-
-                        
-                        matInstance->Set("u_EnvRadianceTexture", m_EnvMap);
-                        matInstance->Set("u_EnvIrradianceTexture", m_EnvMap);
-                        matInstance->Set("u_BRDFLUTTexture", m_BRDFLUT);
-                        
-                    }
-                    */
-
-                    //Render::SceneRenderer::SubmitMesh(mesh.Mesh, transform.GetTransform(), material.MaterialInstance);
-                
             }
         }
         renderer->EndScene();
@@ -507,24 +473,25 @@ namespace Snow {
             auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
             for (auto entity : group) {
                 auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-                auto texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
-
-                if (!sprite.Texture)
-                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Color);
-                else
+                if (AssetManager::IsAssetHandleValid(sprite.Texture)) {
+                    Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
                     m_SceneRenderer2D->DrawQuad(transform.GetTransform(), texture, sprite.Color);
+                }
+                else
+                    m_SceneRenderer2D->DrawQuad(transform.GetTransform(), sprite.Color);
             }
 
             m_SceneRenderer2D->EndScene();
         }
-        //Render::SceneRenderer::EndScene();
         
         
     }
 
-    void Scene::OnViewportResize(uint32_t width, uint32_t height) {
+    void Scene::OnViewportResize(Ref<Render::SceneRenderer> renderer, uint32_t width, uint32_t height) {
         m_ViewportWidth = width;
         m_ViewportHeight = height;
+
+        
 
         auto view = m_Registry.view<CameraComponent>();
         for (auto entity : view) {
@@ -533,7 +500,7 @@ namespace Snow {
                 cameraComp.Camera.SetViewportSize(width, height);
         }
 
-        //Render::SceneRenderer::OnViewportResize(width, height);
+        renderer->OnViewportResize(width, height);
     }
 
     template<typename... Component>

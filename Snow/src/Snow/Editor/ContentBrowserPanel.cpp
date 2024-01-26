@@ -418,6 +418,8 @@ namespace Snow {
 						UI::ScopedStyle spacing(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 						UI::ScopedColorStack itemBG(ImGuiCol_Header, IM_COL32_DISABLE, ImGuiCol_HeaderActive, IM_COL32_DISABLE);
 
+						//if (m_BaseDirectory == nullptr)
+						//	return;
 						for (auto& [handle, directory] : m_BaseDirectory->SubDirectories)
 							DrawDirectoryHierarchy(directory);
 					}

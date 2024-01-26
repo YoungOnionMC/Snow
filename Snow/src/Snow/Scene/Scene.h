@@ -72,7 +72,7 @@ namespace Snow {
         void OnRenderRuntime(Ref<Render::SceneRenderer> renderer, Timestep ts);
         void OnRenderEditor(Ref<Render::SceneRenderer> renderer, Timestep ts, Editor::EditorCamera& editorCamera);
 
-        void OnViewportResize(uint32_t width, uint32_t height);
+        void OnViewportResize(Ref<Render::SceneRenderer> renderer, uint32_t width, uint32_t height);
 
         Entity FindEntityByTag(const std::string& tag);
         static Ref<Scene> CopyScene(Ref<Scene> scene);

@@ -8,6 +8,7 @@ namespace Snow {
 
 	bool VulkanDevice::IsDeviceSuitable(VkPhysicalDevice device) {
 		vkGetPhysicalDeviceProperties(device, &m_VulkanPhysicalDeviceProperties);
+		
 		vkGetPhysicalDeviceFeatures(device, &m_VulkanPhysicalDeviceFeatures);
 		vkGetPhysicalDeviceMemoryProperties(device, &m_VulkanPhysicalDeviceMemoryProperties);
 
@@ -47,6 +48,12 @@ namespace Snow {
 				}
 			}
 		}
+
+		
+
+		//m_VulkanPhysicalDeviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		//vkGetPhysicalDeviceProperties2(m_VulkanPhysicalDevice, &m_VulkanPhysicalDeviceProperties2);
+		//IsExtensionSupported(VK_KHR_RAY_TRACING_EXTENSION_NAME);
 	}
 
 	VulkanDevice::QueueFamilyIndices VulkanDevice::GetQueueFamilyIndices(int flags) {
@@ -159,7 +166,7 @@ namespace Snow {
 		deviceCreateInfo.pQueueCreateInfos = m_QueueCreateInfos.data();
 		deviceCreateInfo.pEnabledFeatures = &m_VulkanPhysicalDeviceFeatures;
 
-		VkPhysicalDeviceFeatures2 physicalDeviceFeatures2 = {};
+		
 		if (IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
 			deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 		}
@@ -217,6 +224,13 @@ namespace Snow {
 
 		vkGetDeviceQueue(m_VulkanDevice, m_QueueFamilyIndices.Graphics, 0, &m_Queue);
 		vkGetDeviceQueue(m_VulkanDevice, m_QueueFamilyIndices.Compute, 0, &m_ComputeQueue);
+
+		VkDebugUtilsObjectNameInfoEXT debugObjectName = {};
+		debugObjectName.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+
+		auto pfn_vkSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(VulkanContext::GetVulkanInstance(), "vkSetDebugUtilsObjectNameEXT");
+		pfn_vkSetDebugUtilsObjectNameEXT(m_VulkanDevice, &debugObjectName);
+		//SNOW_CORE_ASSERT(vkCreateDebugReportCallbackEXT != NULL, "Creation of vulkan debug extension callback failed");
 	}
 
 	VkCommandBuffer VulkanDevice::GetCommandBuffer(bool begin, bool compute) {

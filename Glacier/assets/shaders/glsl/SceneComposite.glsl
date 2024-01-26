@@ -42,7 +42,7 @@ void main() {
 	vec3 color = texture(u_Texture, Input.TexCoord).rgb;
 	color *= u_Uniforms.Exposure;
 
-	color = GammaCorrect(color.rgb, gamma);
+	//color = GammaCorrect(color.rgb, gamma);
 
 	o_Color = vec4(color, 1.0);//color; //;
 }

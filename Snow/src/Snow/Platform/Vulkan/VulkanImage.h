@@ -6,8 +6,7 @@
 #include "Snow/Platform/Vulkan/VulkanCommon.h"
 
 #include "Snow/Platform/Vulkan/VulkanAllocator.h"
-
-#include "VulkanUtils.h"
+#include "Snow/Platform/Vulkan/VulkanContext.h"
 
 namespace Snow {
 	struct VulkanImageInfo {
@@ -29,8 +28,10 @@ namespace Snow {
 		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
 		virtual uint32_t GetHeight() const override { return m_Specification.Height; }
 
-		virtual void SetData(const void* data) override;
-		void RTSetData(const void* data);
+		virtual void SetData(Buffer& data) override;
+		void RTSetData(Buffer& data);
+
+		void CopyToHostBuffer(Buffer& data);
 		virtual bool GetImageData() override { return m_ImageData; }
 
 		void Resize(uint32_t width, uint32_t height) override;
@@ -77,7 +78,46 @@ namespace Snow {
 		VkBuffer m_StagingBuffer = nullptr;
 		VmaAllocation m_StagingBufferAllocation;
 
+		VkImageLayout m_CurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
 		std::vector<VkImageView> m_PerLayerImageViews;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
 	};
+
+	namespace Utils {
+		inline VkFormat GetVulkanFormat(Render::ImageFormat format) {
+			switch (format) {
+			case Render::ImageFormat::Red:	return VkFormat::VK_FORMAT_R8_UNORM;
+			case Render::ImageFormat::RG:	return VkFormat::VK_FORMAT_R8G8_UNORM;
+			case Render::ImageFormat::RGB:	return VkFormat::VK_FORMAT_R8G8B8_UNORM;
+			case Render::ImageFormat::SRGB:	return VkFormat::VK_FORMAT_R8G8B8A8_SRGB;
+			case Render::ImageFormat::RGBA:	return VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
+			case Render::ImageFormat::RGBA16F:	return VkFormat::VK_FORMAT_R16G16B16A16_SFLOAT;
+			case Render::ImageFormat::RGBA32F:	return VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
+			case Render::ImageFormat::Depth32F:	return VkFormat::VK_FORMAT_D32_SFLOAT;
+				//case ImageFormat::DepthStencil:	return VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
+			case Render::ImageFormat::Depth24Stencil8:	return Snow::VulkanContext::GetCurrentDevice()->GetDepthFormat();
+			}
+			SNOW_CORE_ASSERT(false, "Format not defined");
+			return VkFormat::VK_FORMAT_UNDEFINED;
+		}
+
+		inline VkImageUsageFlags GetVulkanImageUsage(Render::ImageUsage usage, Render::ImageFormat format) {
+			VkImageUsageFlags result = VK_IMAGE_USAGE_SAMPLED_BIT;
+			switch (usage) {
+			case Render::ImageUsage::Attachment:
+				if (ImageUtils::IsDepthFormat(format))
+					result |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+				else
+					result |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+				break;
+				break;
+			case Render::ImageUsage::Texture:	result |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+				break;
+			case Render::ImageUsage::Storage:	result |= VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+				break;
+			}
+			return result;
+		}
+	}
 }

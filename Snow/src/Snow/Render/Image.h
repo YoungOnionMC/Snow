@@ -59,7 +59,7 @@ namespace Snow {
 		struct ImageSpecification {
 			ImageFormat Format = ImageFormat::RGBA;
 			ImageUsage Usage = ImageUsage::Texture;
-
+			bool Transfer = false;
 			uint32_t Width = 1;
 			uint32_t Height = 1;
 			uint32_t Mips = 1;
@@ -94,38 +94,40 @@ namespace Snow {
 			static Ref<Image2D> Create(ImageSpecification specification, Buffer buffer);
 			static Ref<Image2D> Create(ImageSpecification specification, const void* data = nullptr);
 
-			virtual void SetData(const void* data) = 0;
+			virtual void SetData(Buffer& data) = 0;
 			virtual bool GetImageData() = 0;
 
 			virtual void Resize(uint32_t width, uint32_t height) = 0;
 		};
 
-		namespace Utils {
-			inline uint32_t GetFormatSize(ImageFormat format) {
-				switch (format) {
-				case ImageFormat::Red:	return 1;
-				case ImageFormat::RG:	return 2;
-				case ImageFormat::RGB:	
-				case ImageFormat::SRGB:	return 3;
-				case ImageFormat::RGBA:	return 4;
-				case ImageFormat::RGBA16F:	return 2 * 4;
-				case ImageFormat::RGBA32F:	return 4 * 4;
-				}
-			}
+		
+	}
 
-			inline uint32_t CalculateMipCount(uint32_t width, uint32_t height) {
-				return (uint32_t)std::floor(std::log2(glm::min(width, height))) + 1;
+	namespace ImageUtils {
+		inline uint32_t GetFormatSize(Render::ImageFormat format) {
+			switch (format) {
+			case Render::ImageFormat::Red:	return 1;
+			case Render::ImageFormat::RG:	return 2;
+			case Render::ImageFormat::RGB:
+			case Render::ImageFormat::SRGB:	return 3;
+			case Render::ImageFormat::RGBA:	return 4;
+			case Render::ImageFormat::RGBA16F:	return 2 * 4;
+			case Render::ImageFormat::RGBA32F:	return 4 * 4;
 			}
+		}
 
-			inline uint32_t GetImageMemorySize(ImageFormat format, uint32_t width, uint32_t height) {
-				return width * height * GetFormatSize(format);
-			}
+		inline uint32_t CalculateMipCount(uint32_t width, uint32_t height) {
+			return (uint32_t)std::floor(std::log2(glm::min(width, height))) + 1;
+		}
 
-			inline bool IsDepthFormat(ImageFormat format) {
-				if (format == ImageFormat::Depth24Stencil8 || format == ImageFormat::Depth32F)
-					return true;
-				return false;
-			}
+		inline uint32_t GetImageMemorySize(Render::ImageFormat format, uint32_t width, uint32_t height) {
+			return width * height * GetFormatSize(format);
+		}
+
+		inline bool IsDepthFormat(Render::ImageFormat format) {
+			if (format == Render::ImageFormat::Depth24Stencil8 || format == Render::ImageFormat::Depth32F)
+				return true;
+			return false;
 		}
 	}
 }

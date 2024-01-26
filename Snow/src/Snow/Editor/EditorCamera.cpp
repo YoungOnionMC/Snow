@@ -20,7 +20,7 @@ namespace Snow {
 			Camera(projMatrix) {
 			m_FocalPoint = glm::vec3(0.0f);
 
-			glm::vec3 position = { 0, 0, -10 };
+			glm::vec3 position = { -5, 5, 5 };
 			m_Distance = glm::distance(position, m_FocalPoint);
 
 			m_Yaw = 3.0f * (float)M_PI / 4.0f;
@@ -128,6 +128,10 @@ namespace Snow {
 
 					m_WorldRotation = glm::rotate(glm::normalize(glm::cross(glm::angleAxis(-m_PitchDelta, m_RightDirection),
 						glm::angleAxis(-m_YawDelta, glm::vec3{ 0.0f, yawSign, 0.0f }))), m_WorldRotation);
+
+					const float dist = glm::distance(m_FocalPoint, m_Position);
+					m_FocalPoint = m_Position + GetForwardDirection() * dist;
+					m_Distance = dist;
 				}
 				else if (Core::Input::IsKeyPressed(KeyCode::LeftAlt)) {
 					m_CameraMode = CameraMode::ARCBALL;
@@ -144,11 +148,9 @@ namespace Snow {
 						DisableMouse();
 						MouseZoom(delta.y);
 					}
-					else
-						EnableMouse();
+					else EnableMouse();
 				}
-				else
-					EnableMouse();
+				else EnableMouse();
 			}
 			m_InitialMousePos = mouse;
 

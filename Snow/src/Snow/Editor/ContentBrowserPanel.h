@@ -49,7 +49,7 @@ namespace Snow {
 		std::vector<AssetHandle> m_Selections;
 	};
 
-	class ContentBrowserPanel {
+	class ContentBrowserPanel : public RefCounted {
 	public:
 		ContentBrowserPanel() = default;
 		ContentBrowserPanel(Ref<Project> project);

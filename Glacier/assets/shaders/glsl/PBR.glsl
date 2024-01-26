@@ -536,7 +536,7 @@ void main() {
     //Color = vec4(m_Params.Albedo, 1.0);
     Color = vec4(lightContribution + iblContribution, 1.0);
 
-    o_ViewNormals = vec4(m_Params.Normal, 1.0f);
+    Color = vec4(m_Params.Normal, 1.0f);
 
     o_ViewPositions = vec4(Input.ViewPosition, 1.0f);
 

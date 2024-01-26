@@ -107,11 +107,11 @@ namespace Snow {
 	}
 
 	void VulkanTexture2D::Invalidate() {
-		auto device = VulkanContext::GetCurrentDevice();
+		auto vkDevice = VulkanContext::GetCurrentDevice();
 		
 		m_Image->Release();
 
-		uint32_t mipCount = GetMipLevelCount();
+		uint32_t mipCount = m_Properties.GenerateMips ? GetMipLevelCount() : 1;
 
 		Render::ImageSpecification& imageSpec = m_Image->GetSpecification();
 		imageSpec.Format = m_Format;
@@ -127,16 +127,80 @@ namespace Snow {
 		auto& info = image->GetImageInfo();
 
 		if (m_ImageData) {
-			image->RTSetData(m_ImageData.Data);
+			VkCommandBuffer copyCmdBuffer = vkDevice->GetCommandBuffer(true);
+			VulkanAllocator allocator("VulkanImage2D");
+
+			VkDeviceSize size = m_ImageData.Size;
+			//uint64_t bufferSize = m_Specification.Width * m_Specification.Height * ImageUtils::GetFormatSize(m_Specification.Format);
+
+			// create staging buffer
+			VkBufferCreateInfo bufferCI = {};
+			bufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferCI.size = size;
+			bufferCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			bufferCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			VkBuffer stagingBuffer;
+
+			VmaAllocation stagingBufferAllocation = allocator.AllocateBuffer(bufferCI, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
+
+			// copy the data to staging buffer
+			uint8_t* dstData = allocator.MapMemory<uint8_t>(stagingBufferAllocation);
+			SNOW_ASSERT(m_ImageData.Data);
+			memcpy(dstData, m_ImageData.Data, size);
+			allocator.UnmapMemory(stagingBufferAllocation);
+
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = 1;
+			subresourceRange.layerCount = 1;
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+			// Transition the image to transfer target, to copy the buffer data to it
+			Render::Utils::InsertImageMemoryBarrier(copyCmdBuffer, image->GetImageInfo().Image,
+				0, VK_ACCESS_TRANSFER_WRITE_BIT,
+				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				subresourceRange);
+
+			VkBufferImageCopy region = {};
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.layerCount = 1;
+			region.imageExtent.width = m_Width;
+			region.imageExtent.height = m_Height;
+			region.imageExtent.depth = 1;
+			region.bufferOffset = 0;
+
+			vkCmdCopyBufferToImage(copyCmdBuffer, stagingBuffer, image->GetImageInfo().Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+			if (m_Properties.GenerateMips) {
+				Render::Utils::InsertImageMemoryBarrier(copyCmdBuffer, image->GetImageInfo().Image,
+					VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					subresourceRange);
+			}
+			else {
+				Render::Utils::InsertImageMemoryBarrier(copyCmdBuffer, image->GetImageInfo().Image,
+					VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					subresourceRange);
+			}
+			vkDevice->FlushCommandBuffer(copyCmdBuffer);
+
+			allocator.DestroyBuffer(stagingBuffer, stagingBufferAllocation);
 		}
 		else {
-			VkCommandBuffer transitionCommandBuffer = device->GetCommandBuffer(true);
+			VkCommandBuffer transitionCommandBuffer = vkDevice->GetCommandBuffer(true);
 			VkImageSubresourceRange subresourceRange = {};
 			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			subresourceRange.levelCount = GetMipLevelCount();
 			subresourceRange.layerCount = 1;
 			Render::Utils::SetImageLayout(transitionCommandBuffer, info.Image, VK_IMAGE_LAYOUT_UNDEFINED, image->GetImageDescriptor().imageLayout, subresourceRange);
-			device->FlushCommandBuffer(transitionCommandBuffer);
+			vkDevice->FlushCommandBuffer(transitionCommandBuffer);
 		}
 
 		VkSamplerCreateInfo sampler{};
@@ -154,13 +218,14 @@ namespace Snow {
 		sampler.maxAnisotropy = 1.0f;
 		sampler.anisotropyEnable = VK_FALSE;
 		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		VKCheckError(vkCreateSampler(device->GetVulkanDevice(), &sampler, nullptr, &info.Sampler));
+		VKCheckError(vkCreateSampler(vkDevice->GetVulkanDevice(), &sampler, nullptr, &info.Sampler));
+		image->UpdateDescriptor();
 
 		if (!m_Properties.Storage) {
 			VkImageViewCreateInfo view{};
 			view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			view.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			view.format = Render::Utils::GetVulkanFormat(m_Format);
+			view.format = Snow::Utils::GetVulkanFormat(m_Format);
 			view.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
 
 			view.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -169,7 +234,7 @@ namespace Snow {
 			view.subresourceRange.layerCount = 1;
 			view.subresourceRange.levelCount = mipCount;
 			view.image = info.Image;
-			VKCheckError(vkCreateImageView(device->GetVulkanDevice(), &view, nullptr, &info.ImageView));
+			VKCheckError(vkCreateImageView(vkDevice->GetVulkanDevice(), &view, nullptr, &info.ImageView));
 
 			image->UpdateDescriptor();
 		}
@@ -183,7 +248,7 @@ namespace Snow {
 	}
 
 	uint32_t VulkanTexture2D::GetMipLevelCount() const {
-		return Render::Utils::CalculateMipCount(m_Width, m_Height);
+		return Snow::ImageUtils::CalculateMipCount(m_Width, m_Height);
 	}
 
 	std::pair<uint32_t, uint32_t> VulkanTexture2D::GetMipSize(uint32_t mip) const {
@@ -297,7 +362,7 @@ namespace Snow {
 	void VulkanTextureCube::Invalidate() {
 		auto device = VulkanContext::GetCurrentDevice();
 
-		VkFormat format = Render::Utils::GetVulkanFormat(m_Format);
+		VkFormat format = Snow::Utils::GetVulkanFormat(m_Format);
 		uint32_t mipCount = GetMipLevelCount();
 
 		VkMemoryAllocateInfo memAllocInfo{};
@@ -435,7 +500,7 @@ namespace Snow {
 	}
 
 	uint32_t VulkanTextureCube::GetMipLevelCount() const {
-		return Render::Utils::CalculateMipCount(m_Width, m_Height);
+		return Snow::ImageUtils::CalculateMipCount(m_Width, m_Height);
 	}
 
 	std::pair<uint32_t, uint32_t> VulkanTextureCube::GetMipSize(uint32_t mip) const {
@@ -451,7 +516,7 @@ namespace Snow {
 
 	VkImageView VulkanTextureCube::CreateImageViewSingleMip(uint32_t mip) {
 		auto vkDevice = VulkanContext::GetCurrentDevice();
-		VkFormat format = Render::Utils::GetVulkanFormat(m_Format);
+		VkFormat format = Snow::Utils::GetVulkanFormat(m_Format);
 
 		VkImageViewCreateInfo view{};
 		view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

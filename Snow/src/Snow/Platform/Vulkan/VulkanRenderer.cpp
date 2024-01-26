@@ -781,26 +781,46 @@ namespace Snow {
 		imageMemoryBarrier.image = image;
 		imageMemoryBarrier.subresourceRange = subresourceRange;
 
+
+		// source layouts
+		// Source access mask controls actions that have to be finished on the old layout
+		// before it will be transitionsed to the new layout
 		switch (oldImageLayout) {
 		case VK_IMAGE_LAYOUT_UNDEFINED:
+			// Image layout is undifined
+			// only valid as initial layout
+			// no flags required
 			imageMemoryBarrier.srcAccessMask = 0;
 			break;
 		case VK_IMAGE_LAYOUT_PREINITIALIZED:
+			// Image is preinitialized
+			// only valid as initial layout for linear images, preserves memory contents
+			// make sure host writes have been finished
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
 			break;
 		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			// image is a color attachment
+			// make sure any writes to the color buffer have been finished
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			break;
 		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			// image is a depth/stencil attachment
+			// make sure any writes to the depth/stencil buffer have been finished
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 			break;
 		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+			// image is a transfer source
+			// make sure any reads from the image have been finished
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 			break;
 		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+			// image is a transfer destination
+			// make sure any writes to the image have been finished
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 			break;
 		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			// image is read by a shader
+			// mak esure any shader reads from the image have been finished
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 			break;
 		default:

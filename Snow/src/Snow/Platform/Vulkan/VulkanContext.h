@@ -1,3 +1,4 @@
+#pragma once
 #include "Snow/Render/RenderContext.h"
 
 #if defined(SNOW_WINDOW_WIN32)

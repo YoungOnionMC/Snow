@@ -152,14 +152,17 @@ namespace Snow {
 
             uint32_t whiteTextureData = 0xffffffff;
             s_Data->WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
+            s_Data->WhiteTexture->GetImage()->GetSpecification().DebugName = "White Texture";
 
             uint32_t blackTextureData = 0xff000000;
             s_Data->BlackTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &blackTextureData);
+            s_Data->BlackTexture->GetImage()->GetSpecification().DebugName = "Black Texture";
 
             {
                 TextureProperties props;
                 props.SamplerWrap = TextureWrap::Clamp;
                 s_Data->BRDFLutTexture = Texture2D::Create("assets/textures/BRDF_LUT.tga", props);
+                s_Data->BRDFLutTexture->GetImage()->GetSpecification().DebugName = "BRDF LUT";
             }
 
             uint32_t blackCubeTextureData[6] = { 0xffff0000, 0xffffff00, 0xff00ff00, 0xff00ffff, 0xff0000ff, 0xffff00ff };

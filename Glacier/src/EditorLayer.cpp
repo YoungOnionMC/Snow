@@ -27,8 +27,10 @@ namespace Snow {
     static char* s_ProjectFilePathBuffer = new char[MAX_PROJECT_FILE_LEN];
 
     void EditorLayer::OnAttach() {
-        
-        //m_EditorCamera = *(Editor::EditorCamera*)&Render::Camera(glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -1.0f, 1.0f));
+        //m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+        m_EditorCamera = Editor::EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
+        m_RayCamera = RayCamera(45.0f, 0.1f, 1000.0f);
+        m_RayCamera.OnResize(1280.0f, 720.0f);
         Render::TextureProperties textureProps;
         textureProps.SamplerFilter = Render::TextureFilter::Linear;
         m_PlayButtonTex = Render::Texture2D::Create("assets/textures/PlayButton.png", textureProps);
@@ -38,14 +40,37 @@ namespace Snow {
         const std::string firstName = "FirstProject";
         memset(s_ProjectNameBuffer, 0, MAX_PROJECT_NAME_LEN);
         memcpy(s_ProjectNameBuffer, firstName.c_str(), firstName.size());
-        OpenProject("Projects/test/FirstProject.sproj");
+
+
+        //SaveProject("Projects/Sandbox");
+        //CreateProject("Projects/Sandbox");
+        //OpenProject("Projects/test/FirstProject.sproj");
+
+        // TODO(a): if no projects exist, make a fresh new project
+
+        {
+            ProjectConfig proj;
+            proj.Name = "Sandbox";
+            proj.ProjectDirectory = "Projects/Sandbox";
+            proj.AssetDirectory = "Assets";
+            proj.AssetRegistryPath = "Assets/AssetRegistry.sar";
+            proj.ScriptModulePath = "Assets/Scripts";
+            proj.ProjectFileName = "FirstProject.sproj";
+
+            if (!Project::GetActive())
+                CreateNewProjectFromScratch(proj);
+        }
 
         //m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
         //m_CameraEntity.AddComponent<CameraComponent>();
 
         //m_Square1 = m_EditorScene->CreateEntity("Square");
 
+        //m_ContentBrowserPanel = Ref<ContentBrowserPanel>();
+
         m_SceneHierarchyPanel = SceneHierarchyPanel(m_EditorScene);
+
+        m_SceneRenderer = Ref<SceneRenderer>::Create(m_EditorScene);
         m_Renderer2D = Ref<Renderer2D>::Create();
         
         Script::ScriptEngine::SetSceneContext(m_EditorScene);
@@ -116,7 +141,7 @@ namespace Snow {
             if (Render::FramebufferSpecification spec = m_Framebuffer->GetSpecification();
                 m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0 && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y)) {
                 m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-                m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+                
                 m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             }
             */
@@ -184,6 +209,7 @@ namespace Snow {
             Snow::FileSystem::CreateDirectory(filePath);
 
         
+        
         {
             std::ifstream stream(filePath / "Project.sproj");
             //SNOW_CORE_VERIFY(stream.is_open());
@@ -200,6 +226,8 @@ namespace Snow {
 
             std::string newProjectName = std::string(s_ProjectNameBuffer) + ".sproj";
             std::filesystem::rename(filePath / "Project.sproj", filePath / newProjectName);
+
+            
         }
 
         FileSystem::CreateDirectory(filePath / "Assets" / "Materials");
@@ -207,8 +235,13 @@ namespace Snow {
         FileSystem::CreateDirectory(filePath / "Assets" / "Scenes");
         FileSystem::CreateDirectory(filePath / "Assets" / "Scripts" / "Source");
         FileSystem::CreateDirectory(filePath / "Assets" / "Textures");
+        
+        
 
-        OpenProject(filePath.string() + "/" + std::string(s_ProjectNameBuffer) + ".sproj");
+
+        
+        //SaveProject();
+        //OpenProject(filePath.string() + "/" + std::string(s_ProjectNameBuffer) + ".sproj");
     }
 
     void EditorLayer::OpenProject() {
@@ -242,7 +275,7 @@ namespace Snow {
         m_EditorScene = Ref<Scene>::Create();
         m_SceneRenderer = Ref<Render::SceneRenderer>::Create(m_EditorScene, Render::SceneRendererSpecification{ false });
 
-        m_ContentBrowserPanel = CreateScope<ContentBrowserPanel>(project);
+        m_ContentBrowserPanel = Ref<ContentBrowserPanel>(project);
         FileSystem::StartWatching();
 
         m_EditorCamera = Editor::EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
@@ -258,7 +291,7 @@ namespace Snow {
 
         auto& project = Project::GetActive();
         ProjectSerializer serializer(project);
-        serializer.Serialize(project->GetConfig().ProjectDirectory + "/" + project->GetConfig().ProjectFileName);
+        serializer.Serialize(project->GetConfig().ProjectDirectory / project->GetConfig().ProjectFileName);
     }
 
     void EditorLayer::CloseProject(bool unload) {
@@ -277,6 +310,22 @@ namespace Snow {
             Project::SetActive(nullptr);
     }
 
+    void EditorLayer::CreateNewProjectFromScratch(const ProjectConfig& cfg) {
+        Ref<Project> project = Ref<Project>::Create();
+        project->SetConfig(cfg);
+        Project::SetActive(project);
+
+        NewScene();
+
+        FileSystem::StartWatching();
+
+        m_EditorCamera = Editor::EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
+        m_ContentBrowserPanel = Ref<ContentBrowserPanel>::Create(Project::GetActive());
+
+        memset(s_ProjectNameBuffer, 0, MAX_PROJECT_NAME_LEN);
+        memset(s_ProjectFilePathBuffer, 0, MAX_PROJECT_FILE_LEN);
+    }
+
     void EditorLayer::NewScene() {
 
         m_EditorScene = Ref<Scene>::Create("Empty Scene");
@@ -285,7 +334,10 @@ namespace Snow {
 
         m_SceneFilePath = std::string();
 
-        m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        if(m_SceneRenderer == nullptr) 
+            m_SceneRenderer = Ref<SceneRenderer>::Create(m_EditorScene);
+
+        m_EditorScene->OnViewportResize(m_SceneRenderer, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         m_EditorCamera = Editor::EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
     }
@@ -310,7 +362,7 @@ namespace Snow {
 
         m_SceneHierarchyPanel.SetScene(m_EditorScene);
         Script::ScriptEngine::SetSceneContext(m_EditorScene);
-        m_EditorScene->OnViewportResize((uint32_t)1280, (uint32_t)720);
+        m_EditorScene->OnViewportResize(m_SceneRenderer, (uint32_t)1280, (uint32_t)720);
 
         m_EditorCamera = Editor::EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
         //m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
@@ -505,9 +557,9 @@ namespace Snow {
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
             //Render::SceneRenderer::OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             if(m_EditorScene)
-                m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+                m_EditorScene->OnViewportResize(m_SceneRenderer, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             if (m_RuntimeScene)
-                m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+                m_RuntimeScene->OnViewportResize(m_SceneRenderer, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_EditorCamera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)m_ViewportSize.x, (float)m_ViewportSize.y, 0.1f, 1000.0f));
             m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -601,8 +653,8 @@ namespace Snow {
                 ImGui::EndPopup();
             }
             else {
-                if (strlen(s_ProjectFilePathBuffer) > 0)
-                    OpenProject(s_ProjectFilePathBuffer);
+                //if (strlen(s_ProjectFilePathBuffer) > 0)
+                    //OpenProject(s_ProjectFilePathBuffer);
             }
         }
         ImGui::PopStyleVar();

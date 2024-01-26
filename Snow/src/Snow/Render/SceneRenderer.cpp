@@ -81,6 +81,8 @@ namespace Snow {
 			m_UniformBufferSet->Create(sizeof(UBRenderer), 3);
 			m_UniformBufferSet->Create(sizeof(UBPointLights), 4);
 
+
+			Ref<Shader> compositeShader = Renderer::GetShaderLibrary()->Get("SceneComposite");
 			
 			{
 				ImageSpecification spec;
@@ -134,17 +136,18 @@ namespace Snow {
 			//PreDepth Pass
 			{
 				FramebufferSpecification fbSpec;
-				fbSpec.AttachmentList = { ImageFormat::Red, ImageFormat::Depth32F };
+				fbSpec.AttachmentList = { /*ImageFormat::Red,*/ ImageFormat::Depth24Stencil8};
 				fbSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+				fbSpec.ClearDepthValue = 0.0f;
 				fbSpec.DebugName = "PreDepth";
 
 				RenderPassSpecification rpSpec;
 				rpSpec.TargetFramebuffer = Render::Framebuffer::Create(fbSpec);
-				rpSpec.DebugName = "PreDepth";
+				rpSpec.DebugName = fbSpec.DebugName;
 
 				auto shader = Renderer::GetShaderLibrary()->Get("PreDepth");
 				PipelineSpecification pipelineSpec;
-				pipelineSpec.DebugName = "PreDepth";
+				pipelineSpec.DebugName = fbSpec.DebugName;
 				pipelineSpec.Shader = shader;
 				pipelineSpec.Layout = {
 					{AttribType::Float3, "a_Position"},
@@ -155,18 +158,18 @@ namespace Snow {
 				};
 				pipelineSpec.BindedRenderPass = RenderPass::Create(rpSpec);
 				m_PreDepthPipeline = Pipeline::Create(pipelineSpec);
-				m_PreDepthMaterial = Material::Create(shader, "PreDepth");
+				m_PreDepthMaterial = Material::Create(shader, pipelineSpec.DebugName);
 			}
 
 			// Geometry Pipeline
 			{
 				FramebufferSpecification framebufferSpec;
 				framebufferSpec.AttachmentList = { ImageFormat::RGBA32F, ImageFormat::RGBA32F, ImageFormat::RGBA16F, ImageFormat::DepthStencil };
-				//framebufferSpec.ExistingImages[3] = m_PreDepthPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
+				framebufferSpec.ExistingImages[3] = m_PreDepthPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
 
 				framebufferSpec.Samples = 1;
-				framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-				framebufferSpec.ClearDepthOnLoad = true;
+				framebufferSpec.ClearColor = { 0.3f, 0.1f, 0.1f, 1.0f };
+				framebufferSpec.ClearDepthOnLoad = false;
 				framebufferSpec.DebugName = "Geometry";
 
 				Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
@@ -246,12 +249,10 @@ namespace Snow {
 				FramebufferSpecification compFramebufferSpec;
 
 				compFramebufferSpec.DebugName = "SceneComposite";
-				compFramebufferSpec.ClearColor = { 0.35f, 0.15f, 0.15f, 1.0f };
-				compFramebufferSpec.SwapChainTarget = m_Specification.SwapChainTarget;
-				if(m_Specification.SwapChainTarget)
-					compFramebufferSpec.AttachmentList = { ImageFormat::RGBA };
-				else
-					compFramebufferSpec.AttachmentList = { ImageFormat::RGBA, ImageFormat::Depth32F };
+				compFramebufferSpec.ClearColor = { 0.35f, 0.8f, 0.15f, 1.0f };
+				compFramebufferSpec.Transfer = true;
+				//compFramebufferSpec.SwapChainTarget = m_Specification.SwapChainTarget;
+				compFramebufferSpec.AttachmentList = { ImageFormat::RGBA, ImageFormat::Depth32F };
 
 				Ref<Framebuffer> framebuffer = Framebuffer::Create(compFramebufferSpec);
 
@@ -259,8 +260,7 @@ namespace Snow {
 				compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
 				compRenderPassSpec.DebugName = "SceneComposite";
 
-				Ref<Shader> compositeShader = Renderer::GetShaderLibrary()->Get("SceneComposite");
-
+				
 				PipelineSpecification pipelineSpec;
 				pipelineSpec.Layout = {
 					{AttribType::Float3, "a_Position"},
@@ -287,19 +287,19 @@ namespace Snow {
 			if(!m_Specification.SwapChainTarget) {
 				FramebufferSpecification framebufferSpec;
 				framebufferSpec.AttachmentList = { ImageFormat::RGBA, ImageFormat::DepthStencil };
-				framebufferSpec.ClearColor = { 0.4f, 0.0f, 0.0f, 1.0f };
+				framebufferSpec.ClearColor = { 0.6f, 0.7f, 0.9f, 1.0f };
 				framebufferSpec.ClearColorOnLoad = false;
 				framebufferSpec.ClearDepthOnLoad = false;
 				framebufferSpec.DebugName = "External Composite";
 
 				framebufferSpec.ExistingImages[0] = m_CompositePipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetImage();
-				framebufferSpec.ExistingImages[1] = m_GeometryPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
+				framebufferSpec.ExistingImages[1] = m_PreDepthPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
 
 				Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
 
 				RenderPassSpecification renderPassSpec;
 				renderPassSpec.TargetFramebuffer = framebuffer;
-				renderPassSpec.DebugName = "External Composite";
+				renderPassSpec.DebugName = framebufferSpec.DebugName;
 				m_ExternalCompositeRenderPass = RenderPass::Create(renderPassSpec);
 			}
 
@@ -320,8 +320,6 @@ namespace Snow {
 				m_ViewportHeight = height;
 				m_NeedsResize = true;
 			}
-			//s_SceneRendererData.GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
-			//s_SceneRendererData.CompPass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 		}
 
 		void SceneRenderer::BeginScene(const SceneRendererCamera& camera) {
@@ -471,7 +469,7 @@ namespace Snow {
 			//s_SceneRendererData.SceneData.SceneEnvironment.RadianceMap = rad;
 
 			//Renderer::ClearImage(m_CommandBuffer, m_GeometryPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetImage());
-			Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryPipeline->GetSpecification().BindedRenderPass, true);
+			Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryPipeline->GetSpecification().BindedRenderPass, false);
 
 			m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SceneData.SkyboxLod);
 			m_SkyboxMaterial->Set("u_Uniforms.Intensity", m_SceneData.SceneEnvironmentIntensity);
@@ -499,7 +497,7 @@ namespace Snow {
 			auto framebuffer = m_GeometryPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer;
 			int textureSamples = framebuffer->GetSpecification().Samples;
 
-			float exposure = 2.0f;
+			float exposure = 1.0f;
 
 			//m_CompositeMaterial->Set("u_Uniforms.TextureSamples", textureSamples);
 			m_CompositeMaterial->Set("u_Uniforms.Exposure", exposure);
@@ -526,7 +524,7 @@ namespace Snow {
 				m_CommandBuffer->Begin();
 
 				//ShadowMapPass();
-				//PreDepthPass();
+				PreDepthPass();
 				GeometryPass();
 				CompositePass();
 

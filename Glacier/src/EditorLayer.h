@@ -10,10 +10,13 @@
 
 #include "Snow/Core/Event/KeyEvent.h"
 
+#include "RayTracing/RayCamera.h"
+
 namespace Snow {
 
     class EditorLayer : public Core::Layer {
     public:
+        EditorLayer() : m_RayCamera(45.0f, 0.1f, 1000.0f) {}
         void OnAttach() override;
         void OnDetach() override;
         void OnUpdate(Timestep ts) override;
@@ -30,6 +33,7 @@ namespace Snow {
         void OpenProject(const std::string& filepath);
         void SaveProject();
         void CloseProject(bool unloadProject = true);
+        void CreateNewProjectFromScratch(const ProjectConfig& cfg);
 
         void NewScene();
         void OpenScene();
@@ -45,6 +49,7 @@ namespace Snow {
 
         bool m_ShowCreateProjectPopup = false;
 
+        Ref<Project> m_ActiveProject;
         Ref<Snow::Scene> m_RuntimeScene, m_EditorScene;
         Ref<Render::SceneRenderer> m_SceneRenderer;
 
@@ -58,6 +63,7 @@ namespace Snow {
         SceneState m_SceneState = SceneState::Editor;
 
         Editor::EditorCamera m_EditorCamera;
+        RayCamera m_RayCamera;
         Entity m_CameraEntity;
         Entity m_Square1;
 
@@ -71,7 +77,7 @@ namespace Snow {
         Ref<Render::Texture2D> m_PlayButtonTex;
 
         SceneHierarchyPanel m_SceneHierarchyPanel;
-        Scope<ContentBrowserPanel> m_ContentBrowserPanel;
+        Ref<ContentBrowserPanel> m_ContentBrowserPanel;
 
         static int m_ImGuizmoSelection;
     };
