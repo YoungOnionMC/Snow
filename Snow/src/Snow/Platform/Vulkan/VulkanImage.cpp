@@ -119,7 +119,7 @@ namespace Snow {
 
 			VulkanContext::GetCurrentDevice()->FlushCommandBuffer(cmdBuffer);
 		}
-		else if (m_Specification.Usage == Render::ImageUsage::Texture) {
+		else if (false) {
 			VkCommandBuffer transitionCommandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
 			VkImageSubresourceRange subresourceRange = {};
 			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -213,7 +213,7 @@ namespace Snow {
 		// Transition the image to transfer target, to copy the buffer data to it
 		Render::Utils::InsertImageMemoryBarrier(copyCmdBuffer, m_ImageInfo.Image,
 			0, VK_ACCESS_TRANSFER_WRITE_BIT,
-			m_DescriptorImageInfo.imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			m_Specification.Usage == ImageUsage::Storage ? m_DescriptorImageInfo.imageLayout : VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 			subresourceRange);
 
@@ -302,29 +302,6 @@ namespace Snow {
 
 		allocator.DestroyBuffer(stagingBuffer, stagingBufferAllocation);
 
-		/*if (m_Specification.Mips > 1) {
-			if (m_CurrentLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-				SNOW_CORE_ERROR("old layout is wrong");
-			Render::Utils::InsertImageMemoryBarrier(copyCmdBuffer, m_ImageInfo.Image,
-				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-				subresourceRange);
-			m_CurrentLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		}
-		else {
-			if (m_CurrentLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-				SNOW_CORE_ERROR("old layout is wrong");
-			Render::Utils::InsertImageMemoryBarrier(cmdBuffer, m_ImageInfo.Image,
-				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_DescriptorImageInfo.imageLayout,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				subresourceRange);
-			m_CurrentLayout = m_DescriptorImageInfo.imageLayout;
-		}
-
-		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;*/
-
 		
 	}
 
@@ -338,7 +315,7 @@ namespace Snow {
 		m_Specification.Height = m_Height;
 
 		Release();
-		RTInvalidate();
+		Invalidate();
 	}
 
 	void VulkanImage2D::CreatePerLayerImageViews() {
@@ -416,8 +393,6 @@ namespace Snow {
 
 		if (m_Specification.Usage == Render::ImageUsage::Storage)
 			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-		else if (m_Specification.Usage == Render::ImageUsage::Texture && false)
-			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
 
 		m_DescriptorImageInfo.imageView = m_ImageInfo.ImageView;
