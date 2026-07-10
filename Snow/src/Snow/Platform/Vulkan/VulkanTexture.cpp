@@ -175,7 +175,7 @@ namespace Snow {
 
 			vkCmdCopyBufferToImage(copyCmdBuffer, stagingBuffer, image->GetImageInfo().Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-			if (m_Properties.GenerateMips) {
+			if (mipCount > 1) {
 				Render::Utils::InsertImageMemoryBarrier(copyCmdBuffer, image->GetImageInfo().Image,
 					VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
 					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,

@@ -42,7 +42,7 @@ project "Glacier"
         }
 
         postbuildcommands {
-            '{COPY} "../Snow/vendor/mono/bin/Windows/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+            '{COPY} "../Snow/vendor/mono/bin/Windows/mono-2.0-sgen.lib" "%{cfg.targetdir}"'
         }
 
         filter "configurations:Debug"

@@ -446,7 +446,7 @@ namespace Snow {
 						if (ImGui::BeginPopupContextWindow(0, 1, false)) {
 							if (ImGui::BeginMenu("New")) {
 								if (ImGui::MenuItem("Folder")) {
-									bool created = FileSystem::CreateDirectory(Project::GetAssetDirectory() / m_CurrentDirectory->FilePath / "New Folder");
+									bool created = FileSystem::CreateFolderDirectory(Project::GetAssetDirectory() / m_CurrentDirectory->FilePath / "New Folder");
 									if (created) {
 										Refresh();
 										const auto& directoryInfo = GetDirectory(m_CurrentDirectory->FilePath / "New Folder");

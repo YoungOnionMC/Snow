@@ -534,9 +534,11 @@ void main() {
     vec3 iblContribution = IBL(F0, Lr) * u_EnvironmentMapIntensity;
 
     //Color = vec4(m_Params.Albedo, 1.0);
-    Color = vec4(lightContribution + iblContribution, 1.0);
+    //Color = vec4(lightContribution + iblContribution, 1.0);
 
-    Color = vec4(m_Params.Normal, 1.0f);
+    //Color = vec4(m_Params.Normal, 1.0f);
+
+    Color = vec4(0.0f, 1.0f, 1.0f, 1.0f);
 
     o_ViewPositions = vec4(Input.ViewPosition, 1.0f);
 

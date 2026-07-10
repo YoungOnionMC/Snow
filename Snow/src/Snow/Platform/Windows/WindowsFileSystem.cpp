@@ -64,7 +64,7 @@ namespace Snow {
 	unsigned long FileSystem::Watch(void* param) {
 		auto assetDirectory = Project::GetActive()->GetAssetDirectory();
 #ifdef UNICODE
-		std::wstring dirStr = assetDirectory.wstring();
+		std::string dirStr = assetDirectory.string();
 #else
 		std::string dirStr = assetDirectory.string();
 #endif

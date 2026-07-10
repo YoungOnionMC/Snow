@@ -168,7 +168,7 @@ namespace Snow {
 				continue;
 
 			if (!FileSystem::Exists(AssetManager::GetFileSystemPath(metadata))) {
-				SNOW_CORE_TRACE("[AssetManager] Missing asset '{0}' detected in registry file, trying to locate...", metadata.FilePath);
+				SNOW_CORE_TRACE("[AssetManager] Missing asset '{0}' detected in registry file, trying to locate...", metadata.FilePath.string());
 			}
 
 			s_AssetRegistry[metadata.FilePath] = metadata;
@@ -281,7 +281,7 @@ namespace Snow {
 				ImGui::SetColumnWidth(0, columnWidth);
 			}
 			for (const auto& [path, metadata] : s_AssetRegistry) {
-				std::string handle = fmt::format("{0}", metadata.Handle);
+				std::string handle = fmt::format("{0}", (int)metadata.Handle);
 				std::string filepath = metadata.FilePath.string();
 				std::string type = Utils::AssetTypeToString(metadata.Type);
 				if (searchBuffer[0] != 0) {

@@ -168,7 +168,7 @@ namespace Snow {
 				framebufferSpec.ExistingImages[3] = m_PreDepthPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
 
 				framebufferSpec.Samples = 1;
-				framebufferSpec.ClearColor = { 0.3f, 0.1f, 0.1f, 1.0f };
+				framebufferSpec.ClearColor = { 0.2f, 0.1f, 0.1f, 1.0f };
 				framebufferSpec.ClearDepthOnLoad = false;
 				framebufferSpec.DebugName = "Geometry";
 
@@ -208,7 +208,7 @@ namespace Snow {
 			{
 				Ref<Shader> gridShader = Renderer::GetShaderLibrary()->Get("Grid");
 
-				const float gridScale = 160.0f;
+				const float gridScale = 16.0f;
 				const float gridSize = 0.025f;
 				m_GridMaterial = Render::Material::Create(gridShader);
 				m_GridMaterial->Set("u_Settings.Scale", gridScale);
@@ -249,7 +249,7 @@ namespace Snow {
 				FramebufferSpecification compFramebufferSpec;
 
 				compFramebufferSpec.DebugName = "SceneComposite";
-				compFramebufferSpec.ClearColor = { 0.35f, 0.8f, 0.15f, 1.0f };
+				compFramebufferSpec.ClearColor = { 0.35f, 0.1f, 0.15f, 1.0f };
 				compFramebufferSpec.Transfer = true;
 				//compFramebufferSpec.SwapChainTarget = m_Specification.SwapChainTarget;
 				compFramebufferSpec.AttachmentList = { ImageFormat::RGBA, ImageFormat::Depth32F };
@@ -338,6 +338,7 @@ namespace Snow {
 			if (m_NeedsResize) {
 				m_NeedsResize = false;
 
+				m_PreDepthPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
 				m_GeometryPipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);
 
 				m_CompositePipeline->GetSpecification().BindedRenderPass->GetSpecification().TargetFramebuffer->Resize(m_ViewportWidth, m_ViewportHeight);

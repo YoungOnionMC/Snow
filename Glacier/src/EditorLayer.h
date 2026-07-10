@@ -69,7 +69,7 @@ namespace Snow {
 
 
         bool m_ViewportFocused = false, m_ViewportHovered = false;
-        glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+        glm::vec2 m_ViewportSize = { 1080.0f, 720.0f };
         bool m_ReloadScriptOnPlay = false;
 
         bool m_Running = false;

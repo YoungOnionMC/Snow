@@ -16,6 +16,7 @@
 
 #include "Snow/Platform/Vulkan/VulkanDevice.h"
 #include "Snow/Platform/Vulkan/VulkanAllocator.h"
+#include "Snow/Render/Renderer.h"
 
 #include "Snow/Core/Ref.h"
 
@@ -40,7 +41,7 @@ namespace Snow {
 		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentBufferIndex); }
 
 		uint32_t GetImageCount() override { return m_ImageCount; }
-		uint32_t GetCurrentBufferIndex() override { return m_CurrentBufferIndex; }
+		uint32_t GetCurrentBufferIndex() override { return m_CurrentBufferIndex % Renderer::GetConfig().FramesInFlight; }
 
 		VkFramebuffer GetFramebuffer(uint32_t index) { SNOW_CORE_ASSERT(index < m_ImageCount); return m_Framebuffers[index]; }
 		VkCommandBuffer GetDrawCommandBuffer(uint32_t index) { SNOW_CORE_ASSERT(index < m_ImageCount);  return m_DrawCommandBuffers[index]; }

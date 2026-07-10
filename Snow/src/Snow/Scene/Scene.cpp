@@ -389,7 +389,7 @@ namespace Snow {
 
     void Scene::OnRenderEditor(Ref<Render::SceneRenderer> renderer, Timestep ts, Editor::EditorCamera& editorCamera) {
         //Render::SceneRenderer::BeginScene(editorCamera);
-        
+#if 0
         {
             m_LightEnvironment = LightEnvironment();
 
@@ -445,6 +445,7 @@ namespace Snow {
                 }
             }
         }
+#endif
 
         renderer->SetScene(this);
         renderer->BeginScene({ editorCamera, editorCamera.GetViewMatrix(), 0.1f, 1000.0f, 45.0f });

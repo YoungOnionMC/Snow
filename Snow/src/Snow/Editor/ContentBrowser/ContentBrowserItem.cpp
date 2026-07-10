@@ -244,7 +244,7 @@ namespace Snow {
 	void ContentBrowserDirectory::Delete() {
 		bool deleted = FileSystem::DeleteFile(Project::GetActive()->GetAssetDirectory() / m_DirectoryInfo->FilePath);
 		if (!deleted) {
-			SNOW_CORE_ERROR("Failed to delete folder {0}", m_DirectoryInfo->FilePath);
+			SNOW_CORE_ERROR("Failed to delete folder {0}", m_DirectoryInfo->FilePath.string());
 			return;
 		}
 
@@ -313,7 +313,7 @@ namespace Snow {
 		auto path = AssetManager::GetFileSystemPath(m_AssetMetadata);
 		bool deleted = FileSystem::DeleteFile(path);
 		if (!deleted) {
-			SNOW_CORE_ERROR("Failed to delete file {0}", m_AssetMetadata.FilePath);
+			SNOW_CORE_ERROR("Failed to delete file {0}", m_AssetMetadata.FilePath.string());
 			return;
 		}
 
@@ -328,7 +328,7 @@ namespace Snow {
 		bool moved = FileSystem::MoveFile(origPath, Project::GetActive()->GetAssetDirectory() / path);
 
 		if (!moved) {
-			SNOW_CORE_ERROR("Couldn't move file from {0} to {1}", m_AssetMetadata.FilePath, path);
+			SNOW_CORE_ERROR("Couldn't move file from {0} to {1}", m_AssetMetadata.FilePath.string(), path.string());
 			return false;
 		}
 

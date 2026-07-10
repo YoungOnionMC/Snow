@@ -167,9 +167,9 @@ namespace Snow {
 		deviceCreateInfo.pEnabledFeatures = &m_VulkanPhysicalDeviceFeatures;
 
 		
-		if (IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
-			deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-		}
+		//if (IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+			//deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+		//}
 
 		if (deviceExtensions.size() > 0) {
 			deviceCreateInfo.enabledExtensionCount = (uint32_t)deviceExtensions.size();
@@ -225,11 +225,7 @@ namespace Snow {
 		vkGetDeviceQueue(m_VulkanDevice, m_QueueFamilyIndices.Graphics, 0, &m_Queue);
 		vkGetDeviceQueue(m_VulkanDevice, m_QueueFamilyIndices.Compute, 0, &m_ComputeQueue);
 
-		VkDebugUtilsObjectNameInfoEXT debugObjectName = {};
-		debugObjectName.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 
-		auto pfn_vkSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(VulkanContext::GetVulkanInstance(), "vkSetDebugUtilsObjectNameEXT");
-		pfn_vkSetDebugUtilsObjectNameEXT(m_VulkanDevice, &debugObjectName);
 		//SNOW_CORE_ASSERT(vkCreateDebugReportCallbackEXT != NULL, "Creation of vulkan debug extension callback failed");
 	}
 

@@ -26,7 +26,7 @@ namespace Snow {
 		};
 
 		struct SceneRendererOptions {
-			bool ShowGrid = false;
+			bool ShowGrid = true;
 			bool ShowBoundingBoxes = false;
 		};
 

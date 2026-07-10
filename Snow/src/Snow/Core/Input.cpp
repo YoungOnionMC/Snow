@@ -14,7 +14,7 @@ namespace Snow {
         std::map<int, Controller> Input::s_Controllers;
 
         void Input::Init() {
-            SNOW_CORE_INFO("Input Initialzed");
+            SNOW_CORE_INFO("Input Initialized");
             if(!PlatformInit())
                 SNOW_CORE_ERROR("Platform Init failed");
         }

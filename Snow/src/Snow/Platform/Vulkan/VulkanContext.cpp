@@ -22,12 +22,65 @@ namespace Snow {
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData) {
         (void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix;
-        SNOW_CORE_WARN("VulkanDebugCallback:\n Object Type: {0}\n Message: {1}", objectType, pMessage);
+        SNOW_CORE_WARN("VulkanDebugCallback:\n Object Type: {0}\n Message: {1}", (int)objectType, pMessage);
 
         const auto& imageRefs = VulkanImage2D::GetImageRefs();
         if (strstr(pMessage, "CoreValidation-DrawState-InvalidImageLayout"))
             SNOW_CORE_ASSERT(false);
 
+
+        return VK_FALSE;
+    }
+
+    constexpr const char* VkDebugUtilsMessageType(const VkDebugUtilsMessageTypeFlagsEXT type) {
+        switch (type) {
+        case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:		return "General";
+        case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:	return "Validation";
+        case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:	return "Performance";
+        default:												return "Unknown";
+        }
+    }
+
+    constexpr const char* VkDebugUtilsMessageSeverity(const VkDebugUtilsMessageSeverityFlagBitsEXT severity) {
+        switch (severity) {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:		return "error";
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:	return "warning";
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:		return "info";
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:	return "verbose";
+        default:												return "unknown";
+        }
+    }
+
+    static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugUtilsMessengerCallback(const VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, const VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+        (void)pUserData;
+
+        const bool perfWarning = false;
+        if (!perfWarning) {
+            if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+                return VK_FALSE;
+        }
+
+        std::string labels, objects;
+        if (pCallbackData->cmdBufLabelCount) {
+            labels = fmt::format("\tLabels({}): \n", pCallbackData->cmdBufLabelCount);
+            for (uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; ++i) {
+                const auto& label = pCallbackData->pCmdBufLabels[i];
+                const std::string colorStr = fmt::format("[ {}, {}, {}, {} ]", label.color[0], label.color[1], label.color[2], label.color[3]);
+                labels.append(fmt::format("]t]t- Command Buffer Label[{0}]: name: {1}, color: {2}\n", i, label.pLabelName ? label.pLabelName : "NULL", colorStr));
+            }
+        }
+
+        if (pCallbackData->objectCount) {
+            objects = fmt::format("\tObjects({}): \n", pCallbackData->objectCount);
+            for (uint32_t i = 0; i < pCallbackData->objectCount; ++i) {
+                const auto& object = pCallbackData->pObjects[i];
+                labels.append(fmt::format("\t\t- Object[{0}]: name: {1}, type: {2}, handle: {3:#x}\n", i, object.pObjectName ? object.pObjectName : "NULL", VkUtils::VkObjectTypeToString(object.objectType), object.objectHandle));
+            }
+        }
+
+        SNOW_CORE_WARN("{0} {1} message: \n\t{2}\n {3} {4}", VkDebugUtilsMessageType(messageType), VkDebugUtilsMessageSeverity(messageSeverity), pCallbackData->pMessage, labels, objects);
+
+        const auto& imageRefs = VulkanImage2D::GetImageRefs();
 
         return VK_FALSE;
     }
@@ -103,6 +156,7 @@ namespace Snow {
         if (s_Validation) {
             m_InstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             m_InstanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+            m_InstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
         }
 
         VkInstanceCreateInfo instanceCreateInfo = {};
@@ -157,6 +211,16 @@ namespace Snow {
         VKCheckError(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
 
         if (debugUtils && debugReport) {
+
+            auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+            SNOW_CORE_ASSERT(vkCreateDebugUtilsMessengerEXT != NULL, "");
+            VkDebugUtilsMessengerCreateInfoEXT debugUtilsCreateInfo = {};
+            debugUtilsCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+            debugUtilsCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+            debugUtilsCreateInfo.pfnUserCallback = VulkanDebugUtilsMessengerCallback;
+            debugUtilsCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+            VKCheckError(vkCreateDebugUtilsMessengerEXT(s_VulkanInstance, &debugUtilsCreateInfo, nullptr, &m_DebugUtilsMessenger));
+#if 0
             auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkCreateDebugReportCallbackEXT");
             SNOW_CORE_ASSERT(vkCreateDebugReportCallbackEXT != NULL, "Creation of vulkan debug extension callback failed");
             VkDebugReportCallbackCreateInfoEXT debugReportCI = {};
@@ -165,6 +229,7 @@ namespace Snow {
             debugReportCI.pfnCallback = VulkanDebugReportCallback;
             debugReportCI.pUserData = NULL;
             VKCheckError(vkCreateDebugReportCallbackEXT(s_VulkanInstance, &debugReportCI, nullptr, &m_DebugReportCallback));
+#endif
         }
 
         m_Device = Ref<VulkanDevice>::Create();

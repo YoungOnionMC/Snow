@@ -53,7 +53,7 @@ namespace Snow {
         VulkanSwapChain m_SwapChain;
         VulkanAllocator m_Allocator;
 
-        VkDebugReportCallbackEXT m_DebugReportCallback = VK_NULL_HANDLE;
+        VkDebugUtilsMessengerEXT m_DebugUtilsMessenger = VK_NULL_HANDLE;
 
         std::vector<const char*> m_InstanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
         std::vector<VkExtensionProperties> m_Extensions;

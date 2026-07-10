@@ -3,6 +3,7 @@ project "Snow"
     language "C++"
     cppdialect "C++17"
     staticruntime "On"
+    characterset "Unicode"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
@@ -116,7 +117,7 @@ project "Snow"
             
             "%{VendorLibraryDir.glslang}/Windows",
             "%{VendorLibraryDir.SPIRVTools}/Windows",
-            "%{VendorLibraryDir.mono}/Windows",
+            "%{VendorLibraryDir.mono}/Windows-Debug",
              
         }
 
@@ -127,6 +128,7 @@ project "Snow"
             "d3d11.lib",
             "d3d12.lib",
             "D3DCompiler.lib",
+            "kernel32.lib",
 
             "vulkan-1.lib",
 

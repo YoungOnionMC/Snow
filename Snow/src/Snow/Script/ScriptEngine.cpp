@@ -501,7 +501,7 @@ namespace Snow {
 		void ScriptEngine::InitScriptEntity(Entity entity) {
 			Scene* scene = entity.m_Scene;
 			UUID id = entity.GetComponent<IDComponent>().ID;
-			SNOW_CORE_TRACE("InitScriptEntity {0}, ({1})", id, entity.m_EntityHandle);
+			SNOW_CORE_TRACE("InitScriptEntity {0}, ({1})", (int)id, (int)entity.m_EntityHandle);
 			auto moduleName = entity.GetComponent<ScriptComponent>().ModuleName;
 			if (moduleName.empty())
 				return;
@@ -654,7 +654,7 @@ namespace Snow {
 		void ScriptEngine::InstantiateEntityClass(Entity entity) {
 			Scene* scene = entity.m_Scene;
 			UUID id = entity.GetComponent<IDComponent>().ID;
-			SNOW_CORE_TRACE("InstantiateEntityClass {0} ({1})", id, entity.m_EntityHandle);
+			SNOW_CORE_TRACE("InstantiateEntityClass {0} ({1})", (int)id, (int)entity.m_EntityHandle);
 			ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 			auto& moduleName = entity.GetComponent<ScriptComponent>().ModuleName;
 

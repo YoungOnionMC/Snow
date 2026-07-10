@@ -66,7 +66,7 @@ group "Editor"
 group ""
 
 group "Scripts"
-    include "ExampleScriptApp"
+    include "GameScripts"
 group ""
 
 workspace "Script"
@@ -83,5 +83,5 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 group "Scripting"
     include "SnowScriptCore"
-    include "ExampleScriptApp"
+    include "GameScripts"
 group ""

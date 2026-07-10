@@ -35,6 +35,8 @@ namespace Snow {
 		Ref<VulkanDevice> vkDevice = VulkanContext::GetCurrentDevice();
 		VulkanAllocator allocator("Image2D");
 
+		Release();
+
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 		if (m_Specification.Usage == Render::ImageUsage::Attachment) {
 			if (ImageUtils::IsDepthFormat(m_Specification.Format))

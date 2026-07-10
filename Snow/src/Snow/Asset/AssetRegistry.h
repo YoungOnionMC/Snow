@@ -2,15 +2,6 @@
 
 #include "Snow/Asset/AssetMetadata.h"
 
-namespace std {
-	template<>
-	struct hash<std::filesystem::path> {
-		std::size_t operator()(const std::filesystem::path& path) const {
-			return hash_value(path);
-		}
-	};
-}
-
 namespace Snow {
 	class AssetRegistry {
 	public:

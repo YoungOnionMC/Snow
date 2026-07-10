@@ -28,7 +28,7 @@ namespace Snow {
 
     void EditorLayer::OnAttach() {
         //m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-        m_EditorCamera = Editor::EditorCamera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
+        m_EditorCamera = Editor::EditorCamera(glm::perspectiveFov(glm::radians(45.0f), m_ViewportSize.x, m_ViewportSize.y, 0.1f, 1000.0f));
         m_RayCamera = RayCamera(45.0f, 0.1f, 1000.0f);
         m_RayCamera.OnResize(1280.0f, 720.0f);
         Render::TextureProperties textureProps;
@@ -61,8 +61,10 @@ namespace Snow {
                 CreateNewProjectFromScratch(proj);
         }
 
-        //m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
-        //m_CameraEntity.AddComponent<CameraComponent>();
+        m_CameraEntity = m_EditorScene->CreateEntity("EditorCamera");
+        m_CameraEntity.AddComponent<CameraComponent>();
+        auto transform = m_CameraEntity.GetComponent<TransformComponent>();
+        transform.SetTranslation(m_EditorCamera.GetPosition());
 
         //m_Square1 = m_EditorScene->CreateEntity("Square");
 
@@ -147,6 +149,7 @@ namespace Snow {
             */
 
             //if (m_ViewportFocused)
+            
                 m_EditorCamera.OnUpdate(ts);
 
             //m_EditorScene->OnUpdate(ts);
@@ -205,8 +208,9 @@ namespace Snow {
     }
 
     void EditorLayer::CreateProject(std::filesystem::path filePath) {
-        if (!FileSystem::Exists(filePath))
-            Snow::FileSystem::CreateDirectory(filePath);
+        if (!FileSystem::Exists(filePath)) {
+            Snow::FileSystem::CreateFolderDirectory(filePath);
+        }
 
         
         
@@ -230,11 +234,11 @@ namespace Snow {
             
         }
 
-        FileSystem::CreateDirectory(filePath / "Assets" / "Materials");
-        FileSystem::CreateDirectory(filePath / "Assets" / "Meshes" / "Source");
-        FileSystem::CreateDirectory(filePath / "Assets" / "Scenes");
-        FileSystem::CreateDirectory(filePath / "Assets" / "Scripts" / "Source");
-        FileSystem::CreateDirectory(filePath / "Assets" / "Textures");
+        FileSystem::CreateFolderDirectory(filePath / "Assets" / "Materials");
+        FileSystem::CreateFolderDirectory(filePath / "Assets" / "Meshes" / "Source");
+        FileSystem::CreateFolderDirectory(filePath / "Assets" / "Scenes");
+        FileSystem::CreateFolderDirectory(filePath / "Assets" / "Scripts" / "Source");
+        FileSystem::CreateFolderDirectory(filePath / "Assets" / "Textures");
         
         
 

@@ -3,12 +3,12 @@
 
 
 namespace Snow {
-	bool FileSystem::CreateDirectory(const std::filesystem::path& directory) {
+	bool FileSystem::CreateFolderDirectory(const std::filesystem::path& directory) {
 		return std::filesystem::create_directories(directory);
 	}
 
-	bool FileSystem::CreateDirectory(const std::string& directory) {
-		return FileSystem::CreateDirectory(std::filesystem::path(directory));
+	bool FileSystem::CreateFolderDirectory(const std::string& directory) {
+		return FileSystem::CreateFolderDirectory(std::filesystem::path(directory));
 	}
 
 	bool FileSystem::Move(const std::filesystem::path& oldPath, const std::filesystem::path& newPath) {
@@ -28,7 +28,7 @@ namespace Snow {
 	}
 
 	bool FileSystem::RenameFilename(const std::filesystem::path& oldFilepath, const std::string& newFilepath) {
-		std::filesystem::path newPath = fmt::format("{0}\\{1}{2}", oldFilepath.parent_path().string(), newFilepath, oldFilepath.extension());
+		std::filesystem::path newPath = fmt::format("{0}\\{1}{2}", oldFilepath.parent_path().string(), newFilepath, oldFilepath.extension().string());
 		return Rename(oldFilepath, newPath);
 	}
 
