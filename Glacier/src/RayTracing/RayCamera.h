@@ -21,6 +21,8 @@ public:
 
 	float GetRotSpeed();
 
+	inline bool HasMoved() const { return m_Moved; }
+
 private:
 	void RecalculateProjection();
 	void RecalculateView();
@@ -41,4 +43,6 @@ private:
 	glm::vec2 m_LastMousePos{ 0.0f, 0.0f };
 
 	uint32_t m_ViewportWidth, m_ViewportHeight;
+
+	bool m_Moved = true;
 };

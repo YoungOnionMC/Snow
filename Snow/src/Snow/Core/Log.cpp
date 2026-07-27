@@ -17,11 +17,11 @@ namespace Snow {
 
             auto coreSink = static_cast<spdlog::sinks::stdout_color_sink_mt*>(s_CoreLogger->sinks()[0].get());
             #if defined(SNOW_PLATFORM_LINUX)
-            //coreSink->set_color(spdlog::level::trace, 0xFF00FF);
-            //coreSink->set_color(spdlog::level::critical, 0xFF0000);
+            coreSink->set_color(spdlog::level::trace, 0xFF00FF);
+            coreSink->set_color(spdlog::level::critical, 0xFF0000);
             #elif defined(SNOW_PLATFORM_WINDOWS)
-            //coreSink->set_color(spdlog::level::trace, 0xFF00FF);
-            //coreSink->set_color(spdlog::level::critical, 0xFF0000);
+            coreSink->set_color(spdlog::level::trace, 3);
+            coreSink->set_color(spdlog::level::critical, 1);
             #endif
 
             s_ClientLogger = spdlog::stdout_color_mt("App");
@@ -31,11 +31,11 @@ namespace Snow {
             auto clientSink = static_cast<spdlog::sinks::stdout_color_sink_mt*>(s_ClientLogger->sinks()[0].get());
 
             #if defined(SNOW_PLATFORM_LINUX)
-            //clientSink->set_color(spdlog::level::trace, 0xFF00FF);
-            //clientSink->set_color(spdlog::level::critical, 0xFF0000);
+            clientSink->set_color(spdlog::level::trace, 0xFF00FF);
+            clientSink->set_color(spdlog::level::critical, 0xFF0000);
             #elif defined(SNOW_PLATFORM_WINDOWS)
-            //clientSink->set_color(spdlog::level::trace, 0xFF00FF);
-            //clientSink->set_color(spdlog::level::critical, 0xFF0000);
+            clientSink->set_color(spdlog::level::trace, 3);
+            clientSink->set_color(spdlog::level::critical, 1);
             #endif
 
 

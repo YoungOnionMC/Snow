@@ -1,5 +1,9 @@
 #include "RayRenderer.h"
 
+#include "Hittable.h"
+#include "Interval.h"
+#include "Material.h"
+
 
 static glm::vec4 ConvertUIntToVec4(uint32_t num) {
     uint8_t a = num >> 24 & 0xff;
@@ -28,7 +32,7 @@ void RayRenderer::OnResize(uint32_t width, uint32_t height) {
         imageSpec.Format = ImageFormat::RGBA;
         imageSpec.Width = width, imageSpec.Height = height;
         imageSpec.Usage = ImageUsage::Texture;
-        imageSpec.DebugName = "RayTraceAttachment4";
+        imageSpec.DebugName = "RayTraceAttachment";
         m_OutputImage = Render::Image2D::Create(imageSpec);
         m_OutputImage->Invalidate();
     }
@@ -37,20 +41,33 @@ void RayRenderer::OnResize(uint32_t width, uint32_t height) {
     //SNOW_CORE_TRACE(m_ImageData.size());
 }
 
-void RayRenderer::OnRender(const Scene& scene, const RayCamera& camera) {
+void RayRenderer::OnRender(const RayCamera& camera) {
     //OnResize(m_ViewportSize.x, m_ViewportSize.y);
    // camera.OnResize(m_ViewportSize.x, m_ViewportSize.y);
 
-    m_ActiveScene = &scene;
+    //m_ActiveScene = &scene;
     m_ActiveCamera = &camera;
+    if (!m_ActiveCamera->HasMoved()) return;
     if (m_OutputImage == nullptr)
         return;
     
     Buffer imageData = Buffer(m_ViewportSize.x * m_ViewportSize.y * 4);
 
+    using namespace Snow::Math;
     for (int y = 0; y < m_OutputImage->GetHeight(); y++) {
         for (int x = 0; x < m_OutputImage->GetWidth(); x++) {
-#if false
+            Math::Ray ray;
+            ray.Origin = m_ActiveCamera->GetPosition();
+            
+            glm::vec3 color(0);
+            int samples = 5;
+            for (int i = 0; i < samples; i++) {
+                ray.Direction = m_ActiveCamera->getRayDirections()[x + y * m_OutputImage->GetWidth()] + glm::vec3(Random::NextFloat(-1, 1), Random::NextFloat(-1, 1), 0.0f);
+                color += RayRenderer::rayColor(ray, m_Bounces, *m_World);
+            }
+            imageData.As<uint32_t>()[x + y * m_OutputImage->GetWidth()] = ConvertVec4ToUInt(glm::vec4((color / glm::vec3(samples)), 1.0f));
+            /*
+#if true
             {
                 glm::vec4 color = RayGen(x, y);
                 color = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f));
@@ -62,13 +79,34 @@ void RayRenderer::OnRender(const Scene& scene, const RayCamera& camera) {
                 imageData.As<uint32_t>()[x + y * m_OutputImage->GetWidth()] = ConvertVec4ToUInt(color);
             }
 #endif
+*/
         }
     }
 
     m_OutputImage->SetData(imageData);
 }
 
-glm::vec4 RayRenderer::RayGen(uint32_t x, uint32_t y) {
+glm::vec3 RayRenderer::rayColor(const Snow::Math::Ray& ray, int depth, const Hittable& world) {
+    if (depth <= 0) {
+        return glm::vec3(0.0);
+    }
+
+    HitRecord record;
+    if (world.hit(ray, Interval(std::numeric_limits<float>::epsilon(), std::numeric_limits<float>::infinity()), record)) {
+        Snow::Math::Ray scattered;
+        glm::vec3 color;
+        if (record.mat->scatter(ray, record, color, scattered)) {
+            return color * rayColor(scattered, depth - 1, world);
+        }
+    }
+
+    glm::vec3 unitDir = glm::normalize(ray.Direction);
+    double a = 0.5 * (unitDir.y + 1.0);
+    // lerp
+    return glm::vec3(0.5, 0.7, 1.0) + (glm::vec3(1.0) - glm::vec3(0.5, 0.7, 1.0)) * glm::vec3(a);
+}
+
+/*glm::vec4 RayRenderer::RayGen(uint32_t x, uint32_t y) {
     Math::Ray ray;
     ray.Origin = m_ActiveCamera->GetPosition();
     ray.Direction = m_ActiveCamera->getRayDirections()[x + y * m_OutputImage->GetWidth()];
@@ -78,7 +116,7 @@ glm::vec4 RayRenderer::RayGen(uint32_t x, uint32_t y) {
     for (int i = 0; i < m_Bounces; i++) {
         RayRenderer::HitInfo hitInfo = TraceRay(ray);
         if (hitInfo.HitDistance < 0.0f) {
-            glm::vec3 skyColor = glm::vec3(0.0f, 0.0f, 0.0f);
+            glm::vec3 skyColor = glm::vec3(0.7f, 0.8f, 0.9f);
             color += skyColor * multiplier;
             break;
         }
@@ -153,4 +191,4 @@ RayRenderer::HitInfo RayRenderer::Miss(const Math::Ray& ray) {
     RayRenderer::HitInfo hitInfo;
     hitInfo.HitDistance = -1.0f;
     return hitInfo;
-}
+}*/

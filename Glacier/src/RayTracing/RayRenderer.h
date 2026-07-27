@@ -4,55 +4,41 @@
 #include <vector>
 
 #include "RayCamera.h"
-#include "Snow/Math/Ray.h"
+#include "HittableList.h"
+#include <Snow/Math/Ray.h>
 
 //#include <Snow.h>
 
 using namespace Snow;
 class RayRenderer {
-public:
-	struct Sphere {
-		glm::vec3 Pos;
-		float radius;
-		glm::vec3 Color;
-	};
-
-	struct Scene {
-		std::vector<Sphere> Spheres;
-	};
-
-	struct HitInfo {
-		bool Hit;
-		float HitDistance;
-
-		glm::vec3 WorldPos;
-		glm::vec3 WorldNormal;
-
-		uint32_t ObjectIndex;
-	};
 
 public:
 
 	void OnResize(uint32_t width, uint32_t height);
 
-	void OnRender(const Scene& scene, const RayCamera& camera);
+	void OnRender(const RayCamera& camera);
 
 	const Ref<Snow::Render::Image2D>& GetOutputImage() const { return m_OutputImage; }
 
 	int& GetBounces() { return m_Bounces; }
 
+	inline void SetWorld(HittableList world) { m_World = &world; }
+	HittableList& GetWorld() { return *m_World; }
+
 private:
 
-	glm::vec4 RayGen(uint32_t x, uint32_t y);
+	glm::vec3 rayColor(const Snow::Math::Ray& ray, int depth, const Hittable& world);
 
-	HitInfo TraceRay(const Math::Ray& ray);
+	//glm::vec4 RayGen(uint32_t x, uint32_t y);
+
+	/*HitInfo TraceRay(const Math::Ray& ray);
 	HitInfo ClosestHit(const Math::Ray& ray, float hitDistance, uint32_t objectIndex);
-	HitInfo Miss(const Math::Ray& ray);
+	HitInfo Miss(const Math::Ray& ray);*/
 
-	const Scene* m_ActiveScene;
+	HittableList* m_World = new HittableList();
 	const RayCamera* m_ActiveCamera;
 
-	int m_Bounces = 1;
+	int m_Bounces = 5;
 
 	glm::vec2 m_ViewportSize;
 

@@ -5,7 +5,18 @@ using namespace Snow;
 void RayTracingLayer::OnAttach() {
     //m_Camera.OnUpdate(ts);
     m_Camera.OnResize(m_ViewportSize.x, m_ViewportSize.y);
-    m_Renderer.OnRender(m_Scene, m_Camera);
+    m_Renderer.OnRender(m_Camera);
+
+    Ref<Raytrace::Material> groundMaterial = Ref<Raytrace::Lambertian>::Create(glm::vec3(0.14, 0.14, 0.18));
+    Ref<Raytrace::Material> albedo = Ref<Raytrace::Lambertian>::Create(glm::vec3(0.2, 0.2, 0.76));
+    Ref<Raytrace::Material> metal = Ref<Raytrace::Metal>::Create(glm::vec3(0.14, 0.14, 0.18), 0.13);
+    Ref<Raytrace::Material> dielectric = Ref<Raytrace::Dielectric>::Create(1.5);
+
+    m_Renderer.GetWorld().add(Ref<Sphere>::Create(glm::vec3(0, -1000, 0), 1000, groundMaterial));
+    m_Renderer.GetWorld().add(Ref<Sphere>::Create(glm::vec3(3, 0, -10), 3, albedo));
+    m_Renderer.GetWorld().add(Ref<Sphere>::Create(glm::vec3(-3, 0, -10), 3, dielectric));
+    //m_Renderer.GetWorld().add(Ref<Sphere>::Create(glm::vec3(0, -1000, 0), 1000, groundMaterial));
+
     //m_Renderer.OnResize(m_ViewportSize.x, m_ViewportSize.y);
 	////Render::TextureProperties textureProps;
 	//textureProps.SamplerFilter = TextureFilter::Linear;
@@ -16,7 +27,7 @@ void RayTracingLayer::OnDetach() {
 
 void RayTracingLayer::OnUpdate(Timestep ts) {
     m_Camera.OnUpdate(ts);
-    m_Renderer.OnRender(m_Scene, m_Camera);
+    m_Renderer.OnRender(m_Camera);
 }
 
 void RayTracingLayer::OnResize(uint32_t width, uint32_t height) {
@@ -98,17 +109,17 @@ void RayTracingLayer::OnImGuiRender() {
 
     ImGui::Begin("Scene");
     ImGui::DragInt("Bounces", &m_Renderer.GetBounces(), 1.0f, 1, 10);
-    for (size_t i = 0; i < m_Scene.Spheres.size(); i++) {
-        ImGui::PushID(i);
+    //for (size_t i = 0; i < m_Scene.Spheres.size(); i++) {
+        //ImGui::PushID(i);
 
-        RayRenderer::Sphere& sphere = m_Scene.Spheres[i];
+        //RayRenderer::Sphere& sphere = m_Scene.Spheres[i];
 
-        ImGui::DragFloat3("Position", glm::value_ptr(sphere.Pos), 0.1f);
-        ImGui::DragFloat("Radius", &sphere.radius, 0.1f);
-        ImGui::ColorEdit3("Albedo", glm::value_ptr(sphere.Color));
-        ImGui::Separator();
+        //ImGui::DragFloat3("Position", glm::value_ptr(sphere.Pos), 0.1f);
+        //ImGui::DragFloat("Radius", &sphere.radius, 0.1f);
+        //ImGui::ColorEdit3("Albedo", glm::value_ptr(sphere.Color));
+        //ImGui::Separator();
 
-        ImGui::PopID();
-    }
+        //ImGui::PopID();
+    //}
     ImGui::End();
 }

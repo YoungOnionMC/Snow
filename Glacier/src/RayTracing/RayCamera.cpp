@@ -7,8 +7,8 @@
 RayCamera::RayCamera(float fov, float nearP, float farP) :
 	m_FOV(fov), m_Near(nearP), m_Far(farP) {
 
-	m_ForwardDirection = glm::vec3(0, 0, -1);
-	m_Pos = glm::vec3(0, 0, 3);
+	m_ForwardDirection = glm::normalize(glm::vec3(0, -1, -1));
+	m_Pos = glm::vec3(0, 10, -10);
 }
 
 using namespace Snow;
@@ -71,9 +71,10 @@ void RayCamera::OnUpdate(Timestep ts) {
 	}
 
 	if (moved) {
+		m_Moved = true;
 		RecalculateView();
 		RecalculateRayDirections();
-	}
+	} 
 }
 
 void RayCamera::OnResize(uint32_t width, uint32_t height) {
@@ -114,4 +115,5 @@ void RayCamera::RecalculateRayDirections() {
 			m_RayDirections[x + y * m_ViewportWidth] = rayDir;
 		}
 	}
+	m_Moved = false;
 }

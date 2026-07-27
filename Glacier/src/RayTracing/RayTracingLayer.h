@@ -5,6 +5,8 @@
 
 #include "RayTracing/RayCamera.h"
 #include "RayRenderer.h"
+#include "Material.h"
+#include "Sphere.h"
 
 using namespace Snow;
 
@@ -15,7 +17,7 @@ class RayTracingLayer : public Snow::Core::Layer {
 public:
 	RayTracingLayer() :
 		m_Camera(45.0f, 0.1f, 1000.0f) {
-			{
+			/*{
 				RayRenderer::Sphere s;
 				s.Pos = glm::vec3(0, -270, 0);
 				s.Color = glm::vec3(.2, .3, .6);
@@ -28,7 +30,7 @@ public:
 				s.Color = Math::Random::NextVec3();
 				s.radius = Math::Random::NextFloat();
 				m_Scene.Spheres.push_back(s);
-			}
+			}*/
 	}
 
 	void OnAttach() override;
@@ -45,7 +47,8 @@ private:
 
 	
 	RayRenderer m_Renderer;
-	RayRenderer::Scene m_Scene;
+
+	//RayRenderer::Scene m_Scene;
 	RayCamera m_Camera;
 
 	bool m_FirstFrame = false;

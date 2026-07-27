@@ -9,8 +9,8 @@ namespace Snow {
     class MainApplication : public Core::Application {
     public:
         MainApplication() {
-            //PushLayer(new RayTracingLayer());
-            PushLayer(new EditorLayer());
+            PushLayer(new RayTracingLayer());
+            //PushLayer(new EditorLayer());
             //PushLayer(new VulkanLayer());
         }
     };
